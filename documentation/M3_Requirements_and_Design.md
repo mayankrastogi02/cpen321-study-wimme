@@ -438,58 +438,58 @@ Study Wimme targets university students who seek a collaborative study environme
 ![Design_Dependency_Diagram](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Design_Diagram.jpg?raw=true)
 
 ### **4.6. Functional Requirements Sequence Diagram**
-   1. [**Manage Friends**](#fr1)
-      - **addFriendsSD** <br>
+   1. [**Manage Profile**](#fr3)
+      - **Create Profile**<br>
+        ![createProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Profile_SD.jpg?raw=true)
+
+      - **Read Profile**<br>
+        ![readProfileSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Profile_SD.jpg?raw=true)
+
+      - **Delete Profile**<br>
+        ![deleteProfileSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Profile_SD.jpg?raw=true)
+
+      - **Edit Profile**<br>
+        ![editProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
+   
+   2. [**Manage Friends**](#fr1)
+      - **Add Friends** <br>
         ![addFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Add_Friends_SD.jpg?raw=true)
 
-      - **readFriendsSD**<br>
+      - **Read Friends**<br>
         ![readFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Friends_SD.jpg?raw=true)
 
-      - **deleteFriendsSD**<br>
+      - **Delete Friend**<br>
         ![deleteFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Friends_SD.jpg?raw=true)
-   2. [**Manage Groups**](#fr2)
-      - **createGroupsSD**<br>
+   3. [**Manage Groups**](#fr2)
+      - **Create Group**<br>
         ![createGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Group_SD.jpg?raw=true)
 
-      - **readGroupsSD**<br>
+      - **Read Groups**<br>
         ![readGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Groups_SD.jpg?raw=true)
 
-      - **deleteGroupSD**<br>
+      - **Delete Group**<br>
         ![deleteGroupSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Group_SD.jpg?raw=true)
 
-      - **editGroupsSD**<br>   
+      - **Edit Group**<br>   
         ![editGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Group_SD.jpg?raw=true)
-   3. [**Manage Profile**](#fr3)
-         - **createProfileSD**<br>
-![createProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Profile_SD.jpg?raw=true)
 
-      - **readProfilesSD**<br>
-![readProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Profile_SD.jpg?raw=true)
+   4. [**Browse Sessions**](#fr4)
+      - **Browse Sessions**<br>
+        ![readSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Browse_Sessions_SD.jpg?raw=true)
 
-      - **deleteProfileSD**<br>
-![deleteProfileSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Profile_SD.jpg?raw=true)
+   5. [**Manage Session**](#fr5)
+      - **Create Session**<br>
+        ![createSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Session_SD.jpg?raw=true)
 
-      - **editProfilesSD**<br>
-![editProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
-   4. [**Manage Sessions**](#fr4)
-         - **createSessionSD**<br>
-![createSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Session_SD.jpg?raw=true)
+      - **Delete Session**<br>
+        ![deleteSessionD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Session_SD.png?raw=true)
 
-      - **browseSessionSD**<br>
-![readSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Browse_Sessions_SD.jpg?raw=true)
+   6. [**Join/Leave Sessions**](#fr5)
+      - **Join Session**<br>
+        ![joinSessionSd](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Join_Sessions_SD.jpg?raw=true)
 
-      - **deleteSessionD**<br>
-![deleteSessionD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Session_SD.png?raw=true)
-
-      - **editSessionSD**<br>
-![editSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
-
-5. [**Join/Leave Sessions**](#fr5)
-      - **joinSessionSd**<br>
-![joinSessionSd](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Join_Sessions_SD.jpg?raw=true)
-
-      - **leaveSessionSD**<br>
-![leaveSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Leave_Sessions_SD.jpg?raw=true)
+      - **Leave Session**<br>
+        ![leaveSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Leave_Sessions_SD.jpg?raw=true)
 
 
 ### **4.7. Non-Functional Requirements Design**
