@@ -17,13 +17,14 @@ Study Wimme targets university students who seek a collaborative study environme
 2. **Host**: A student can become a host. They are a student who wants to organize a study session with their friends or publicly.
 
 ### **3.3. Functional Requirements**
+<a name="fr1"></a>
 
-#### General Failure Scenarios: 
-Database failure scenarios exist in all functional requirements.
-- If any database operation fails due to database service not being available or encountering an unexpected error, a message will be displayed to the user informing them of the database error and to try again.
+- #### General Failure Scenarios: 
+  - Database failure scenarios exist in all functional requirements.
+    - If any database operation fails due to database service not being available or encountering an unexpected error, a message will be displayed to the user informing them of the database error and to try again
 
-Network failure scenario exists in all functional requirements.
-- If network access is lost at any point, an error message is displayed informing the user that an internet connection is required for app functionality.
+  - Network failure scenario exists in all functional requirements.
+    - If network access is lost at any point, an error message is displayed informing the user that an internet connection is required for app functionality
 
 
 1. **Manage Profile**
@@ -35,7 +36,7 @@ Network failure scenario exists in all functional requirements.
      4. Delete profile
    - **Detailed Flow for Each Independent Scenario**:
      1. **Create Profile**:
-        - **Description**: The actor can create their profile by specifying their username, year, and faculty.
+        - **Description**: The actor can create their profile by specifying their username, year, and faculty
         - **Primary actor(s)**: Student
         - **Main success scenario**:
           1. The actor clicks the create profile button.
@@ -45,8 +46,8 @@ Network failure scenario exists in all functional requirements.
           5. The inputted data gets populated in the database for that user.
           6. The system displays that the profile has been created successfully
         - **Failure scenario(s)**:
-          - 3a1: User enters invalid text for respective fields (string for year, number for major, etc..)
-            - Message is displayed to user informing them that they have entered invalid characters for the given field(s) and to fix it before submitting is allowed.
+          - 3a. User enters invalid text for respective fields (string for year, number for major, etc..)
+            - 3a1. Message is displayed to user informing them that they have entered invalid characters for the given field(s) and to fix it before submitting is allowed
      2. **Read Profile**:
         - **Description**: The actor can view their profile details.
         - **Primary actor(s)**: Student
@@ -56,9 +57,9 @@ Network failure scenario exists in all functional requirements.
             3. The system displays information about their profile: username, year, and faculty
 
         - **Failure scenario(s)**:
-          - See general failure requirements.
+          - See general failure requirements
      3. **Edit profile**:
-        - **Description**: The actor can change the details of their profile profile.
+        - **Description**: The actor can change the details of their profile profile
         - **Primary actor(s)**: Student
         - **Main success scenario**:
             1. The actor clicks the edit button on their profile
@@ -70,8 +71,8 @@ Network failure scenario exists in all functional requirements.
             7. The system displays that the changes have been saved successfully
 
         - **Failure scenario(s)**:
-          - 4a1: User enters invalid text for respective fields (string for year, number for major, etc..)
-            - Message is displayed to user informing them that they have entered invalid characters for the given field(s) and to fix before they can save their edited details. 
+          - 4a. User enters invalid text for respective fields (string for year, number for major, etc..)
+            - 4a1. Message is displayed to user informing them that they have entered invalid characters for the given field(s) and to fix before they can save their edited details
 
      4. **Delete profile**:
         - **Description**: The actor can delete their profile
@@ -84,9 +85,9 @@ Network failure scenario exists in all functional requirements.
             5. The system displays that the profile has been deleted successfully
 
         - **Failure scenario(s)**:
-          - 2a1:  User cancels deletion:
-            - System closes confirmation popup
-            - Returns to profile page with no changes
+          - 2a.  User cancels deletion:
+            - 2a1. System closes confirmation popup
+            - 2a2. Returns to profile page with no changes
 
 
 2. **Manage friends**
@@ -97,8 +98,8 @@ Network failure scenario exists in all functional requirements.
      3. Delete friends
    - **Detailed Flow for Each Independent Scenario**:
      1. **Add friends**:
-        - **Description**: The actor can search for friends and add them to their friends list. 
-        - **Primary actor(s)**: Student A, Student B
+        - **Description**: The actor can search for friends and add them to their friends list 
+        - **Primary actor(s)**: Student
         - **Main success scenario**:
             1. Student A clicks the friends button
             2. The system loads the friends list page that displays a list of the student's friends and a text input to add friends
@@ -107,10 +108,10 @@ Network failure scenario exists in all functional requirements.
             5. The system updates the database, adding Student B to Student A's friend list and vice versa
 
         - **Failure scenario(s)**:
-          - 3a1: The user did not enter any search string
-            - System displays an error message that says empty search strings are not allowed
-          - 3a2: No users are found
-            - System displays a message saying no users with username matching the given search string was found, as well as a reminder to double-check input
+          - 3a. The user did not enter any search string
+            - 3a1. System displays an error message that says empty search strings are not allowed
+          - 3b. No users are found
+            - 3b1. System displays a message saying no users with username matching the given search string was found, as well as a reminder to double-check input
 
      2. **Read friends**:
         - **Description**: The actor can view their friends list
@@ -120,8 +121,8 @@ Network failure scenario exists in all functional requirements.
             2. The system retrieves the friends list from the database and displays this information
 
         - **Failure scenario(s)**:
-          - 2a1: The user has no friends
-            - Message is displayed to the user that they currently have no friends added
+          - 2a. The user has no friends
+            - 2a1. Message is displayed to the user that they currently have no friends added
 
      3. **Delete Friends**:
         - **Description**: The actor can delete friends from their friends list 
@@ -138,12 +139,12 @@ Network failure scenario exists in all functional requirements.
             9. The system displays that the friend has been deleted successfully
 
         - **Failure scenario(s)**:
-          - 2a1: User has no friends
-            - Popup informs user that they have no friends to delete
-            - Returns to friends list with no changes
-          - 6a1: User cancels deletion
-            - System closes confirmation popup
-            - Returns to friends list with no changes
+          - 2a. User has no friends
+            - 2a1. Popup informs user that they have no friends to delete
+            - 2a2. Returns to friends list with no changes
+          - 6a. User cancels deletion
+            - 6a1. System closes confirmation popup
+            - 6a2. Returns to friends list with no changes
 
 3. **Manage groups**
 
@@ -163,12 +164,12 @@ Network failure scenario exists in all functional requirements.
             4. The system adds the newly created group to the database
 
         - **Failure scenario(s)**:
-          - 2a1: The user has no groups
-            - System displays a message saying that user has no created groups
-          - 3a1: The user has no friends when creating the group
-            - Inform the user that they can only create groups with friends and to add some friends before trying again
-          - 3a2: The user already has a group with the same people
-            - Message pops up informing them that a preexisting group with the same people exist and tells them the name of the group
+          - 2a. The user has no groups
+            - 2a1. System displays a message saying that user has no created groups
+          - 3a. The user has no friends when creating the group
+            - 3a1. Inform the user that they can only create groups with friends and to add some friends before trying again
+          - 3b. The user already has a group with the same people
+            - 3b1. Message pops up informing them that a preexisting group with the same people exist and tells them the name of the group
 
 
      2. **Read groups**:
@@ -179,8 +180,8 @@ Network failure scenario exists in all functional requirements.
             2. The system retrieves the groups list from the database and displays this information
 
         - **Failure scenario(s)**:
-          - 2a1: The user has no groups
-            - Message is displayed to the user that they currently have no groups created
+          - 2a. The user has no groups
+            - 2a1. Message is displayed to the user that they currently have no groups created
 
      3. **Edit groups**:
         - **Description**: The actor can edit which users are part of a group they created 
@@ -194,12 +195,12 @@ Network failure scenario exists in all functional requirements.
             6. The system updates the database with edited group
 
         - **Failure scenario(s)**:
-          - 1a1: The user has no created groups
-            - Message is displayed to a user that they currently have no groups created
-          - 5a1: The user removes all members from a group
-            - Message is displayed to a user that they have removed everyone, and if they would like to just delete the group
-          - 5a2: The edited group matches a preexisting group
-            - Message pops up informing them that a preexisting group with the same people exist and tells them the name of the group
+          - 2a. The user has no created groups
+            - 2a1. Message is displayed to a user that they currently have no groups created
+          - 5a. The user removes all members from a group
+            - 5a1. Message is displayed to a user that they have removed everyone, and if they would like to just delete the group
+          - 5b. The edited group matches a preexisting group
+            - 5b1. Message pops up informing them that a preexisting group with the same people exist and tells them the name of the group
 
 
      4. **Delete groups**:
@@ -217,19 +218,19 @@ Network failure scenario exists in all functional requirements.
             9. The system displays that the group has been deleted successfully
 
         - **Failure scenario(s)**:
-          - 2a1: User has no groups
-            - Popup informs user that they have no groups to delete
-            - Returns to groups list with no changes
-          - 6a1: User cancels deletion
-            - System closes confirmation popup
-            - Returns to groups list with no changes
+          - 2a. User has no groups
+            - 2a1. Popup informs user that they have no groups to delete
+            - 2a2. Returns to groups list with no changes
+          - 6a. User cancels deletion
+            - 6a1. System closes confirmation popup
+            - 6a2. Returns to groups list with no changes
 
 4. **Browse sessions**
    - **Overview**:
      1. Browse sessions
    - **Detailed Flow for Each Independent Scenario**:
      1. **Browse sessions**:
-        - **Description**: The actor can browse for sessions hosted by their friends or public sessions on a graphical map interface.
+        - **Description**: The actor can browse for sessions hosted by their friends or public sessions on a graphical map interface
         - **Primary actor(s)**: Student
         - **Main success scenario**:
             1. The actor clicks on the browse sessions button
@@ -238,11 +239,11 @@ Network failure scenario exists in all functional requirements.
             4. The system displays the sessions on a map
 
         - **Failure scenario(s)**:
-          - 2a1: Location services disabled:
-            - System displays error that location access is required
-            - Prompts user to enable location services
-          - 3a1: There are no sessions available.
-            - System displays message that no sessions are available at the moment, and prompts user to create a session.
+          - 2a. Location services disabled
+            - 2a1. System displays error that location access is required
+            - 2a2. Prompts user to enable location services
+          - 3a. There are no sessions available
+            - 3a1. System displays message that no sessions are available at the moment, and prompts user to create a session
 
 5. **Manage session**
 
@@ -251,19 +252,19 @@ Network failure scenario exists in all functional requirements.
      2. Delete session
    - **Detailed Flow for Each Independent Scenario**:
      1. **Create session**:
-        - **Description**: The actor can create a private or public study session with a set time range, name, location, and optional description. 
+        - **Description**: The actor can create a private or public study session with a set time range, name, location, and optional description
         - **Primary actor(s)**: Host
         - **Main success scenario**:
           1. The actor clicks on the create session button
-          2. The system displays empty, editable fields for time range, location, and description. It also includes a toggle that lets the actor choose if the session is private or public.
-          3. The actor clicks the fields, enters the appropriate information and specifies whether the session is public or private. If the session is private, the actor chooses which friends or groups they broadcast the session to.
+          2. The system displays empty, editable fields for time range, location, and description. It also includes a toggle that lets the actor choose if the session is private or public
+          3. The actor clicks the fields, enters the appropriate information and specifies whether the session is public or private. If the session is private, the actor chooses which friends or groups they broadcast the session to
           4. The actor clicks the create button
           5. The inputted data gets populated in the database for the new session
-          6. The system displays that the session has been created successfully. If the session is private, the selected friends/groups are notified.
+          6. The system displays that the session has been created successfully. If the session is private, the selected friends/groups are notified
 
         - **Failure scenario(s)**:
-          - 3a1: User enters invalid information for session (letters for time, symbols for anything, date in the past, etc…)
-            -    Message informing user that they have entered invalid information for a field and identifying that the field and expected format of input is.
+          - 3a. User enters invalid information for session (letters for time, symbols for anything, date in the past, etc…)
+            - 3a1. Message informing user that they have entered invalid information for a field and identifying that the field and expected format of input is
      2. **Delete session**:
         - **Description**: The host can end a session
         - **Primary actor(s)**: Host
@@ -278,9 +279,9 @@ Network failure scenario exists in all functional requirements.
 
 
         - **Failure scenario(s)**:
-          - 4a1: User cancels deletion:
-            - System closes confirmation popup
-            - Returns to session page with no changes
+          - 4a. User cancels deletion:
+            - 4a1. System closes confirmation popup
+            - 4a2. Returns to session page with no changes
 
 6. **Join/Leave Session**
 
@@ -292,16 +293,16 @@ Network failure scenario exists in all functional requirements.
             - **Description**: The actor can join sessions which are available to them
             - **Primary actor(s)**: Student
             - **Main success scenario**:
-                1. The actor clicks the create profile button.
-                2. The system displays empty, editable fields about their profile.
-                3. The actor clicks the fields and enters the appropriate information
-                4. The actor clicks the save button
-                5. The inputted data gets populated in the database for that user.
-                6. The system displays that the profile has been created successfully
+                1. The actor clicks on the session which they want to join
+                2. The system retrieves the session information from the database and displays the information
+                3. The actor clicks the join button
+                4. The system updates the database to include the actor as an attendee
+                5. The system displays that the actor has joined the session
+
             - **Failure scenario(s)**:
-                - 1a1: User already joined:
-                    - System displays message that user is already in session
-                    - Returns to session page
+                - 1a. User already joined
+                    - 1a1. System displays message that user is already in session
+                    - 1a2. Returns to session page
         2. **Leave Session**:
             - **Description**: The actor can leave a session which they have joined.
             - **Primary actor(s)**: Student
@@ -313,9 +314,9 @@ Network failure scenario exists in all functional requirements.
                 5. The system displays that the actor has left the session
 
             - **Failure scenario(s)**:
-                - 3a1: Session no longer exists:
-                    - System displays error that session cannot be found
-                    - Returns to sessions list
+                - 3a. Session no longer exists:
+                    - 3a1. System displays error that session cannot be found
+                    - 3a2. Returns to sessions list
 
         
 
@@ -331,61 +332,84 @@ Network failure scenario exists in all functional requirements.
 | ![User Settings](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/User%20Settings.jpg) | ![Friends](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Friends.jpg) | ![Groups](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Groups.jpg) | ![Edit Groups](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Edit%20Group.jpg) |
 
 ### **3.5. Non-Functional Requirements**
-
+<a name="nfr1"></a>
 
 
 1. **Real-time Updates**
-   - **Description**: The system must update session information and notifications within 5 seconds.
-   - **Justification**: This is critical for maintaining accurate session information and participant coordination.
+   - **Description**: The system must update session information and notifications within 5 seconds
+   - **Justification**: This is critical for maintaining accurate session information and participant coordination
 2. **Location Accuracy**
-   - **Description**: The system must maintain location accuracy within 10 meters for session locations.
-   - **Justification**: This is essential for students to find study locations efficiently.
+   - **Description**: The system must maintain location accuracy within 10 meters for session locations
+   - **Justification**: This is essential for students to find study locations efficiently
 
 ## 4. Design Specification
 
 ### **4.1. Main Components**
 
 1. **UserManagement**
-   - **Purpose**: Handles user authentication and profile management.
+   - **Purpose**: Handles user authentication and profile management
    - **Interfaces**:
-     1. `createProfile(UserDTO)` - Creates a new user profile.
-     2. `updateProfile(UserID, UserDTO)` - Updates user profile information.
-     3. `deleteProfile(UserID)` - Deletes the user’s profile.
-     4. `viewProfile(UserID)` - Views the user’s profile.
+     1. `UserID createProfile(UserDTO)` 
+        - **Purpose**: Creates a new user profile
+     2. `void updateProfile(UserID, UserDTO)` 
+        - **Purpose**: Updates user profile information
+     3. `void deleteProfile(UserID)` 
+        - **Purpose**: Deletes the user’s profile
+     4. `void viewProfile(UserID)` 
+        - **Purpose**: Views the user’s profile
 2. **FriendGroupManagement**
-   - **Purpose**: Handles creation, modification, and deletion of groups. Also manages users' friends list.
+   - **Purpose**: Handles creation, modification, and deletion of groups. It also manages users' friends list
    - **Interfaces**:
-     1. `void sendFriendRequest(SenderID, ReceiverID)` - Send friend request to another user.
-     2. `void decideFriendRequest(Decision, SenderID, ReceiverID)` - Adds user to friends list if accepted, otherwise remove the friend request.
-     3. `void getFriends(UserID)` - Get all friends for user
-     4. `void deleteFriend(UserID, FriendID)` - Delete a friend that the user has selected.
-     5. `void createGroup(UserID, List<UserId> members)` - Create a group using the friends user has selected.
-     6. `void editGroup(UserID, GroupID, List<UserID> newGroupMembers)` - make changes to an existing group.
-     7. `void deleteGroup(UserID, GroupID)` - Delete a preexisting group.
-     8. `void getGroups(UserID)` - Get all groups made by that user.
+     1. `void sendFriendRequest(SenderID, ReceiverID)` 
+        - **Purpose**: Send friend request to another user
+     2. `void decideFriendRequest(Decision, SenderID, ReceiverID)` 
+        - **Purpose**: Adds user to friends list if accepted, otherwise remove the friend request
+     3. `void getFriends(UserID)` 
+        - **Purpose**: Get all friends for user
+     4. `void deleteFriend(UserID, FriendID)` 
+        - **Purpose**: Delete a friend that the user has selected
+     5. `void createGroup(UserID, List<UserId> members)` 
+        - **Purpose**: Create a group using the friends user has selected
+     6. `void editGroup(UserID, GroupID, List<UserID> newGroupMembers)` 
+        - **Purpose**: make changes to an existing group
+     7. `void deleteGroup(UserID, GroupID)` 
+        - **Purpose**: Delete a preexisting group
+     8. `void getGroups(UserID)` 
+        - **Purpose**: Get all groups made by that user
 
 3. **Session**
    - **Purpose**: Handles the creation, modification, and deletion of study sessions
    - **Interfaces**:
-      1. `SessionID createSession(SessionDTO)` - Creates new study session
-      2. `void updateSession(SessionID, SessionDTO)` - Updates existing session details
-      3. `void deleteSession(SessionID)` - Deletes existing study session
-      4. `void viewSession(SessionID)` - View the details of a session
-      5. `boolean isUserJoined(UserId, SessionId)` - Checks if User has joined a particular session
-      6. `void addUserToSession(UserID, SessionID)` - Adds a user to the joined attribute of a session
-      7. `void removeUserFromSession(UserID, SessionID)` - Removes from a user from the joined attribute of a session
-      8. `void sendJoinNotificationToCreator(SessionId)` - Send notification to creator of session notifying that someone joins
+      1. `SessionID createSession(SessionDTO)` 
+          - **Purpose**: Creates new study session
+      2. `void updateSession(SessionID, SessionDTO)` 
+          - **Purpose**: Updates existing session details
+      3. `void deleteSession(SessionID)` 
+          - **Purpose**: Deletes existing study session
+      4. `void viewSession(SessionID)` 
+          - **Purpose**: View the details of a session
+      5. `boolean isUserJoined(UserId, SessionId)` 
+          - **Purpose**: Checks if User has joined a particular session
+      6. `void addUserToSession(UserID, SessionID)` 
+          - **Purpose**: Adds a user to the joined attribute of a session
+      7. `void removeUserFromSession(UserID, SessionID)` 
+          - **Purpose**: Removes from a user from the joined attribute of a session
+      8. `void sendJoinNotificationToCreator(SessionId)` 
+          - **Purpose**: Send notification to creator of session notifying that someone joins
 4. **Session Viewer**
    - **Purpose**: Handles the presentation and filtering of study sessions in both map and list views
    - **Interfaces**:
-      1. `List<Session> getFilteredSessions(filters: FilterOptions)` - Purpose: Retrieves sessions based on applied filters
-      2. `void toggleView(viewType: ViewType)` - Purpose: Switches between map and list views
+      1. `List<Session> getFilteredSessions(filters: FilterOptions)` 
+          - **Purpose**: Retrieves sessions based on applied filters
+      2. `void toggleView(viewType: ViewType)` 
+          - **Purpose**: Switches between map and list views
       
 ### **4.2. Databases**
 
 1. **UserDB**
-   - `User table` - Stores user profile information (name, faculty, year, friends).
-   - `Group table`- Stores the group that have been made by users along with the group members.
+    - **Purpose**:
+      - `User table` - Stores user profile information (name, faculty, year, friends).
+      - `Group table`- Stores the group that have been made by users along with the group members.
 2. **SessionDB**
    - **Purpose**: Stores session data including session ID, creator ID, invitee ID, and session details.
 
@@ -401,75 +425,72 @@ Network failure scenario exists in all functional requirements.
 ### **4.4. Frameworks**
 
 1. **Amazon Web Services (AWS)**
-   - **Purpose**: Using AWS EC2, we are able to deploy our server backend.
-   - **Reason**: It was covered in the tutorials and we have the technical knowledge from M1. It is simple and easy to deploy with good performance and it has a generous free tier.
+   - **Purpose**: Using AWS EC2, we are able to deploy our server backend
+   - **Reason**: It was covered in the tutorials and we have the technical knowledge from M1. It is simple and easy to deploy with good performance and it has a generous free tier
 2. **Kotlin/Android**
    - **Purpose**: Native Android mobile application development
-   - **Reason**: It was covered in the tutorials and we have the technical knowledge from M1. It also provides better performance, native Android features, and modern language features.
+   - **Reason**: Required as per course syllabus
 3. **Node.js with Express**
    - **Purpose**: Backend REST API server
-   - **Reason**: It is lightweight and enables fast development and easy deployment.
+   - **Reason**: It is lightweight and enables fast development and easy deployment
 
 ### **4.5. Dependencies Diagram**
 ![Design_Dependency_Diagram](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Design_Diagram.jpg?raw=true)
 
 ### **4.6. Functional Requirements Sequence Diagram**
-   1. **Manage Friends**
-      - **addFriendsSD**
-![addFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Add_Friends_SD.jpg?raw=true)
+   1. [**Manage Friends**](#fr1)
+      - **addFriendsSD** <br>
+        ![addFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Add_Friends_SD.jpg?raw=true)
 
-      - **readFriendsSD**
-![readFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Friends_SD.jpg?raw=true)
+      - **readFriendsSD**<br>
+        ![readFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Friends_SD.jpg?raw=true)
 
-      - **deleteFriendsSD**
-![deleteFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Friends_SD.jpg?raw=true)
-   2. **Manage Groups**
-      - **createGroupsSD**
-![createGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Group_SD.jpg?raw=true)
+      - **deleteFriendsSD**<br>
+        ![deleteFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Friends_SD.jpg?raw=true)
+   2. [**Manage Groups**](#fr2)
+      - **createGroupsSD**<br>
+        ![createGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Group_SD.jpg?raw=true)
 
-      - **readGroupsSD**
-![readGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Groups_SD.jpg?raw=true)
+      - **readGroupsSD**<br>
+        ![readGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Groups_SD.jpg?raw=true)
 
-      - **deleteGroupSD**
-![deleteGroupSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Group_SD.jpg?raw=true)
+      - **deleteGroupSD**<br>
+        ![deleteGroupSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Group_SD.jpg?raw=true)
 
-      - **editGroupsSD**
-![editGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Group_SD.jpg?raw=true)
-   3. **Manage Profile**
-         - **createProfileSD**
+      - **editGroupsSD**<br>   
+        ![editGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Group_SD.jpg?raw=true)
+   3. [**Manage Profile**](#fr3)
+         - **createProfileSD**<br>
 ![createProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Profile_SD.jpg?raw=true)
 
-      - **readProfilesSD**
+      - **readProfilesSD**<br>
 ![readProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Profile_SD.jpg?raw=true)
 
-      - **deleteProfileSD**
+      - **deleteProfileSD**<br>
 ![deleteProfileSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Profile_SD.jpg?raw=true)
 
-      - **editProfilesSD**
+      - **editProfilesSD**<br>
 ![editProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
-   4. **Manage Sessions**
-         - **createSessionSD**
+   4. [**Manage Sessions**](#fr4)
+         - **createSessionSD**<br>
 ![createSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Session_SD.jpg?raw=true)
 
-      - **browseSessionSD**
+      - **browseSessionSD**<br>
 ![readSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Browse_Sessions_SD.jpg?raw=true)
 
-      - **deleteSessionD**
+      - **deleteSessionD**<br>
 ![deleteSessionD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Session_SD.png?raw=true)
 
-      - **editSessionSD**
+      - **editSessionSD**<br>
 ![editSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
 
-5. **Join/Leave Sessions**
-      - **joinSessionSd**
+5. [**Join/Leave Sessions**](#fr5)
+      - **joinSessionSd**<br>
 ![joinSessionSd](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Join_Sessions_SD.jpg?raw=true)
 
-      - **leaveSessionSD**
-![leaveSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Join_Sessions_SD.jpg?raw=true)
+      - **leaveSessionSD**<br>
+![leaveSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Leave_Sessions_SD.jpg?raw=true)
 
-
-1. [**Manage Profile**](#fr1)\
-   [SEQUENCE\_DIAGRAM\_HERE]
 
 ### **4.7. Non-Functional Requirements Design**
 
@@ -478,7 +499,7 @@ Network failure scenario exists in all functional requirements.
         - Measure time between server update and client reflection
         - Run automated tests to verify notification delivery time < 2 seconds
 
-2. [**Location Accuracy**](#nfr1)
+2. [**Location Accuracy**](#nfr2)
    - **Validation**:
         - Compare reported location with actual physical location using multiple devices
         - Measure deviation from true coordinates using reference points
@@ -496,7 +517,7 @@ Network failure scenario exists in all functional requirements.
   - **Output**: Ranked list of recommended study sessions
   - **Main computational logic**: Weighted scoring system based on multiple factors like user location, subjects, schedule, available sessions, user preferences
   - **Pseudo-code**:
-    ```
+    ```javascript
     function calculateTotalScore(locationScore, subjectMatchScore, timePreferenceScore, socialScore) {
         return (
             locationScore * locationWeight +
@@ -538,7 +559,3 @@ Network failure scenario exists in all functional requirements.
 - `David Deng` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
 - `Simran Garcha` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
 - `Mayank Rastogi` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
-
-
-
-
