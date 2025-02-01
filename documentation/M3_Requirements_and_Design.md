@@ -9,6 +9,7 @@ Study Wimme targets university students who seek a collaborative study environme
 ## 3. Requirements Specification
 
 ### **3.1. Use-Case Diagram**
+![Use-Case Diagram](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Use_Case_Diagram.jpg?raw=true)
 
 ### **3.2. Actors Description**
 
@@ -223,7 +224,27 @@ Network failure scenario exists in all functional requirements.
             - System closes confirmation popup
             - Returns to groups list with no changes
 
-4. **Manage session**
+4. **Browse sessions**
+   - **Overview**:
+     1. Browse sessions
+   - **Detailed Flow for Each Independent Scenario**:
+     1. **Browse sessions**:
+        - **Description**: The actor can browse for sessions hosted by their friends or public sessions on a graphical map interface.
+        - **Primary actor(s)**: Student
+        - **Main success scenario**:
+            1. The actor clicks on the browse sessions button
+            2. The system checks for location permissions and if not enabled, requests it with a modal
+            3. The system retrieves all sessions available to the actor from the database within a specific timeframe and radius of the user’s location
+            4. The system displays the sessions on a map
+
+        - **Failure scenario(s)**:
+          - 2a1: Location services disabled:
+            - System displays error that location access is required
+            - Prompts user to enable location services
+          - 3a1: There are no sessions available.
+            - System displays message that no sessions are available at the moment, and prompts user to create a session.
+
+5. **Manage session**
 
    - **Overview**:
      1. Create session
@@ -261,26 +282,6 @@ Network failure scenario exists in all functional requirements.
             - System closes confirmation popup
             - Returns to session page with no changes
 
-5. **Browse sessions**
-   - **Overview**:
-     1. Browse sessions
-   - **Detailed Flow for Each Independent Scenario**:
-     1. **Browse sessions**:
-        - **Description**: The actor can browse for sessions hosted by their friends or public sessions on a graphical map interface.
-        - **Primary actor(s)**: Student
-        - **Main success scenario**:
-            1. The actor clicks on the browse sessions button
-            2. The system checks for location permissions and if not enabled, requests it with a modal
-            3. The system retrieves all sessions available to the actor from the database within a specific timeframe and radius of the user’s location
-            4. The system displays the sessions on a map
-
-        - **Failure scenario(s)**:
-          - 2a1: Location services disabled:
-            - System displays error that location access is required
-            - Prompts user to enable location services
-          - 3a1: There are no sessions available.
-            - System displays message that no sessions are available at the moment, and prompts user to create a session.
-
 6. **Join/Leave Session**
 
     - **Overview**:
@@ -301,20 +302,21 @@ Network failure scenario exists in all functional requirements.
                 - 1a1: User already joined:
                     - System displays message that user is already in session
                     - Returns to session page
-        2. **Join Session**:
-            - **Description**: The actor can join sessions which are available to them
+        2. **Leave Session**:
+            - **Description**: The actor can leave a session which they have joined.
             - **Primary actor(s)**: Student
             - **Main success scenario**:
-                1. The actor clicks the create profile button.
-                2. The system displays empty, editable fields about their profile.
-                3. The actor clicks the fields and enters the appropriate information
-                4. The actor clicks the save button
-                5. The inputted data gets populated in the database for that user.
-                6. The system displays that the profile has been created successfully
+                1. The actor clicks on the session which they have joined
+                2. The system retrieves the session information from the database and displays the information
+                3. The actor clicks the leave button
+                4. The system updates the database to remove the actor as an attendee
+                5. The system displays that the actor has left the session
+
             - **Failure scenario(s)**:
-                - 1a1: User already joined:
-                    - System displays message that user is already in session
-                    - Returns to session page
+                - 3a1: Session no longer exists:
+                    - System displays error that session cannot be found
+                    - Returns to sessions list
+
         
 
 
@@ -334,10 +336,10 @@ Network failure scenario exists in all functional requirements.
 
 1. **Real-time Updates**
    - **Description**: The system must update session information and notifications within 5 seconds.
-   - **Justification**: Critical for maintaining accurate session information and coordination.
+   - **Justification**: This is critical for maintaining accurate session information and participant coordination.
 2. **Location Accuracy**
    - **Description**: The system must maintain location accuracy within 10 meters for session locations.
-   - **Justification**: Essential for students to find study locations efficiently.
+   - **Justification**: This is essential for students to find study locations efficiently.
 
 ## 4. Design Specification
 
@@ -382,36 +384,89 @@ Network failure scenario exists in all functional requirements.
 ### **4.2. Databases**
 
 1. **UserDB**
-   - **Purpose**: Stores user profile information (name, faculty, year, friends).
+   - `User table` - Stores user profile information (name, faculty, year, friends).
+   - `Group table`- Stores the group that have been made by users along with the group members.
 2. **SessionDB**
    - **Purpose**: Stores session data including session ID, creator ID, invitee ID, and session details.
 
 ### **4.3. External Modules**
 
 1. **Google Maps API**
-   - **Purpose**: Provides location services and map visualization.
+   - **Purpose**: Provides location services and map visualization
 2. **Google OAuth**
-   - **Purpose**: Handles user authentication and security.
+   - **Purpose**: Handles user authentication and security
+3. **Google Firebase Push Notifications**
+   - **Purpose**: Provides push notifications to the users as a way to relay information
 
 ### **4.4. Frameworks**
 
 1. **Amazon Web Services (AWS)**
-   - **Purpose**: Backend server deployment using AWS EC2.
-   - **Reason**: Simple deployment, good performance, and a free tier.
+   - **Purpose**: Using AWS EC2, we are able to deploy our server backend.
+   - **Reason**: It was covered in the tutorials and we have the technical knowledge from M1. It is simple and easy to deploy with good performance and it has a generous free tier.
 2. **Kotlin/Android**
-   - **Purpose**: Native Android mobile application development.
-   - **Reason**: Provides better performance and modern language features.
+   - **Purpose**: Native Android mobile application development
+   - **Reason**: It was covered in the tutorials and we have the technical knowledge from M1. It also provides better performance, native Android features, and modern language features.
+3. **Node.js with Express**
+   - **Purpose**: Backend REST API server
+   - **Reason**: It is lightweight and enables fast development and easy deployment.
 
 ### **4.5. Dependencies Diagram**
+![Design_Dependency_Diagram](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Design_Diagram.jpg?raw=true)
 
 ### **4.6. Functional Requirements Sequence Diagram**
+   1. **Manage Friends**
+      - **addFriendsSD**
 ![addFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Add_Friends_SD.jpg?raw=true)
+
+      - **readFriendsSD**
 ![readFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Friends_SD.jpg?raw=true)
+
+      - **deleteFriendsSD**
 ![deleteFriendsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Friends_SD.jpg?raw=true)
-![readGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Groups_SD.jpg?raw=true)
-![deleteGroupSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Group_SD.jpg?raw=true)
-![editGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Group_SD.jpg?raw=true)
+   2. **Manage Groups**
+      - **createGroupsSD**
 ![createGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Group_SD.jpg?raw=true)
+
+      - **readGroupsSD**
+![readGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Groups_SD.jpg?raw=true)
+
+      - **deleteGroupSD**
+![deleteGroupSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Group_SD.jpg?raw=true)
+
+      - **editGroupsSD**
+![editGroupsSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Group_SD.jpg?raw=true)
+   3. **Manage Profile**
+         - **createProfileSD**
+![createProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Profile_SD.jpg?raw=true)
+
+      - **readProfilesSD**
+![readProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Read_Profile_SD.jpg?raw=true)
+
+      - **deleteProfileSD**
+![deleteProfileSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Profile_SD.jpg?raw=true)
+
+      - **editProfilesSD**
+![editProfilesSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
+   4. **Manage Sessions**
+         - **createSessionSD**
+![createSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Session_SD.jpg?raw=true)
+
+      - **browseSessionSD**
+![readSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Browse_Sessions_SD.jpg?raw=true)
+
+      - **deleteSessionD**
+![deleteSessionD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Session_SD.png?raw=true)
+
+      - **editSessionSD**
+![editSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Edit_Profile_SD.jpg?raw=true)
+
+5. **Join/Leave Sessions**
+      - **joinSessionSd**
+![joinSessionSd](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Join_Sessions_SD.jpg?raw=true)
+
+      - **leaveSessionSD**
+![leaveSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Join_Sessions_SD.jpg?raw=true)
+
 
 1. [**Manage Profile**](#fr1)\
    [SEQUENCE\_DIAGRAM\_HERE]
@@ -419,20 +474,27 @@ Network failure scenario exists in all functional requirements.
 ### **4.7. Non-Functional Requirements Design**
 
 1. [**Real-time Updates**](#nfr1)
-   - **Validation**: Measure server-client update time and ensure <2 seconds delay.
+   - **Validation**: 
+        - Measure time between server update and client reflection
+        - Run automated tests to verify notification delivery time < 2 seconds
+
 2. [**Location Accuracy**](#nfr1)
-   - **Validation**: Compare reported vs. actual location and measure deviations.
+   - **Validation**:
+        - Compare reported location with actual physical location using multiple devices
+        - Measure deviation from true coordinates using reference points
+        - Verify accuracy remains within 10-meter threshold in 95% of test cases
+
 
 ### **4.8. Main Project Complexity Design**
 
 **Study Session Matching Algorithm**
 
-- **Description**: Algorithm to match students with compatible study sessions.
-- **Why complex?**: Considers multiple factors including location, subject, time preferences, and friends/groups.
+- **Description**: Algorithm to match students with compatible study sessions
+- **Why complex?**: Considers multiple factors including location, subject, time preferences, and friends and groups
 - **Design**:
-  - **Input**: User location, subjects, schedule, available sessions, user preferences.
-  - **Output**: Ranked list of recommended study sessions.
-  - **Main computational logic**: Weighted scoring system.
+  - **Input**: User location, subjects, schedule, available sessions, user preferences
+  - **Output**: Ranked list of recommended study sessions
+  - **Main computational logic**: Weighted scoring system based on multiple factors like user location, subjects, schedule, available sessions, user preferences
   - **Pseudo-code**:
     ```
     function calculateTotalScore(locationScore, subjectMatchScore, timePreferenceScore, socialScore) {
@@ -472,9 +534,11 @@ Network failure scenario exists in all functional requirements.
     ```
 
 ## 5. Contributions
+- `Yibo Chen` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
+- `David Deng` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
+- `Simran Garcha` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
+- `Mayank Rastogi` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
 
-- ...
-- ...
-- ...
-- ...
+
+
 
