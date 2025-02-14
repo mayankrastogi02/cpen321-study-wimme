@@ -2,8 +2,14 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Studywimme" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+         <item name="colorPrimary">@color/primary</item>
     </style>
 
     <style name="Theme.Studywimme" parent="Base.Theme.Studywimme" />
+
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/primarybg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/studywimme_logo</item>
+        <item name="postSplashScreenTheme">@style/Base.Theme.Studywimme</item>
+    </style>
 </resources>
