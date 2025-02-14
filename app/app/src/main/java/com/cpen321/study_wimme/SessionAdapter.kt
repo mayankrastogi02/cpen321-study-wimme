@@ -4,11 +4,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
-class SessionsAdapter : ListAdapter<Session, SessionsAdapter.SessionViewHolder>(SessionDiffCallback()) {
+class SessionsAdapter : RecyclerView.Adapter<SessionsAdapter.SessionViewHolder>() {
+    private val allSessions = mutableListOf<Session>()
+    private val displayedSessions = mutableListOf<Session>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -17,32 +17,41 @@ class SessionsAdapter : ListAdapter<Session, SessionsAdapter.SessionViewHolder>(
     }
 
     override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(displayedSessions[position])
+    }
+
+    override fun getItemCount(): Int = displayedSessions.size
+
+    fun addSession(session: Session) {
+        allSessions.add(session)
+        if (session.visibility == currentVisibility) {
+            displayedSessions.add(session)
+            notifyItemInserted(displayedSessions.size - 1)
+        }
+    }
+
+    fun filterSessions(visibility: SessionVisibility) {
+        currentVisibility = visibility
+        displayedSessions.clear()
+        displayedSessions.addAll(allSessions.filter { it.visibility == visibility })
+        notifyDataSetChanged()
     }
 
     class SessionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val titleTextView: TextView = itemView.findViewById(R.id.sessionTitle)
+        private val nameTextView: TextView = itemView.findViewById(R.id.sessionName)
+        private val timeTextView: TextView = itemView.findViewById(R.id.sessionTime)
+        private val locationTextView: TextView = itemView.findViewById(R.id.sessionLocation)
+        private val descriptionTextView: TextView = itemView.findViewById(R.id.sessionDescription)
 
         fun bind(session: Session) {
-            titleTextView.text = session.title
-            // TODO: Bind other session data as needed
+            nameTextView.text = session.name
+            timeTextView.text = session.time
+            locationTextView.text = session.location
+            descriptionTextView.text = session.description
         }
     }
 
-    private class SessionDiffCallback : DiffUtil.ItemCallback<Session>() {
-        override fun areItemsTheSame(oldItem: Session, newItem: Session): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Session, newItem: Session): Boolean {
-            return oldItem == newItem
-        }
+    companion object {
+        private var currentVisibility: SessionVisibility = SessionVisibility.PRIVATE
     }
 }
-
-data class Session(
-    val id: String,
-    val title: String,
-    val isPublic: Boolean
-    // TODO: Add other session properties as needed
-)

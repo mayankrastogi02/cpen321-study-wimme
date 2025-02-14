@@ -1,5 +1,6 @@
 package com.cpen321.study_wimme
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -86,52 +87,55 @@ class SessionsListActivity : AppCompatActivity() {
 
     private fun setupFab() {
         addSessionFab.setOnClickListener {
-            // TODO: Implement new session creation
-            showAddSessionDialog()
+            val intent = Intent(this, CreateSessionActivity::class.java)
+            startActivityForResult(intent, CREATE_SESSION_REQUEST)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CREATE_SESSION_REQUEST && resultCode == RESULT_OK) {
+            val session = Session(
+                name = data?.getStringExtra("SESSION_NAME") ?: "",
+                time = data?.getStringExtra("SESSION_TIME") ?: "",
+                location = data?.getStringExtra("SESSION_LOCATION") ?: "",
+                description = data?.getStringExtra("SESSION_DESCRIPTION") ?: "",
+                visibility = data?.getSerializableExtra("SESSION_VISIBILITY") as? SessionVisibility
+                    ?: SessionVisibility.PRIVATE
+            )
+            sessionsAdapter.addSession(session)
         }
     }
 
     private fun updateViewMode() {
+        // Update the view mode of the sessions list (List or Map)
         when (currentViewMode) {
             ViewMode.LIST -> {
+                // Set RecyclerView to List mode
                 sessionsRecyclerView.visibility = View.VISIBLE
-                // TODO: Hide map view when implemented
+                // Hide Map view if implemented
             }
             ViewMode.MAP -> {
+                // Set RecyclerView to Map mode
                 sessionsRecyclerView.visibility = View.GONE
-                // TODO: Show map view when implemented
+                // Show Map view if implemented
             }
         }
     }
 
     private fun updateSessionsList() {
-        // TODO: Update sessions based on visibility setting
-        val sessions = when (currentVisibility) {
-            SessionVisibility.PRIVATE -> getPrivateSessions()
-            SessionVisibility.PUBLIC -> getPublicSessions()
-        }
-        sessionsAdapter.submitList(sessions)
+        // Update the sessions list based on the selected visibility (Private or Public)
+        sessionsAdapter.filterSessions(currentVisibility)
     }
 
-    private fun showAddSessionDialog() {
-        // TODO: Implement add session dialog
-    }
 
-    private fun getPrivateSessions(): List<Session> {
-        // TODO: Implement fetching private sessions
-        return emptyList()
-    }
-
-    private fun getPublicSessions(): List<Session> {
-        // TODO: Implement fetching public sessions
-        return emptyList()
-    }
 
     enum class ViewMode {
         LIST, MAP
     }
 
-    enum class SessionVisibility {
-        PRIVATE, PUBLIC
+
+    companion object {
+        private const val CREATE_SESSION_REQUEST = 1
     }
 }
