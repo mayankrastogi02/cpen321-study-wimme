@@ -115,6 +115,7 @@ class SessionsListActivity : AppCompatActivity() {
                 sessionsRecyclerView.visibility = View.VISIBLE
                 // Hide Map view if implemented
             }
+
             ViewMode.MAP -> {
                 // Set RecyclerView to Map mode
                 sessionsRecyclerView.visibility = View.GONE
@@ -127,7 +128,6 @@ class SessionsListActivity : AppCompatActivity() {
         // Update the sessions list based on the selected visibility (Private or Public)
         sessionsAdapter.filterSessions(currentVisibility)
     }
-
 
 
     enum class ViewMode {

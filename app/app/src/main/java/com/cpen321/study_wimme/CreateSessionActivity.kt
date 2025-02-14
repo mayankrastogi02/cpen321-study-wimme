@@ -23,7 +23,7 @@ class CreateSessionActivity : AppCompatActivity() {
 
         // Set initial visibility toggle state
         visibilityGroup.check(R.id.privateButton)
-        
+
         visibilityGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 sessionVisibility = when (checkedId) {
