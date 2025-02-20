@@ -4,7 +4,8 @@
   "description": "Server files for cpen321 application",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node index.ts"
   },
   "author": "",
   "license": "ISC",
@@ -12,7 +13,7 @@
     "@types/express": "^5.0.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
-    "ts-node": "^10.9.2",
+    "mongodb": "^6.13.0",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
@@ -20,6 +21,7 @@
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "morgan": "^1.10.0",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2"
   }
 }
