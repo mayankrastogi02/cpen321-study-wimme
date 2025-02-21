@@ -4,11 +4,12 @@ import { validationResult } from "express-validator";
 import morgan from "morgan";
 import { UserRoutes } from "./routes/UserRoutes";
 import mongoose from "mongoose";
+import { SessionRoutes } from "./routes/SessionRoutes";
 
 const app = express();
 app.use(express.json());
 const port = 3000;
-const Routes = [...UserRoutes];
+const Routes = [...UserRoutes, ...SessionRoutes];
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
