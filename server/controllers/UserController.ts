@@ -96,4 +96,33 @@ export class UserController {
       res.status(500).send(error);
     }
   };
+
+  async removeFriend(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, friendId } = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+        return res.status(400).json({ message: "Invalid user ID or friend ID" });
+      }
+
+      const user = await User.findById(userId);
+      const friend = await User.findById(friendId);
+
+      if (!user || !friend) {
+        return res.status(404).json({ message: "User or friend not found" });
+      }
+
+      user.friends = user.friends.filter(id => id.toString() !== friendId);
+      friend.friends = friend.friends.filter(id => id.toString() !== userId);
+
+      await user.save();
+      await friend.save();
+
+      return res.status(200).json({ message: "Friend deleted"});
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).send(error);
+    }
+  };
 }

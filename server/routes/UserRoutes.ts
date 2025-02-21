@@ -11,7 +11,7 @@ export const UserRoutes = [
     },
     {
         method: "post",
-        route: "/user/addFriend",
+        route: "/user/friend",
         action: controller.addFriend,
         validation: [],
     },
@@ -19,6 +19,12 @@ export const UserRoutes = [
         method: "post",
         route: "/user",
         action: controller.createUser,
+        validation: [],
+    },
+    {
+        method: "delete",
+        route: "/user/friend",
+        action: controller.removeFriend,
         validation: [],
     }
 ]
