@@ -26,5 +26,11 @@ export const UserRoutes = [
         route: "/user/friend",
         action: controller.removeFriend,
         validation: [],
+    },
+    {
+        method: "get",
+        route: "/user",
+        action: controller.getUser,
+        validation: [],
     }
 ]

@@ -15,6 +15,9 @@ const SessionSchema = new mongoose.Schema({
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
+// Index for efficient querying of sessions a user is part of
+SessionSchema.index({ participants: 1 });
+
 // Delete document after endDate has passed
 SessionSchema.index({ endDate: 1 }, { expireAfterSeconds: 0 });
 
