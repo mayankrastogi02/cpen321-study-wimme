@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class HomeFragment : Fragment() {
 
@@ -18,6 +19,7 @@ class HomeFragment : Fragment() {
     private lateinit var sessionsAdapter: SessionsAdapter
     private lateinit var visibilityToggleGroup: MaterialButtonToggleGroup
     private lateinit var profileIcon: ImageView
+    private lateinit var addSessionFab: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,6 +31,7 @@ class HomeFragment : Fragment() {
         sessionsRecyclerView = view.findViewById(R.id.sessionsRecyclerView)
         visibilityToggleGroup = view.findViewById(R.id.visibilityToggleGroup)
         profileIcon = view.findViewById(R.id.profileIcon)
+        addSessionFab = view.findViewById(R.id.addSessionFab)
 
         // Set up RecyclerView
         sessionsRecyclerView.layoutManager = LinearLayoutManager(context)
@@ -53,6 +56,12 @@ class HomeFragment : Fragment() {
         // Set up profile icon click listener
         profileIcon.setOnClickListener {
             val intent = Intent(context, UserSettingsActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Set up add session FAB click listener
+        addSessionFab.setOnClickListener {
+            val intent = Intent(context, CreateSessionActivity::class.java)
             startActivity(intent)
         }
 

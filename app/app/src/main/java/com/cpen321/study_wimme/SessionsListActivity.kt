@@ -10,14 +10,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class SessionsListActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var addSessionFab: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sessions_list)
 
         bottomNavigationView = findViewById(R.id.bottom_navigation)
-        addSessionFab = findViewById(R.id.addSessionFab)
 
         // Set initial fragment
         loadFragment(HomeFragment())
@@ -41,13 +39,6 @@ class SessionsListActivity : AppCompatActivity() {
                 }
                 else -> false
             }
-        }
-
-        addSessionFab.setOnClickListener {
-            startActivityForResult(
-                Intent(this, CreateSessionActivity::class.java),
-                CREATE_SESSION_REQUEST
-            )
         }
     }
 
