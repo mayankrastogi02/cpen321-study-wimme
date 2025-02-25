@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// TODO: add a boolean to show if sessions is private or public
 const SessionSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String},

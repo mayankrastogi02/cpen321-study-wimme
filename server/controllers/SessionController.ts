@@ -144,7 +144,9 @@ export class SessionController {
         }
     }
 
-    async getAvailableSessions(req: Request, res: Response, next: NextFunction) {
+    // TODO: Do we filter session location in frontend or backend? We think it should be in frontend so we don't get hella requests
+    // TODO: We might want to make the next two functions a helper function for a big getAvailableSessions()
+    async getPublicSessions(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
 
@@ -161,6 +163,10 @@ export class SessionController {
             console.error(error);
             res.status(500).json({ message: "Internal server error" });
         }
+    }
+
+    async getPrivateSessions(req: Request, res: Response, next: NextFunction) {
+
     }
 
     async getJoinedSessions(req: Request, res: Response, next: NextFunction) {

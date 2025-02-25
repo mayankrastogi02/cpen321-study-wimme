@@ -30,7 +30,7 @@ export const SessionRoutes = [
     {
         method: "get",
         route: "/session/availableSessions",
-        action: controller.getAvailableSessions,
+        action: controller.getPublicSessions,
         validation: [],
     },
     {
