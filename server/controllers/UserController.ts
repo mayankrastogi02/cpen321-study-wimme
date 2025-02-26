@@ -19,7 +19,6 @@ export class UserController {
 
             const newUser = new User({
                 userName,
-                email,
                 firstName,
                 lastName,
                 year,
