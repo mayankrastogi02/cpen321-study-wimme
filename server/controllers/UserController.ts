@@ -37,30 +37,6 @@ export class UserController {
         }
     };
 
-    // TODO: test functionality
-    async getFriends(req: Request, res: Response, next: NextFunction) {
-        try {
-        	const { userId } = req.body;
-
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-                return res.status(400).json({ message: "Invalid user ID" });
-            }
-
-            const user = await User.findById(userId);
-
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
-            }
-
-            // TODO: add first name, last name, and/or username
-            return res.status(200).json({ friends: user.friends });
-
-        } catch (error) {
-            console.error(error);
-            res.status(500).send(error);
-        }
-    }
-
 	async sendFriendRequest (req: Request, res: Response, next: NextFunction) {
 		try {
 			const { userId, friendId } = req.body;
@@ -71,14 +47,17 @@ export class UserController {
 			if (!user || !friend) {
 				return res.status(404).json({ message: "User or friend not found" });
 			}
-            // TODO: Check the case where the other friend has sent a request to YOU
-            // TODO: Also include the case where someone is already a friend
-			if (!friend.friendRequests.includes(userId)) {
-				friend.friendRequests.push(userId);
-				await friend.save();
-			} else {
-				return res.status(404).json({ message: "Friend request already sent" });
+
+            if (user.friends.includes(friendId)) {
+                return res.status(400).json({ message: "User is already a friend" });
+            }
+
+			if (friend.friendRequests.includes(userId) || user.friendRequests.includes(friendId)) {
+				return res.status(400).json({ message: "Already a pending friend request" });
 			}
+
+            friend.friendRequests.push(userId);
+            await friend.save();
 
 			res.status(200).json({ message: "Sent friend request"});
 		} catch (error) {
@@ -87,11 +66,9 @@ export class UserController {
 		}
     };
 
-    // TODO: Combine addFriend and rejectFriend into one function
-    // TODO: maybe change the name to acceptFriend()?
-    async addFriend(req: Request, res: Response, next: NextFunction) {
+    async handleFriend(req: Request, res: Response, next: NextFunction) {
         try {
-        	const { userId, friendId } = req.body;
+        	const { userId, friendId, accepted } = req.body;
 
             if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
                 return res.status(400).json({ message: "Invalid user ID or friend ID" });
@@ -104,31 +81,34 @@ export class UserController {
                 return res.status(404).json({ message: "User or friend not found" });
             }
 
+            // if the user's friend requests list includes the user has not friended the friend yet, process the friend request.
             if (user.friendRequests.includes(friendId) && !user.friends.includes(friendId) && !friend.friends.includes(userId)) {
-                user.friends.push(friendId);
-                friend.friends.push(userId);
+
+                let returnMsg = 'friend request rejected'
+
+                if (accepted) {
+                    user.friends.push(friendId);
+                    friend.friends.push(userId);
+                    returnMsg = 'Friend added successfully';
+                }
 
                 //remove friend from the list
                 user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId);
 
                 await user.save();
                 await friend.save();
+
+                return res.status(200).json({ message: returnMsg, user });
+
             } else {
                 return res.status(404).json({ message: "Friend already added or no friend request found" });
             }
-
-            return res.status(200).json({ message: "Friend added successfully", user });
 
         } catch (error) {
             console.error(error);
             res.status(500).send(error);
         }
     };
-
-    // TODO: implement functionality
-    async rejectFriend(req: Request, res: Response, next: NextFunction) {
-        
-    }
 
     async removeFriend(req: Request, res: Response, next: NextFunction) {
         try {
@@ -167,7 +147,7 @@ export class UserController {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
-            const user = await User.findById(userId);
+            const user = await User.findById(userId).populate("friends", "userName firstName lastName");
 
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -181,7 +161,6 @@ export class UserController {
         }
     };
 
-    // TODO: test functionality
     async updateUser(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId, firstName, lastName, year, faculty } = req.body;
@@ -196,12 +175,18 @@ export class UserController {
                 return res.status(404).json({ message: "User not found" });
             }
 
-            // TODO: check if the fields are populated before assigning
-            // Update the user object and store it in the database
-            user.firstName = firstName
-            user.lastName = lastName
-            user.year = year
-            user.faculty = faculty
+            if (firstName) {
+                user.firstName = firstName;
+            }
+            if (lastName) {
+                user.lastName = lastName;
+            }
+            if (year) {
+                user.year = year;
+            }
+            if (faculty) {
+                user.faculty = faculty;
+            }
 
             const savedUser = await user.save()
 
@@ -212,8 +197,7 @@ export class UserController {
             res.status(500).send(error);
         }
     }
-
-    // TODO: test functionality
+    
     async deleteUser(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
