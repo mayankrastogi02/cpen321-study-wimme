@@ -50,8 +50,8 @@ class FriendsFragment : Fragment() {
         friendList.add(Friend("xcxx01", "Charlie", "Truman", "Junior", "Computer Science", "Machine Learning"))
 
         groupList = ArrayList()
-        groupList.add(Group( "Study Group 1", "Studying for CPEN 321"))
-        groupList.add(Group( "Study Group 2", "Studying for CPEN 421"))
+        groupList.add(Group("Study Group 1", "Studying for CPEN 321"))
+        groupList.add(Group("Study Group 2", "Studying for CPEN 421"))
 
         adapter = FriendAdapter(friendList) { item ->
             // Handle item click
@@ -105,6 +105,9 @@ class FriendsFragment : Fragment() {
                             when (item) {
                                 is Group -> {
                                     // Handle group click
+                                    val intent = Intent(context, EditGroupActivity::class.java)
+                                    intent.putExtra("group", item)
+                                    startActivity(intent)
                                     Toast.makeText(context, "Clicked on group: ${item.name}", Toast.LENGTH_SHORT).show()
                                 }
                             }

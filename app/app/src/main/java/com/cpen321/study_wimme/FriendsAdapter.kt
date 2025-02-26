@@ -57,6 +57,10 @@ class FriendAdapter(
                 val groupViewHolder = holder as GroupViewHolder
                 groupViewHolder.groupNameTextView.text = group.name
 
+                groupViewHolder.editGroupImageView.setOnClickListener {
+                    onItemClicked(group)
+                }
+
                 groupViewHolder.itemView.setOnClickListener {
                     onItemClicked(group)
                 }
