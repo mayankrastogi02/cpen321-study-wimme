@@ -1,10 +1,14 @@
 package com.cpen321.study_wimme
 
 import android.os.Bundle
-import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class FriendsInfoActivity : AppCompatActivity() {
 
@@ -12,24 +16,28 @@ class FriendsInfoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_friends_info)
 
+        val backButton: ImageButton = findViewById(R.id.backButton)
+        backButton.setOnClickListener {
+            finish()
+        }
+
         val friend = intent.getSerializableExtra("friend") as? Friend
 
         if (friend != null) {
-            val usernameTextView = findViewById<TextView>(R.id.usernameTextView)
-            val firstNameTextView = findViewById<TextView>(R.id.firstNameTextView)
-            val lastNameTextView = findViewById<TextView>(R.id.lastNameTextView)
-            val yearTextView = findViewById<TextView>(R.id.yearTextView)
-            val programTextView = findViewById<TextView>(R.id.programTextView)
-            val interestsTextView = findViewById<TextView>(R.id.interestsTextView)
+            val usernameEditText = findViewById<TextInputEditText>(R.id.usernameEditText)
+            val firstNameEditText = findViewById<TextInputEditText>(R.id.firstNameEditText)
+            val lastNameEditText = findViewById<TextInputEditText>(R.id.lastNameEditText)
+            val yearEditText = findViewById<TextInputEditText>(R.id.yearEditText)
+            val programEditText = findViewById<TextInputEditText>(R.id.programEditText)
+            val interestsEditText = findViewById<TextInputEditText>(R.id.interestsEditText)
+            val removeFriendButton = findViewById<MaterialButton>(R.id.removeFriendButton)
 
-            val removeFriendButton = findViewById<Button>(R.id.removeFriendButton)
-
-            usernameTextView.text = "Username: ${friend.username}"
-            firstNameTextView.text = "First Name: ${friend.firstName}"
-            lastNameTextView.text = "Last Name: ${friend.lastName}"
-            yearTextView.text = "Year: ${friend.year}"
-            programTextView.text = "Program: ${friend.program}"
-            interestsTextView.text = "Interests: ${friend.interests}"
+            usernameEditText.setText(friend.username)
+            firstNameEditText.setText(friend.firstName)
+            lastNameEditText.setText(friend.lastName)
+            yearEditText.setText(friend.year)
+            programEditText.setText(friend.program)
+            interestsEditText.setText(friend.interests)
 
             removeFriendButton.setOnClickListener {
                 // Implement your logic to remove the friend

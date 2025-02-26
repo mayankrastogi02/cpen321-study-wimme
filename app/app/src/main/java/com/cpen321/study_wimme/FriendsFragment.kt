@@ -93,7 +93,7 @@ class FriendsFragment : Fragment() {
                             }
                         }
                         recyclerView.adapter = adapter
-                        Toast.makeText(context, "Switching to Friends", Toast.LENGTH_SHORT).show()
+                        // Toast.makeText(context, "Switching to Friends", Toast.LENGTH_SHORT).show()
                         // Update the RecyclerView with friends data
                     }
                     R.id.groupsButton -> {
@@ -110,7 +110,7 @@ class FriendsFragment : Fragment() {
                             }
                         }
                         recyclerView.adapter = adapter
-                        Toast.makeText(context, "Switching to Groups", Toast.LENGTH_SHORT).show()
+                        // Toast.makeText(context, "Switching to Groups", Toast.LENGTH_SHORT).show()
                         // Update the RecyclerView with groups data
                     }
                 }

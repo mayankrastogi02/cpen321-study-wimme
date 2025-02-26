@@ -6,6 +6,14 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Friends &amp; Groups"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/friendsGroupsToggle"
         android:layout_width="wrap_content"
