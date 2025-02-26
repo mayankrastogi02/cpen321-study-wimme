@@ -2,94 +2,50 @@ package com.cpen321.study_wimme
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButtonToggleGroup
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class SessionsListActivity : AppCompatActivity() {
-    private lateinit var viewToggleGroup: MaterialButtonToggleGroup
-    private lateinit var visibilityToggleGroup: MaterialButtonToggleGroup
-    private lateinit var sessionsRecyclerView: RecyclerView
-    private lateinit var addSessionFab: FloatingActionButton
-    private lateinit var sessionsAdapter: SessionsAdapter
 
-    private var currentViewMode: ViewMode = ViewMode.LIST
-    private var currentVisibility: SessionVisibility = SessionVisibility.PRIVATE
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_sessions_list)
 
-        // Setup edge-to-edge display
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
 
-        initializeViews()
-        setupRecyclerView()
-        setupToggleGroups()
-        setupFab()
-    }
+        // Set initial fragment
+        loadFragment(HomeFragment())
 
-    private fun initializeViews() {
-        viewToggleGroup = findViewById(R.id.viewToggleGroup)
-        visibilityToggleGroup = findViewById(R.id.visibilityToggleGroup)
-        sessionsRecyclerView = findViewById(R.id.sessionsRecyclerView)
-        addSessionFab = findViewById(R.id.addSessionFab)
-    }
+        // Select Home tab initially
+        bottomNavigationView.selectedItemId = R.id.nav_home
 
-    private fun setupRecyclerView() {
-        sessionsAdapter = SessionsAdapter()
-        sessionsRecyclerView.apply {
-            adapter = sessionsAdapter
-            layoutManager = LinearLayoutManager(this@SessionsListActivity)
-        }
-    }
-
-    private fun setupToggleGroups() {
-        // View mode toggle (List/Map)
-        viewToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                currentViewMode = when (checkedId) {
-                    R.id.listViewButton -> ViewMode.LIST
-                    R.id.mapViewButton -> ViewMode.MAP
-                    else -> ViewMode.LIST
+        bottomNavigationView.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.nav_home -> {
+                    loadFragment(HomeFragment())
+                    true
                 }
-                updateViewMode()
+                R.id.nav_map -> {
+                    loadFragment(MapFragment())
+                    true
+                }
+                R.id.nav_friends -> {
+                    loadFragment(FriendsFragment())
+                    true
+                }
+                else -> false
             }
         }
-
-        // Visibility toggle (Private/Public)
-        visibilityToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                currentVisibility = when (checkedId) {
-                    R.id.privateButton -> SessionVisibility.PRIVATE
-                    R.id.publicButton -> SessionVisibility.PUBLIC
-                    else -> SessionVisibility.PRIVATE
-                }
-                updateSessionsList()
-            }
-        }
-
-        // Set initial states
-        viewToggleGroup.check(R.id.listViewButton)
-        visibilityToggleGroup.check(R.id.privateButton)
     }
 
-    private fun setupFab() {
-        addSessionFab.setOnClickListener {
-            val intent = Intent(this, CreateSessionActivity::class.java)
-            startActivityForResult(intent, CREATE_SESSION_REQUEST)
-        }
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -103,37 +59,10 @@ class SessionsListActivity : AppCompatActivity() {
                 visibility = data?.getSerializableExtra("SESSION_VISIBILITY") as? SessionVisibility
                     ?: SessionVisibility.PRIVATE
             )
-            sessionsAdapter.addSession(session)
+            val homeFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? HomeFragment
+            homeFragment?.getSessionsAdapter()?.addSession(session)
         }
     }
-
-    private fun updateViewMode() {
-        // Update the view mode of the sessions list (List or Map)
-        when (currentViewMode) {
-            ViewMode.LIST -> {
-                // Set RecyclerView to List mode
-                sessionsRecyclerView.visibility = View.VISIBLE
-                // Hide Map view if implemented
-            }
-
-            ViewMode.MAP -> {
-                // Set RecyclerView to Map mode
-                sessionsRecyclerView.visibility = View.GONE
-                // Show Map view if implemented
-            }
-        }
-    }
-
-    private fun updateSessionsList() {
-        // Update the sessions list based on the selected visibility (Private or Public)
-        sessionsAdapter.filterSessions(currentVisibility)
-    }
-
-
-    enum class ViewMode {
-        LIST, MAP
-    }
-
 
     companion object {
         private const val CREATE_SESSION_REQUEST = 1

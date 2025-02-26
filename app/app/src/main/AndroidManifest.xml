@@ -13,6 +13,18 @@
         android:theme="@style/Theme.Studywimme"
         tools:targetApi="31">
         <activity
+            android:name=".EditGroupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FriendsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FriendsInfoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserSettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".CreateSessionActivity"
             android:exported="false" />
         <activity
