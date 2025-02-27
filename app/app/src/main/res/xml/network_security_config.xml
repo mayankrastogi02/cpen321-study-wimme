@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true"> #ENTER_IP_ADDRESS_HERE_IP4</domain>
-    </domain-config>
-</network-security-config>

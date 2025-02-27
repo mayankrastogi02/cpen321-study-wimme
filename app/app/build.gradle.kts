@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,23 +7,12 @@ android {
     namespace = "com.cpen321.study_wimme"
     compileSdk = 35
 
-    val file = rootProject.file("local.properties")
-    val properties = Properties()
-    properties.load(file.inputStream())
-
     defaultConfig {
         applicationId = "com.cpen321.study_wimme"
         minSdk = 31
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
-        val webClientId = properties.getProperty("WEB_CLIENT_ID") ?: ""
-        buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
-
-        val serverUrl = properties.getProperty("SERVER_URL") ?: ""
-        buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
-
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,7 +35,6 @@ android {
     }
     buildFeatures {
         viewBinding = true
-        buildConfig = true
     }
 }
 
@@ -68,5 +54,4 @@ dependencies {
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
     implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.core:core-splashscreen:1.0.0")
-    implementation ("com.google.android.gms:play-services-auth:20.7.0")
 }
