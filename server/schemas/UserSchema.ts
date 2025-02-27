@@ -6,10 +6,11 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   school: string;
-  year: string;
+  year: Number;
   faculty: string;
   friends: mongoose.Types.ObjectId[];
   friendRequests: mongoose.Types.ObjectId[];
+  profileCreated: boolean;
   // Add Google Auth fields
   googleId?: string;
   displayName?: string;

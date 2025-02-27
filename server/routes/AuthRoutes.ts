@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { check } from "express-validator";
-import { AuthController } from "../controllers/AuthController";
-
-const authController = new AuthController();
+import AuthController from "../controllers/AuthController";
 
 interface Route {
   method: string;
@@ -15,11 +13,9 @@ export const AuthRoutes: Route[] = [
   {
     method: "get",
     route: "/api/auth/verify",
-    validation: [
-      check("googleId").exists().withMessage("Google ID is required"),
-    ],
+    validation: [],
     action: async (req: Request, res: Response, next: NextFunction) => {
-      await authController.verifyUser(req, res);
+      await AuthController.verifyUser(req, res);
     },
   },
   {
@@ -31,7 +27,22 @@ export const AuthRoutes: Route[] = [
       check("displayName").exists().withMessage("Display name is required"),
     ],
     action: async (req: Request, res: Response, next: NextFunction) => {
-      await authController.createOrUpdateUser(req, res);
+      await AuthController.createOrUpdateUser(req, res);
+    },
+  },
+  {
+    method: "put",
+    route: "/api/auth/profile/:googleId",
+    validation: [
+      check("googleId").exists().withMessage("Google ID is required"),
+      check("firstName").exists().withMessage("First name is required"),
+      check("lastName").exists().withMessage("Last name is required"),
+      check("userName").exists().withMessage("Username is required"),
+      check("year").isNumeric().withMessage("Year must be a number"),
+      check("faculty").exists().withMessage("Faculty is required"),
+    ],
+    action: async (req: Request, res: Response, next: NextFunction) => {
+      await AuthController.updateUserProfile(req, res);
     },
   },
 ];

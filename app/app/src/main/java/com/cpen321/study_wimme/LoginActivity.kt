@@ -18,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -26,7 +28,7 @@ class LoginActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "LoginActivity"
-        private const val SERVER_URL = BuildConfig.SERVER_URL // Update with your server URL
+        private const val SERVER_URL = BuildConfig.SERVER_URL
         
         // Static method for signing out
         fun signOut(activity: AppCompatActivity) {
@@ -34,7 +36,7 @@ class LoginActivity : AppCompatActivity() {
                 .requestEmail()
                 .requestProfile()
                 .requestId()
-                .requestIdToken("${BuildConfig.WEB_CLIENT_ID}")
+                .requestIdToken(BuildConfig.WEB_CLIENT_ID)
                 .build()
                 
             val googleSignInClient = GoogleSignIn.getClient(activity, gso)
@@ -49,9 +51,14 @@ class LoginActivity : AppCompatActivity() {
                 activity.startActivity(intent)
                 activity.finish()
                 
-                // Show toast
                 Toast.makeText(activity, "Signed out", Toast.LENGTH_SHORT).show()
             }
+        }
+        
+        // Static method to get current user's Google ID
+        fun getCurrentUserGoogleId(activity: AppCompatActivity): String? {
+            val sharedPreferences = activity.getSharedPreferences("user_prefs", AppCompatActivity.MODE_PRIVATE)
+            return sharedPreferences.getString("googleId", null)
         }
     }
 
@@ -78,10 +85,10 @@ class LoginActivity : AppCompatActivity() {
 
         // Configure Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail() // Request email only
-            .requestProfile() // Request basic profile
-            .requestId() // Request Google ID
-            .requestIdToken("${BuildConfig.WEB_CLIENT_ID}")
+            .requestEmail()
+            .requestProfile()
+            .requestId()
+            .requestIdToken(BuildConfig.WEB_CLIENT_ID)
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -115,8 +122,8 @@ class LoginActivity : AppCompatActivity() {
         editor.putString("displayName", account.displayName ?: "User")
         editor.apply()
 
-        // Save to backend
-        saveGoogleIdToUser(account.id!!, account.email!!, account.displayName ?: "User")
+        // Check with backend if the user exists and if profile is created
+        verifyUserWithBackend(account)
     }
 
     private fun verifyUserWithBackend(account: GoogleSignInAccount) {
@@ -128,22 +135,36 @@ class LoginActivity : AppCompatActivity() {
                 connection.requestMethod = "GET"
 
                 val responseCode = connection.responseCode
+                Log.d(TAG, "Verify response code: $responseCode")
+
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    // User exists in backend, proceed to main activity
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
+                    reader.close()
+                    
+                    val jsonResponse = JSONObject(response.toString())
+                    val profileCreated = jsonResponse.getBoolean("profileCreated")
+                    
                     withContext(Dispatchers.Main) {
-                        startMainActivity()
+                        if (profileCreated) {
+                            // Profile is created, proceed to main activity
+                            startSessionsListActivity()
+                        } else {
+                            // Profile is not created, go to settings
+                            startUserSettingsActivity()
+                        }
                     }
                 } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    // User doesn't exist in backend, save them
-                    saveGoogleIdToUser(account.id!!, account.email!!, account.displayName ?: "User")
+                    // User doesn't exist in backend, create a new user
+                    createNewUser(account)
                 } else {
                     // Handle other error cases
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@LoginActivity,
-                            "Error verifying user",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@LoginActivity, "Error verifying user", Toast.LENGTH_SHORT).show()
                     }
                 }
                 connection.disconnect()
@@ -156,16 +177,16 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveGoogleIdToUser(googleId: String, email: String, displayName: String) {
+    private fun createNewUser(account: GoogleSignInAccount) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-
-                Log.d(TAG, "Making backend request to save user data")
+                Log.d(TAG, "Creating new user in backend")
                 // Prepare JSON data
-                val jsonData = JSONObject()
-                jsonData.put("googleId", googleId)
-                jsonData.put("email", email)
-                jsonData.put("displayName", displayName)
+                val jsonData = JSONObject().apply {
+                    put("googleId", account.id)
+                    put("email", account.email)
+                    put("displayName", account.displayName ?: "User")
+                }
 
                 // Make HTTP request to your server
                 val url = URL("$SERVER_URL/api/auth/google")
@@ -183,47 +204,39 @@ class LoginActivity : AppCompatActivity() {
 
                 // Get response
                 val responseCode = connection.responseCode
-                Log.d(TAG, "Response code: $responseCode")
+                Log.d(TAG, "Create user response code: $responseCode")
 
-                if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                    Log.d(TAG, "User data saved successfully")
-
+                if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
+                    // New user created, go to settings to complete profile
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@LoginActivity,
-                            "Login successful!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        startMainActivity()
+                        startUserSettingsActivity()
                     }
                 } else {
-                    Log.e(TAG, "Error saving user data: $responseCode")
+                    Log.e(TAG, "Error creating user: $responseCode")
 
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@LoginActivity,
-                            "Error saving user data",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@LoginActivity, "Error creating user", Toast.LENGTH_SHORT).show()
                     }
                 }
                 connection.disconnect()
             } catch (e: Exception) {
                 Log.e(TAG, "Exception during API call", e)
-
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        "Error: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@LoginActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    private fun startMainActivity() {
+    private fun startSessionsListActivity() {
         val intent = Intent(this, SessionsListActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+    
+    private fun startUserSettingsActivity() {
+        val intent = Intent(this, UserSettingsActivity::class.java)
+        intent.putExtra("COMPLETE_PROFILE", true)
         startActivity(intent)
         finish()
     }
