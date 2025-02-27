@@ -5,15 +5,21 @@ import morgan from "morgan";
 import { UserRoutes } from "./routes/UserRoutes";
 import mongoose from "mongoose";
 import { SessionRoutes } from "./routes/SessionRoutes";
+import admin from "firebase-admin";
 
 const app = express();
 app.use(express.json());
 const port = 3000;
 const Routes = [...UserRoutes, ...SessionRoutes];
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+const serviceAccount = require('./serviceAccountKey');
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
 });
+
+export const messaging = admin.messaging();
+
 
 app.use(morgan("tiny"));
 
