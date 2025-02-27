@@ -6,16 +6,17 @@ import { UserRoutes } from "./routes/UserRoutes";
 import mongoose from "mongoose";
 import { SessionRoutes } from "./routes/SessionRoutes";
 import admin from "firebase-admin";
+import { NotificationRoutes } from "./routes/NotificationRoutes";
 
 const app = express();
 app.use(express.json());
 const port = 3000;
-const Routes = [...UserRoutes, ...SessionRoutes];
+const Routes = [...UserRoutes, ...SessionRoutes, ...NotificationRoutes];
 
-const serviceAccount = require('./serviceAccountKey');
+const serviceAccountKey = require('./serviceAccountKey');
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(serviceAccountKey),
 });
 
 export const messaging = admin.messaging();
