@@ -28,6 +28,7 @@ class UserSettingsActivity : AppCompatActivity() {
     private lateinit var lastNameInput: TextInputEditText
     private lateinit var facultyInput: TextInputEditText
     private lateinit var yearInput: TextInputEditText
+    private lateinit var interestsInput: TextInputEditText
     private lateinit var saveButton: Button
     private lateinit var logoutButton: Button
     private lateinit var backButton: ImageButton
@@ -44,6 +45,7 @@ class UserSettingsActivity : AppCompatActivity() {
         lastNameInput = findViewById(R.id.lastNameEditText)
         facultyInput = findViewById(R.id.programEditText)
         yearInput = findViewById(R.id.yearEditText)
+        interestsInput = findViewById(R.id.interestsEditText)
         saveButton = findViewById(R.id.saveButton)
         logoutButton = findViewById(R.id.logoutButton)
         backButton = findViewById(R.id.backButton)
@@ -129,6 +131,7 @@ class UserSettingsActivity : AppCompatActivity() {
                         lastNameInput.setText(userData.optString("lastName", ""))
                         facultyInput.setText(userData.optString("faculty", ""))
                         yearInput.setText(userData.optInt("year", 1).toString())
+                        interestsInput.setText(userData.optString("interests", ""))
                     }
                 }
                 connection.disconnect()
@@ -199,6 +202,7 @@ class UserSettingsActivity : AppCompatActivity() {
         val lastName = lastNameInput.text.toString().trim()
         val faculty = facultyInput.text.toString().trim()
         val year = yearInput.text.toString().trim().toInt()
+        val interests = interestsInput.text.toString().trim()
         
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -214,6 +218,7 @@ class UserSettingsActivity : AppCompatActivity() {
                     put("lastName", lastName)
                     put("faculty", faculty)
                     put("year", year)
+                    put("interests", interests)
                 }
                 
                 val outputStream = OutputStreamWriter(connection.outputStream)

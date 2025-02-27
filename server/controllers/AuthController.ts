@@ -16,6 +16,8 @@ export class AuthController {
 
       const user = await User.findOne({ googleId });
 
+      console.log("DEBUG: User:", user);
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -85,7 +87,7 @@ export class AuthController {
           lastName,
           userName: email.split("@")[0], // Default username from email
           year: 1,
-          faculty: "",
+          faculty: "empty",
           friends: [],
           friendRequests: [],
           profileCreated: false, // Default to false for new users
