@@ -38,6 +38,7 @@ export class AuthController {
           userName: user.userName,
           year: user.year,
           faculty: user.faculty,
+          interests: user.interests,
         },
       });
     } catch (error: any) {
@@ -91,6 +92,7 @@ export class AuthController {
           friends: [],
           friendRequests: [],
           profileCreated: false, // Default to false for new users
+          interests: "",
         });
 
         await user.save();
@@ -140,7 +142,7 @@ export class AuthController {
       if (userName) user.userName = userName;
       if (year) user.year = parseInt(year);
       if (faculty) user.faculty = faculty;
-      // if (interests) user.interests = interests;
+      if (interests) user.interests = interests;
 
       // Mark profile as created once it's updated
       user.profileCreated = true;

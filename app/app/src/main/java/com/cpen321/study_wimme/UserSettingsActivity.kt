@@ -124,7 +124,7 @@ class UserSettingsActivity : AppCompatActivity() {
                     val response = inputStream.bufferedReader().use { it.readText() }
                     val jsonResponse = JSONObject(response)
                     val userData = jsonResponse.getJSONObject("data")
-                    
+
                     withContext(Dispatchers.Main) {
                         usernameInput.setText(userData.optString("userName", ""))
                         firstNameInput.setText(userData.optString("firstName", ""))

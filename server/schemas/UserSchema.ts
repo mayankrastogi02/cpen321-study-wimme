@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
   faculty: { type: String, required: true },
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  interests: [{ type: String }],
+  interests: { type: String },
   googleId: { type: String, unique: true, required: true },
   profileCreated: { type: Boolean, default: false },
 });
