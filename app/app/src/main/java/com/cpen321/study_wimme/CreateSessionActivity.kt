@@ -3,6 +3,7 @@ package com.cpen321.study_wimme
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -48,6 +49,12 @@ class CreateSessionActivity : AppCompatActivity() {
         }
 
         hostButton.setOnClickListener {
+            if (selectedLatitude == null || selectedLongitude == null) {
+                // Inform the user to pick a location first
+                Toast.makeText(this, "Please select a location", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val session = Session(
                 name = nameInput.text?.toString() ?: "",
                 time = timeInput.text?.toString() ?: "",
@@ -59,7 +66,8 @@ class CreateSessionActivity : AppCompatActivity() {
             setResult(RESULT_OK, Intent().apply {
                 putExtra("SESSION_NAME", session.name)
                 putExtra("SESSION_TIME", session.time)
-                putExtra("SESSION_LOCATION", session.location)
+                putExtra("SESSION_LATITUDE", selectedLatitude)
+                putExtra("SESSION_LATITUDE", selectedLongitude)
                 putExtra("SESSION_DESCRIPTION", session.description)
                 putExtra("SESSION_VISIBILITY", session.visibility)
             })
@@ -75,7 +83,6 @@ class CreateSessionActivity : AppCompatActivity() {
             if (lat != null && lng != null) {
                 selectedLatitude = lat
                 selectedLongitude = lng
-                // Optionally update the location input field with a readable string
                 findViewById<TextInputEditText>(R.id.sessionLocationInput).setText("Lat: $lat, Lng: $lng")
             }
         }

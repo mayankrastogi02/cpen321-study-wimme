@@ -7,6 +7,11 @@ plugins {
 }
 
 android {
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
+
     namespace = "com.cpen321.study_wimme"
     compileSdk = 35
 
@@ -20,16 +25,17 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
-        val webClientId = properties.getProperty("WEB_CLIENT_ID") ?: ""
-        buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
+        val mapsAPIKey = properties.getProperty("MAPS_API_KEY") ?: ""
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsAPIKey\"")
+        manifestPlaceholders["MAPS_API_KEY"] = mapsAPIKey
 
         val serverUrl = properties.getProperty("SERVER_URL") ?: ""
         buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
 
+        val webClientId = properties.getProperty("WEB_CLIENT_ID") ?: ""
+        buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders["MAPS_API_KEY"] = project.findProperty("MAPS_API_KEY") ?: ""
     }
 
     buildTypes {
@@ -68,6 +74,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation ("com.google.android.material:material:1.9.0")
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
     implementation ("androidx.constraintlayout:constraintlayout:2.1.4")

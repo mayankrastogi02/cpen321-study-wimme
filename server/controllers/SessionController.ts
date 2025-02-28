@@ -10,7 +10,8 @@ export class SessionController {
                 name, 
                 description, 
                 hostId, 
-                location, 
+                latitude, 
+                longitude, 
                 dateRange, 
                 isPublic,
                 subject,
@@ -38,6 +39,14 @@ export class SessionController {
             if (endDate <= new Date()) {
                 return res.status(400).json({ message: "End date must be in the future" });
             }
+
+        const lat = parseFloat(latitude);
+        const lng = parseFloat(longitude);
+
+        const location = {
+            type: "Point",
+            coordinates: [lng, lat]
+        };
 
             const newSession = new Session({
                 name,
@@ -221,7 +230,6 @@ export class SessionController {
             res.status(500).json({ message: "Internal server error" });
         }
     }
-    
 
     async getJoinedSessions(req: Request, res: Response, next: NextFunction) {
         try {
