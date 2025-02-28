@@ -4,13 +4,13 @@ const controller = new UserController();
 
 export const UserRoutes = [
     {
-        method: "post",
+        method: "put",
         route: "/user/friendRequest",
         action: controller.sendFriendRequest,
         validation: [],
     },
     {
-        method: "post",
+        method: "put",
         route: "/user/friend",
         action: controller.handleFriend,
         validation: [],
@@ -22,8 +22,8 @@ export const UserRoutes = [
         validation: [],
     },
     {
-        method: "delete",
-        route: "/user/friend",
+        method: "put",
+        route: "/user/removeFriend",
         action: controller.removeFriend,
         validation: [],
     },

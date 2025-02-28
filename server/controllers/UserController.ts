@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../schemas/UserSchema";
+import Group from "../schemas/GroupSchema";
+import Session from "../schemas/SessionSchema"
 import mongoose from "mongoose";
-
-// TODO: think about using userName instead of userId because how will frontend know the id?
 
 export class UserController {
     async createUser(req: Request, res: Response, next: NextFunction) {
         try {
-			const { userName, email, firstName, lastName, year, faculty, friends, friendRequests } = req.body;
+			const { userName, email, firstName, lastName, profilePic, year, faculty, friends, friendRequests } = req.body;
 
 			const existingUser = await User.findOne({
 				$or: [{ userName }, { email }]
@@ -22,6 +22,7 @@ export class UserController {
                 email,
                 firstName,
                 lastName,
+                profilePic,
                 year,
                 faculty,
                 friends,
@@ -39,14 +40,21 @@ export class UserController {
 
 	async sendFriendRequest (req: Request, res: Response, next: NextFunction) {
 		try {
-			const { userId, friendId } = req.body;
+			const { userId, friendUserName } = req.body;
+
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ message: "Invalid user ID" });
+            }
 
 			const user = await User.findById(userId);
-			const friend = await User.findById(friendId);
+
+			const friend = await User.findOne({userName: friendUserName});
 
 			if (!user || !friend) {
 				return res.status(404).json({ message: "User or friend not found" });
 			}
+            
+            const friendId = friend._id
 
             if (user.friends.includes(friendId)) {
                 return res.status(400).json({ message: "User is already a friend" });
@@ -163,7 +171,7 @@ export class UserController {
 
     async updateUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, firstName, lastName, year, faculty } = req.body;
+            const { userId, firstName, lastName, profilePic, year, faculty } = req.body;
 
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
@@ -180,6 +188,9 @@ export class UserController {
             }
             if (lastName) {
                 user.lastName = lastName;
+            }
+            if (profilePic) {
+                user.profilePic = profilePic;
             }
             if (year) {
                 user.year = year;
@@ -211,6 +222,30 @@ export class UserController {
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
+            
+            // Delete groups which the user has created
+            await Group.deleteMany({ userId: userId });
+
+            // Remove the user from groups they are in
+            await Group.updateMany(
+                { members : userId },
+                { $pull: { members: userId } }
+            );
+
+            // Delete sessions which the user is hosting
+            await Session.deleteMany({ hostId: userId });
+
+            // Remove the user from sessions they participate in or are invited to
+            await Session.updateMany(
+                { $or: [{ participants: userId }, { invitees: userId }] },
+                { $pull: { participants: userId, invitees: userId } }
+            ),
+
+            // Remove the user from friend requests or friends lists
+            await User.updateMany(
+                { $or: [{ friendRequests: userId }, { friends: userId }] },
+                { $pull: { friendRequests: userId, friends: userId } }
+            ),
 
             await User.findByIdAndDelete(userId);
 
