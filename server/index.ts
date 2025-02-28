@@ -9,7 +9,6 @@ import { GroupRoutes } from "./routes/GroupRoutes";
 
 const app = express();
 app.use(express.json());
-const port = 3000;
 const Routes = [...UserRoutes, ...SessionRoutes, ...GroupRoutes];
 
 app.get("/", (req, res) => {
@@ -44,11 +43,11 @@ Routes.forEach((route) => {
   );
 });
 
-mongoose.connect("mongodb://localhost:27017/studywimme").then(() => {
+mongoose.connect(process.env.DB_URI as string).then(() => {
   console.log("MongoDB Client Connected");
 
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+  app.listen(process.env.PORT, () => {
+    console.log(`Example app listening on port ${process.env.PORT}`);
   });
 }).catch(err => {
   console.error(err)

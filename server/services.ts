@@ -1,3 +1,3 @@
 import { MongoClient } from 'mongodb';
 
-export const client = new MongoClient("mongodb://localhost:27017/studywimme");
+export const client = new MongoClient(process.env.DB_URI ?? "mongodb://mongo:27017/studywimme");
