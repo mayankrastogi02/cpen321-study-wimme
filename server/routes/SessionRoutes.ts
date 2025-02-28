@@ -4,8 +4,8 @@ const controller = new SessionController();
 
 export const SessionRoutes = [
     {
-        method: "post",
-        route: "/session/:sessionId/participants",
+        method: "put",
+        route: "/session/:sessionId/join",
         action: controller.joinSession,
         validation: [],
     },
@@ -16,8 +16,8 @@ export const SessionRoutes = [
         validation: [],
     },
     {
-        method: "delete",
-        route: "/session/:sessionId/participants",
+        method: "put",
+        route: "/session/:sessionId/leave",
         action: controller.leaveSession,
         validation: [],
     },

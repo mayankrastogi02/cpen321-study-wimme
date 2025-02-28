@@ -5,16 +5,29 @@ import morgan from "morgan";
 import { UserRoutes } from "./routes/UserRoutes";
 import mongoose from "mongoose";
 import { SessionRoutes } from "./routes/SessionRoutes";
+import admin from "firebase-admin";
+import { NotificationRoutes } from "./routes/NotificationRoutes";
+import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes"; // Import the new AuthRoutes
 
 const app = express();
 app.use(express.json());
 const port = 3000;
-const Routes = [...UserRoutes, ...SessionRoutes, ...AuthRoutes]; // Add AuthRoutes to the Routes array
+const Routes = [
+  ...UserRoutes,
+  ...SessionRoutes,
+  ...GroupRoutes,
+  ...NotificationRoutes,
+  ...AuthRoutes,
+];
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+const serviceAccountKey = require("./serviceAccountKey");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountKey),
 });
+
+export const messaging = admin.messaging();
 
 app.use(morgan("tiny"));
 
@@ -48,7 +61,7 @@ mongoose
       console.log(`Example app listening on port ${port}`);
     });
   })
-  .catch((err: any) => {
+  .catch((err) => {
     console.error(err);
     client.close();
   });
