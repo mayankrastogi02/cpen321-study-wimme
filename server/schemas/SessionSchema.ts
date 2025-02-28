@@ -4,9 +4,18 @@ const SessionSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String},
     hostId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    // Store location as a GeoJSON point
     location: {
-        latitude: { type: Number, required: true },
-        longitude: { type: Number, required: true },
+        type: {
+            type: String,
+            enum: ["Point"],
+            required: true,
+            default: "Point"
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true,
+        }
     },
     dateRange: {
         startDate: { type: Date, required: true },
@@ -19,6 +28,9 @@ const SessionSchema = new mongoose.Schema({
     invitees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
+
+// Create a geospatial index on the location field
+SessionSchema.index({ location: "2dsphere" });
 
 // Index for efficient querying of sessions a user is part of
 SessionSchema.index({ participants: 1 });

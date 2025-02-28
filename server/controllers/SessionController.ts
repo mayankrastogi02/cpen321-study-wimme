@@ -193,6 +193,36 @@ export class SessionController {
         }
     }
 
+    async getNearbySessions(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { latitude, longitude, radius } = req.query;
+    
+            if (!latitude || !longitude || !radius) {
+                return res.status(400).json({ message: "Latitude, longitude, and radius are required." });
+            }
+    
+            const lat = parseFloat(latitude as string);
+            const lng = parseFloat(longitude as string);
+            const rad = parseFloat(radius as string);
+    
+            const sessions = await Session.find({
+                location: {
+                    $near: {
+                        $geometry: { type: "Point", coordinates: [lng, lat] },
+                        $maxDistance: rad // distance in meters
+                    }
+                }
+            }).populate("hostId", "firstName lastName")
+              .populate("participants", "firstName lastName");
+    
+            res.status(200).json({ sessions });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+    
+
     async getJoinedSessions(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
