@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "434975178478",
+    "project_id": "study-wimme",
+    "storage_bucket": "study-wimme.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:434975178478:android:83b0f539ad7176c713fdff",
+        "android_client_info": {
+          "package_name": "com.cpen321.study_wimme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDINAZQ2_joX7HfIZaPzheH4xsDEk3hEpI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
