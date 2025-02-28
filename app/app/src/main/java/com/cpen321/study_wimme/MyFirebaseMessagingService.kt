@@ -6,16 +6,23 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         Log.d("FCM", "Refreshed token: $token")
+        val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("fcm_token", token).apply()
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        Log.d("FCM", "Message recieved: ${remoteMessage.notification}")
+        if (remoteMessage.data.isNotEmpty()) {
+            val title = remoteMessage.data["title"]
+            val body = remoteMessage.data["body"]
+            showNotification(title, body)
+        }
         remoteMessage.notification?.let {
             showNotification(it.title, it.body)
         }
@@ -29,7 +36,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val channel = NotificationChannel(
                 channelId,
                 "Study Wimme",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(channel)
         }
@@ -37,7 +44,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(message)
-            //.setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
 
         notificationManager.notify(0, notificationBuilder.build())

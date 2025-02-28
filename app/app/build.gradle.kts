@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.fir.declarations.builder.buildScript
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -58,5 +56,7 @@ dependencies {
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
     implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.core:core-splashscreen:1.0.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+    implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging:23.3.1")
 }

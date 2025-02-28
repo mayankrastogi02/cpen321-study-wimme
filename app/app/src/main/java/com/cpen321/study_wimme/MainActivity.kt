@@ -11,8 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.messaging.FirebaseMessaging
 
 
@@ -40,9 +38,11 @@ class MainActivity : AppCompatActivity() {
         val localToken = sharedPreferences.getString("fcm_token", null)
 
         if (localToken != null) {
+            Log.d("FCM", "Getting token from local storage")
             callback(localToken)
         } else {
             // Fetch the token from Firebase
+            Log.d("FCM", "Fetching token from Firebase")
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val token = task.result

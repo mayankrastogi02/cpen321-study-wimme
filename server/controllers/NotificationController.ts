@@ -26,6 +26,7 @@ export class NotificationController {
       }
     }
 
+    // for testing purposes only
     async testMessage(req: Request, res: Response, next: NextFunction) {
       try {
         const { userId, title, body} = req.body;
