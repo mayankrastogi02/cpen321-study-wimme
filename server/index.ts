@@ -5,11 +5,12 @@ import morgan from "morgan";
 import { UserRoutes } from "./routes/UserRoutes";
 import mongoose from "mongoose";
 import { SessionRoutes } from "./routes/SessionRoutes";
+import { GroupRoutes } from "./routes/GroupRoutes";
 
 const app = express();
 app.use(express.json());
 const port = 3000;
-const Routes = [...UserRoutes, ...SessionRoutes];
+const Routes = [...UserRoutes, ...SessionRoutes, ...GroupRoutes];
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
