@@ -6,8 +6,23 @@ import User from "../schemas/UserSchema";
 export class SessionController {
     async hostSession(req: Request, res: Response, next: NextFunction) {
         try {
-            const { name, description, hostId, location, dateRange } = req.body;
+            const { 
+                name, 
+                description, 
+                hostId, 
+                location, 
+                dateRange, 
+                isPublic,
+                subject,
+                faculty,
+                year,
+                invitees 
+            } = req.body;
             
+            if (!mongoose.Types.ObjectId.isValid(hostId)) {
+                return res.status(400).json({ message: "Invalid host ID" });
+            }
+
             const host = await User.findById(hostId);
 
             if (!host) {
@@ -30,6 +45,11 @@ export class SessionController {
                 hostId,
                 location,
                 dateRange,
+                isPublic,
+                subject,
+                faculty,
+                year,
+                invitees
             });
 
             const savedSession = await newSession.save();
@@ -94,6 +114,10 @@ export class SessionController {
             if (session.participants.includes(userId)) {
                 return res.status(400).json({ message: "User is already a participant" });
             }
+            
+            if (!session.isPublic && !session.invitees.includes(userId)) {
+                return res.status(400).json({ message: "User is not invited to this private session" });
+            }
 
             session.participants.push(userId);
             await session.save();
@@ -152,9 +176,15 @@ export class SessionController {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
-            const sessions = await Session.find({ hostId: { $ne: userId } })
-                .populate("hostId", "firstName lastName")
-                .populate("participants", "firstName lastName");
+            const sessions = await Session.find({
+                hostId: { $ne: userId },
+                $or: [
+                    { isPublic: true },
+                    { isPublic: false, invitees: userId }
+                ]
+            })
+            .populate("hostId", "firstName lastName")
+            .populate("participants", "firstName lastName");
 
             res.status(200).json({ sessions });
         } catch (error) {

@@ -12,6 +12,11 @@ const SessionSchema = new mongoose.Schema({
         startDate: { type: Date, required: true },
         endDate: { type: Date, required: true },
     },
+    isPublic: { type: Boolean, required: true },
+    subject: { type: String, required: true },
+    faculty: { type: String, required: true },
+    year: { type: Number, min: 1, required: true },
+    invitees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
