@@ -7,11 +7,12 @@ import mongoose from "mongoose";
 import { SessionRoutes } from "./routes/SessionRoutes";
 import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
+import { GroupRoutes } from "./routes/GroupRoutes";
 
 const app = express();
 app.use(express.json());
 const port = 3000;
-const Routes = [...UserRoutes, ...SessionRoutes, ...NotificationRoutes];
+const Routes = [...UserRoutes, ...SessionRoutes, ...GroupRoutes, ...NotificationRoutes];
 
 const serviceAccountKey = require('./serviceAccountKey');
 
