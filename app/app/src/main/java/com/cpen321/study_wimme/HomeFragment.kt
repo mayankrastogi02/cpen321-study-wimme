@@ -30,6 +30,7 @@ class HomeFragment : Fragment() {
         // Initialize views
         sessionsRecyclerView = view.findViewById(R.id.sessionsRecyclerView)
         visibilityToggleGroup = view.findViewById(R.id.visibilityToggleGroup)
+        visibilityToggleGroup.check(R.id.privateButton)
         profileIcon = view.findViewById(R.id.profileIcon)
         addSessionFab = view.findViewById(R.id.addSessionFab)
 

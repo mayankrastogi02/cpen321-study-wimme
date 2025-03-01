@@ -4,6 +4,10 @@
     <color name="white">#FFFFFFFF</color>
     <color name="primary">#FF000000</color>
     <color name="primarybg">#FEE7AF</color>
-    <color name="yellow">#FEE7AF</color>
+    <color name="google_blue">#4285F4</color>
+    <color name="google_red">#EA4335</color>
+    <color name="google_yellow">#FBBC05</color>
+    <color name="google_green">#34A853</color>
     <color name="purple">#E8DEF8</color>
+    <color name="yellow">#FEE7AF</color>
 </resources>
