@@ -33,14 +33,15 @@ jobs:
             cd /home/ubuntu/cpen321-project/server
 
             # Write secrets into .env
-            cat > .env <<EOF
-            PORT=${{ secrets.PROD_PORT }}
-            DB_URI=${{ secrets.PROD_DB_URI }}
-            GCP_PROJECT_ID=${{ secrets.PROJECTID }}
-            GCP_CLIENT_EMAIL=${{ secrets.CLIENTEMAIL }}
-            GCP_PRIVATE_KEY=${{ secrets.PRIVATEKEY }}
-            EOF
-            
+            printf "DB_URI=%s\nPORT=%s\nGCP_PROJECT_ID=%s\nGCP_CLIENT_EMAIL=%s\n" \
+              "${{ secrets.PROD_DB_URI }}" \
+              "${{ secrets.PROD_PORT }}" \
+              "${{ secrets.PROJECTID }}" \
+              "${{ secrets.CLIENTEMAIL }}" > .env
+
+            # Write GCP_PRIVATE_KEY with quotes and newlines
+            printf "GCP_PRIVATE_KEY=\"%s\"\n" "${{ secrets.PRIVATEKEY }}" >> .env
+
             # Give .env permissions
             chmod 600 .env
 
