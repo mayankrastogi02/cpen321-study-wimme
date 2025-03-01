@@ -6,9 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class SessionsAdapter : RecyclerView.Adapter<SessionsAdapter.SessionViewHolder>() {
+class SessionAdapter : RecyclerView.Adapter<SessionAdapter.SessionViewHolder>() {
     private val allSessions = mutableListOf<Session>()
     private val displayedSessions = mutableListOf<Session>()
+    private var currentVisibility = SessionVisibility.PRIVATE
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.session_item, parent, false)
@@ -33,6 +34,16 @@ class SessionsAdapter : RecyclerView.Adapter<SessionsAdapter.SessionViewHolder>(
         currentVisibility = visibility
         displayedSessions.clear()
         displayedSessions.addAll(allSessions.filter { it.visibility == visibility })
+        notifyDataSetChanged()
+    }
+
+    fun updateSessions(newSessions: List<Session>) {
+        allSessions.clear()
+        allSessions.addAll(newSessions)
+        
+        displayedSessions.clear()
+        displayedSessions.addAll(newSessions.filter { it.visibility == currentVisibility })
+        
         notifyDataSetChanged()
     }
 

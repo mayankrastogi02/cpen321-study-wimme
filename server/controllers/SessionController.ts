@@ -6,20 +6,20 @@ import User from "../schemas/UserSchema";
 export class SessionController {
     async hostSession(req: Request, res: Response, next: NextFunction) {
         try {
-            const { 
-                name, 
-                description, 
-                hostId, 
-                latitude, 
-                longitude, 
-                dateRange, 
+            const {
+                name,
+                description,
+                hostId,
+                latitude,
+                longitude,
+                dateRange,
                 isPublic,
                 subject,
                 faculty,
                 year,
-                invitees 
+                invitees
             } = req.body;
-            
+
             if (!mongoose.Types.ObjectId.isValid(hostId)) {
                 return res.status(400).json({ message: "Invalid host ID" });
             }
@@ -40,13 +40,13 @@ export class SessionController {
                 return res.status(400).json({ message: "End date must be in the future" });
             }
 
-        const lat = parseFloat(latitude);
-        const lng = parseFloat(longitude);
+            const lat = parseFloat(latitude);
+            const lng = parseFloat(longitude);
 
-        const location = {
-            type: "Point",
-            coordinates: [lng, lat]
-        };
+            const location = {
+                type: "Point",
+                coordinates: [lng, lat]
+            };
 
             const newSession = new Session({
                 name,
@@ -62,7 +62,7 @@ export class SessionController {
             });
 
             const savedSession = await newSession.save();
-    
+
             res.status(200).json({ message: "Session created successfully", session: savedSession });
         } catch (error) {
             console.error(error);
@@ -123,7 +123,7 @@ export class SessionController {
             if (session.participants.includes(userId)) {
                 return res.status(400).json({ message: "User is already a participant" });
             }
-            
+
             if (!session.isPublic && !session.invitees.includes(userId)) {
                 return res.status(400).json({ message: "User is not invited to this private session" });
             }
@@ -179,41 +179,63 @@ export class SessionController {
 
     async getAvailableSessions(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId } = req.body;
+            // Get userId from query parameters instead of body
+            const userId = req.query.userId as string;
 
-            if (!mongoose.Types.ObjectId.isValid(userId as string)) {
+            if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
-            const sessions = await Session.find({
+            // Find sessions where the user is not the host
+            const availableSessions = await Session.find({
                 hostId: { $ne: userId },
                 $or: [
                     { isPublic: true },
                     { isPublic: false, invitees: userId }
                 ]
             })
-            .populate("hostId", "firstName lastName")
-            .populate("participants", "firstName lastName");
+                .populate("hostId", "firstName lastName")
+                .populate("participants", "firstName lastName");
 
-            res.status(200).json({ sessions });
+            // Also find hosted sessions by the user
+            const hostedSessions = await Session.find({
+                hostId: userId
+            })
+                .populate("participants", "firstName lastName");
+
+            // Also find sessions where the user is a participant
+            const participantSessions = await Session.find({
+                hostId: { $ne: userId },
+                participants: userId
+            })
+                .populate("hostId", "firstName lastName");
+
+            // Combine all sessions
+            const allSessions = [...hostedSessions, ...participantSessions, ...availableSessions];
+
+            // Return success response with sessions
+            return res.status(200).json({
+                success: true,
+                sessions: allSessions
+            });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "Internal server error" });
+            return res.status(500).json({ message: "Internal server error" });
         }
     }
 
     async getNearbySessions(req: Request, res: Response, next: NextFunction) {
         try {
             const { latitude, longitude, radius } = req.query;
-    
+
             if (!latitude || !longitude || !radius) {
                 return res.status(400).json({ message: "Latitude, longitude, and radius are required." });
             }
-    
+
             const lat = parseFloat(latitude as string);
             const lng = parseFloat(longitude as string);
             const rad = parseFloat(radius as string);
-    
+
             const sessions = await Session.find({
                 location: {
                     $near: {
@@ -222,8 +244,8 @@ export class SessionController {
                     }
                 }
             }).populate("hostId", "firstName lastName")
-              .populate("participants", "firstName lastName");
-    
+                .populate("participants", "firstName lastName");
+
             res.status(200).json({ sessions });
         } catch (error) {
             console.error(error);
@@ -234,14 +256,14 @@ export class SessionController {
     async getJoinedSessions(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
-    
+
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
-    
+
             const sessions = await Session.find({ participants: userId })
                 .populate("hostId", "firstName lastName")
-    
+
             res.status(200).json({ sessions });
         } catch (error) {
             console.error(error);
@@ -252,13 +274,13 @@ export class SessionController {
     async getHostedSessions(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
-    
+
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
-    
+
             const sessions = await Session.find({ hostId: userId })
-    
+
             res.status(200).json({ sessions });
         } catch (error) {
             console.error(error);

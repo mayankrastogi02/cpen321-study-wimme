@@ -10,17 +10,19 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header with profile icon -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingBottom="16dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Study Wimme"
+                android:text="Study Sessions"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -32,39 +34,48 @@
 
         </LinearLayout>
 
+        <!-- Toggle buttons -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/visibilityToggleGroup"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             app:singleSelection="true">
 
             <Button
                 android:id="@+id/privateButton"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="wrap_content"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
+                android:layout_weight="1"
                 android:text="Private" />
 
             <Button
                 android:id="@+id/publicButton"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="wrap_content"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
+                android:layout_weight="1"
                 android:text="Public" />
-
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
+        <!-- Empty state text view -->
+        <TextView
+            android:id="@+id/emptyStateTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="No sessions found"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+        <!-- RecyclerView for sessions -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sessionsRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="16dp" />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
@@ -74,6 +85,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add" />
+        android:contentDescription="Add Session"
+        app:srcCompat="@drawable/ic_add" />
 
 </FrameLayout>
