@@ -21,10 +21,10 @@ const Routes = [
   ...AuthRoutes,
 ];
 
-const serviceAccountKey = require("./serviceAccountKey");
+const serviceAccountKey = process.env.GCP_KEY
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountKey),
+  credential: admin.credential.cert(serviceAccountKey as string),
 });
 
 export const messaging = admin.messaging();
