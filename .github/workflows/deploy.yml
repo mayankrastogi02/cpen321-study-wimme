@@ -36,8 +36,9 @@ jobs:
             cat > .env <<EOF
             PORT=${{ secrets.PROD_PORT }}
             DB_URI=${{ secrets.PROD_DB_URI }}
-            GCP_KEY=${{ secrets.GCP_SERVICE_KEY }}
-            EOF
+            GCP_PROJECT_ID=${{ secrets.PROJECTID }}
+            GCP_CLIENT_EMAIL=${{ secrets.CLIENTEMAIL }}
+            GCP_PRIVATE_KEY=${{ secrets.PRIVATEKEY }}
 
             # Give .env permissions
             chmod 600 .env

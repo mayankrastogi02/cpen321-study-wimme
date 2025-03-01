@@ -9,6 +9,7 @@ import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes"; // Import the new AuthRoutes
+import * as fs from 'fs';
 
 const app = express();
 app.use(express.json());
@@ -21,10 +22,14 @@ const Routes = [
   ...AuthRoutes,
 ];
 
-const serviceAccountKey = process.env.GCP_KEY
+const certKey = fs.readFileSync(process.env.GCP_PRIVATE_KEY as string, 'utf8');
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountKey as string),
+  credential: admin.credential.cert({
+    projectId: process.env.GCP_PROJECT_ID,
+    clientEmail: process.env.GCP_CLIENT_EMAIL,
+    privateKey: certKey
+  })
 });
 
 export const messaging = admin.messaging();
