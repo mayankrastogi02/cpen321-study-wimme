@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -51,6 +54,8 @@ class FriendsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_friends, container, false)
+
+        LoginActivity.logAllPreferences(requireActivity())
 
         recyclerView = view.findViewById(R.id.friendsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -121,11 +126,27 @@ class FriendsFragment : Fragment() {
     }
 
     private fun fetchFriends() {
-        val sharedPreferences = requireContext().getSharedPreferences("user_prefs", 0)
-        val userId = sharedPreferences.getString("userId", null)
+        // Get userId using our new helper method
+        val userId = LoginActivity.getCurrentUserId(requireActivity())
+        
+        // Log the userId for debugging
+        Log.d(TAG, "Fetching friends with userId: $userId")
 
         if (userId == null) {
-            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+            // If userId is null, try to get it from GoogleId
+            val googleId = LoginActivity.getCurrentUserGoogleId(requireActivity())
+            Log.d(TAG, "userId is null, googleId: $googleId")
+            
+            if (googleId != null) {
+                // Try to fetch userId from backend using googleId
+                fetchUserIdFromGoogleId(googleId)
+            } else {
+                Toast.makeText(context, "User not authenticated. Please log in again.", Toast.LENGTH_SHORT).show()
+                // Navigate back to login
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
             return
         }
 
@@ -136,6 +157,7 @@ class FriendsFragment : Fragment() {
                 connection.requestMethod = "GET"
 
                 val responseCode = connection.responseCode
+                Log.d(TAG, "Friends API response code: $responseCode")
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     val jsonResponse = JSONObject(response)
@@ -178,6 +200,70 @@ class FriendsFragment : Fragment() {
                 connection.disconnect()
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching friends", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    // Helper method to fetch userId using googleId
+    private fun fetchUserIdFromGoogleId(googleId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val url = URL("${BuildConfig.SERVER_URL}/api/auth/verify?googleId=$googleId")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+
+                val responseCode = connection.responseCode
+                Log.d(TAG, "Verify API response code: $responseCode")
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
+                    reader.close()
+
+                    val jsonResponse = JSONObject(response.toString())
+
+                    // Extract MongoDB user ID from response
+                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
+                        val mongoUserId = jsonResponse.getJSONObject("data").getString("_id")
+
+                        // Save MongoDB ID to SharedPreferences
+                        val sharedPreferences = requireActivity().getSharedPreferences(
+                            "user_prefs",
+                            AppCompatActivity.MODE_PRIVATE
+                        )
+                        val editor = sharedPreferences.edit()
+                        editor.putString("userId", mongoUserId)
+                        editor.apply()
+
+                        Log.d(TAG, "Saved MongoDB user ID: $mongoUserId")
+
+                        // Now fetch friends with the retrieved userId
+                        withContext(Dispatchers.Main) {
+                            fetchFriends()
+                        }
+                    } else {
+                        Log.e(TAG, "MongoDB user ID not found in response")
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Error: User ID not found", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "Failed to verify user")
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to verify user", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching user ID", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }

@@ -15,6 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -36,9 +38,9 @@ class UserSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_settings)
-        
+
         isCompletingProfile = intent.getBooleanExtra("COMPLETE_PROFILE", false)
-        
+
         // Initialize UI elements
         usernameInput = findViewById(R.id.usernameEditText)
         firstNameInput = findViewById(R.id.firstNameEditText)
@@ -49,7 +51,7 @@ class UserSettingsActivity : AppCompatActivity() {
         saveButton = findViewById(R.id.saveButton)
         logoutButton = findViewById(R.id.logoutButton)
         backButton = findViewById(R.id.backButton)
-        
+
         // Setup back button functionality
         if (isCompletingProfile) {
             // Hide back button if completing profile for the first time
@@ -59,23 +61,23 @@ class UserSettingsActivity : AppCompatActivity() {
                 finish() // Just go back if not completing profile
             }
         }
-        
+
         // Load user data from sharedPreferences for initial values
         loadUserData()
-        
+
         // Set up save button
         saveButton.setOnClickListener {
             if (validateInputs()) {
                 saveUserProfile()
             }
         }
-        
+
         // Set up logout button
         logoutButton.setOnClickListener {
             logout()
         }
     }
-    
+
     private fun loadUserData() {
         val googleId = LoginActivity.getCurrentUserGoogleId(this)
         if (googleId == null) {
@@ -84,12 +86,12 @@ class UserSettingsActivity : AppCompatActivity() {
             finish()
             return
         }
-        
+
         // Load basic info from shared preferences
         val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
         val displayName = sharedPreferences.getString("displayName", "") ?: ""
         val email = sharedPreferences.getString("email", "") ?: ""
-        
+
         // If this is a new user setting up their profile, pre-populate with info from Google
         if (isCompletingProfile) {
             val nameParts = displayName.split(" ")
@@ -99,25 +101,25 @@ class UserSettingsActivity : AppCompatActivity() {
                     lastNameInput.setText(nameParts.subList(1, nameParts.size).joinToString(" "))
                 }
             }
-            
+
             // Set default username from email
             val defaultUsername = email.split("@").firstOrNull() ?: ""
             usernameInput.setText(defaultUsername)
         }
-        
+
         // If user is editing an existing profile, fetch the full profile data from server
         if (!isCompletingProfile) {
             fetchUserProfile(googleId)
         }
     }
-    
+
     private fun fetchUserProfile(googleId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/api/auth/verify?googleId=$googleId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                
+
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val inputStream = connection.inputStream
@@ -147,30 +149,30 @@ class UserSettingsActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     private fun validateInputs(): Boolean {
         var isValid = true
-        
+
         if (usernameInput.text.toString().trim().isEmpty()) {
             usernameInput.error = "Username is required"
             isValid = false
         }
-        
+
         if (firstNameInput.text.toString().trim().isEmpty()) {
             firstNameInput.error = "First name is required"
             isValid = false
         }
-        
+
         if (lastNameInput.text.toString().trim().isEmpty()) {
             lastNameInput.error = "Last name is required"
             isValid = false
         }
-        
+
         if (facultyInput.text.toString().trim().isEmpty()) {
             facultyInput.error = "Faculty is required"
             isValid = false
         }
-        
+
         if (yearInput.text.toString().trim().isEmpty()) {
             yearInput.error = "Year is required"
             isValid = false
@@ -186,24 +188,24 @@ class UserSettingsActivity : AppCompatActivity() {
                 isValid = false
             }
         }
-        
+
         return isValid
     }
-    
+
     private fun saveUserProfile() {
         val googleId = LoginActivity.getCurrentUserGoogleId(this)
         if (googleId == null) {
             Toast.makeText(this, "Error: User not logged in", Toast.LENGTH_SHORT).show()
             return
         }
-        
+
         val username = usernameInput.text.toString().trim()
         val firstName = firstNameInput.text.toString().trim()
         val lastName = lastNameInput.text.toString().trim()
         val faculty = facultyInput.text.toString().trim()
         val year = yearInput.text.toString().trim().toInt()
         val interests = interestsInput.text.toString().trim()
-        
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/api/auth/profile/$googleId")
@@ -211,7 +213,7 @@ class UserSettingsActivity : AppCompatActivity() {
                 connection.requestMethod = "PUT"
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
-                
+
                 val jsonData = JSONObject().apply {
                     put("userName", username)
                     put("firstName", firstName)
@@ -220,23 +222,51 @@ class UserSettingsActivity : AppCompatActivity() {
                     put("year", year)
                     put("interests", interests)
                 }
-                
+
                 val outputStream = OutputStreamWriter(connection.outputStream)
                 outputStream.write(jsonData.toString())
                 outputStream.flush()
-                
+
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
+                    // Read the response to get user ID
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
+                    reader.close()
+
+                    val jsonResponse = JSONObject(response.toString())
+
+                    // Check if the response contains user data with _id
+                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
+                        val userId = jsonResponse.getJSONObject("data").getString("_id")
+
+                        // Save the user ID in SharedPreferences
+                        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                        val editor = sharedPreferences.edit()
+                        editor.putString("userId", userId)
+                        editor.apply()
+
+                        Log.d(TAG, "Saved user ID: $userId")
+                    }
+
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             this@UserSettingsActivity,
                             "Profile saved successfully!",
                             Toast.LENGTH_SHORT
                         ).show()
-                        
+
+                        // Log all preferences for debugging
+                        LoginActivity.logAllPreferences(this@UserSettingsActivity)
+
                         if (isCompletingProfile) {
                             // Navigate to main activity after completing profile setup
-                            val intent = Intent(this@UserSettingsActivity, SessionsListActivity::class.java)
+                            val intent =
+                                Intent(this@UserSettingsActivity, SessionsListActivity::class.java)
                             startActivity(intent)
                             finish()
                         } else {
@@ -266,11 +296,11 @@ class UserSettingsActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     private fun logout() {
         LoginActivity.signOut(this)
     }
-    
+
     // Override back button behavior for new users completing their profile
     override fun onBackPressed() {
         if (isCompletingProfile) {

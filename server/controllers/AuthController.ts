@@ -98,6 +98,7 @@ export class AuthController {
 
         await user.save();
       }
+      console.log("DEBUG: User:", user);
 
       return res.status(201).json({
         success: true,
