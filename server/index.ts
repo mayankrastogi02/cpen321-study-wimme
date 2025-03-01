@@ -22,13 +22,11 @@ const Routes = [
   ...AuthRoutes,
 ];
 
-const certKey = fs.readFileSync(process.env.GCP_PRIVATE_KEY as string, 'utf8');
-
 admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.GCP_PROJECT_ID,
     clientEmail: process.env.GCP_CLIENT_EMAIL,
-    privateKey: certKey
+    privateKey: process.env.GCP_PRIVATE_KEY as string
   })
 });
 
