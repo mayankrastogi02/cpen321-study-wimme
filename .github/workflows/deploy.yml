@@ -39,7 +39,8 @@ jobs:
             GCP_PROJECT_ID=${{ secrets.PROJECTID }}
             GCP_CLIENT_EMAIL=${{ secrets.CLIENTEMAIL }}
             GCP_PRIVATE_KEY=${{ secrets.PRIVATEKEY }}
-
+            EOF
+            
             # Give .env permissions
             chmod 600 .env
 
