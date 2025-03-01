@@ -4,6 +4,7 @@ import Group from "../schemas/GroupSchema";
 import Session from "../schemas/SessionSchema";
 import mongoose from "mongoose";
 import { sendPushNotification } from "../utils/notificationUtils";
+import Device from "../schemas/DeviceSchema";
 
 export class UserController {
     async createUser(req: Request, res: Response, next: NextFunction) {
@@ -370,6 +371,9 @@ export class UserController {
                     { $pull: { friendRequests: userId, friends: userId } }
                 ),
                 await User.findByIdAndDelete(userId);
+
+            // Delete all devices associated with the user
+            await Device.deleteMany({ userId: userId });
 
             res.status(200).json({ message: "User deleted successfully" });
         } catch (error) {
