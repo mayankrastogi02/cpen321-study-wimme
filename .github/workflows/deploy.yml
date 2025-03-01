@@ -36,15 +36,11 @@ jobs:
             cat > .env <<EOF
             PORT=${{ secrets.PROD_PORT }}
             DB_URI=${{ secrets.PROD_DB_URI }}
+            GCP_KEY=${{ secrets.GCP_SERVICE_KEY }}
             EOF
 
             # Give .env permissions
             chmod 600 .env
-
-            echo '${{ secrets.GCP_SERVICE_KEY }}' > serviceAccountKey.json
-
-            # Give the file permissions
-            chmod 600 serviceAccountKey.json
 
             # Build and run container
             docker-compose down
