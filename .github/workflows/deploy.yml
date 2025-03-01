@@ -41,6 +41,11 @@ jobs:
             # Give .env permissions
             chmod 600 .env
 
+            echo '${{ secrets.GCP_SERVICE_KEY }}' > serviceAccountKey.json
+
+            # Give the file permissions
+            chmod 600 serviceAccountKey.json
+
             # Build and run container
             docker-compose down
             docker-compose --env-file .env build
