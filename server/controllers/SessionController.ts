@@ -10,7 +10,8 @@ export class SessionController {
                 name, 
                 description, 
                 hostId, 
-                location, 
+                latitude, 
+                longitude, 
                 dateRange, 
                 isPublic,
                 subject,
@@ -38,6 +39,14 @@ export class SessionController {
             if (endDate <= new Date()) {
                 return res.status(400).json({ message: "End date must be in the future" });
             }
+
+        const lat = parseFloat(latitude);
+        const lng = parseFloat(longitude);
+
+        const location = {
+            type: "Point",
+            coordinates: [lng, lat]
+        };
 
             const newSession = new Session({
                 name,
@@ -186,6 +195,35 @@ export class SessionController {
             .populate("hostId", "firstName lastName")
             .populate("participants", "firstName lastName");
 
+            res.status(200).json({ sessions });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    async getNearbySessions(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { latitude, longitude, radius } = req.query;
+    
+            if (!latitude || !longitude || !radius) {
+                return res.status(400).json({ message: "Latitude, longitude, and radius are required." });
+            }
+    
+            const lat = parseFloat(latitude as string);
+            const lng = parseFloat(longitude as string);
+            const rad = parseFloat(radius as string);
+    
+            const sessions = await Session.find({
+                location: {
+                    $near: {
+                        $geometry: { type: "Point", coordinates: [lng, lat] },
+                        $maxDistance: rad // distance in meters
+                    }
+                }
+            }).populate("hostId", "firstName lastName")
+              .populate("participants", "firstName lastName");
+    
             res.status(200).json({ sessions });
         } catch (error) {
             console.error(error);

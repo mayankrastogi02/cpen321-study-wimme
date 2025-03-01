@@ -45,4 +45,10 @@ export const SessionRoutes = [
         action: controller.getHostedSessions,
         validation: [],
     },
+    {
+        method: "get",
+        route: "/session/nearbySessions/",
+        action: controller.getNearbySessions,
+        validation: [],
+    },
 ]
