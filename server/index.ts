@@ -22,11 +22,14 @@ const Routes = [
   ...AuthRoutes,
 ];
 
+const utf8GCPKeyBuffer = Buffer.from(process.env.GCP_PRIVATE_KEY as string, "utf-8");
+const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
+
 admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.GCP_PROJECT_ID,
     clientEmail: process.env.GCP_CLIENT_EMAIL,
-    privateKey: process.env.GCP_PRIVATE_KEY as string
+    privateKey: utf8GCPKeyString
   })
 });
 
