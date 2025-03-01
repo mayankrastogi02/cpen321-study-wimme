@@ -30,6 +30,7 @@ export class AuthController {
         success: true,
         profileCreated: user.profileCreated,
         data: {
+          _id: user._id,
           googleId: user.googleId,
           email: user.email,
           displayName: user.displayName,

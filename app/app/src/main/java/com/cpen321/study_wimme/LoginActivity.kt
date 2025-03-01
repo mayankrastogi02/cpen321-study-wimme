@@ -148,6 +148,13 @@ class LoginActivity : AppCompatActivity() {
                     
                     val jsonResponse = JSONObject(response.toString())
                     val profileCreated = jsonResponse.getBoolean("profileCreated")
+
+                    // Save the MongoDB user ID to SharedPreferences
+                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
+                        val mongoUserId = jsonResponse.getJSONObject("data").getString("_id")
+                        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                        sharedPreferences.edit().putString("userId", mongoUserId).apply()
+                    }
                     
                     withContext(Dispatchers.Main) {
                         if (profileCreated) {
