@@ -30,6 +30,7 @@ export class AuthController {
         success: true,
         profileCreated: user.profileCreated,
         data: {
+          _id: user._id,
           googleId: user.googleId,
           email: user.email,
           displayName: user.displayName,
@@ -97,6 +98,7 @@ export class AuthController {
 
         await user.save();
       }
+      console.log("DEBUG: User:", user);
 
       return res.status(201).json({
         success: true,

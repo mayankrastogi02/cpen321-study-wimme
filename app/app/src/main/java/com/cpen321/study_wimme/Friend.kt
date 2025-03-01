@@ -3,6 +3,7 @@ package com.cpen321.study_wimme
 import java.io.Serializable
 
 data class Friend(
+    val id: String,
     val username: String,
     val firstName: String,
     val lastName: String,
