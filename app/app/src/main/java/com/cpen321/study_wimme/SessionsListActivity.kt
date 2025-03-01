@@ -2,21 +2,26 @@ package com.cpen321.study_wimme
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
 class SessionsListActivity : AppCompatActivity() {
+    private val TAG = "SessionsListActivity"
 
     private lateinit var bottomNavigationView: BottomNavigationView
 
@@ -26,12 +31,56 @@ class SessionsListActivity : AppCompatActivity() {
         // First check if the user has completed their profile
         checkProfileCreated()
 
+        LoginActivity.getCurrentToken(this) {
+            token ->
+                val userId = LoginActivity.getCurrentUserId(this)
+
+                val jsonData = JSONObject().apply {
+                    put("userId", userId)
+                    put("token", token)
+                }
+
+                val url = URL("${BuildConfig.SERVER_URL}/notification/deviceToken")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        Log.d(TAG, "JSON data: $jsonData")
+
+                        val outputStream = OutputStreamWriter(connection.outputStream)
+                        outputStream.write(jsonData.toString())
+                        outputStream.flush()
+                        outputStream.close()
+
+                        // Handle the response
+                        val responseCode = connection.responseCode
+                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                            val response = connection.inputStream.bufferedReader().use { it.readText() }
+                            Log.d(TAG, "Response: $response")
+                        } else {
+                            Log.e(TAG, "Server returned error code: $responseCode")
+                            val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
+                            Log.e(TAG, "Error Response: $errorResponse")
+                        }
+                    } catch (e: Exception) {
+                        // Log and handle exceptions
+                        Log.e(TAG, "Error sending data: ${e.message}", e)
+                    } finally {
+                        connection.disconnect()
+                    }
+                }
+        }
+
         setContentView(R.layout.activity_sessions_list)
 
         bottomNavigationView = findViewById(R.id.bottom_navigation)
 
         // Set initial fragment
         loadFragment(HomeFragment())
+        requestNotificationPermission()
 
         // Select Home tab initially
         bottomNavigationView.selectedItemId = R.id.nav_home
@@ -139,6 +188,15 @@ class SessionsListActivity : AppCompatActivity() {
         requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
             LOCATION_PERMISSION_REQUEST_CODE
         )
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = "android.permission.POST_NOTIFICATIONS"
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(

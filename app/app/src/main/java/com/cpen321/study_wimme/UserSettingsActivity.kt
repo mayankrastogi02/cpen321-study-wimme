@@ -299,6 +299,47 @@ class UserSettingsActivity : AppCompatActivity() {
 
     private fun logout() {
         LoginActivity.signOut(this)
+        LoginActivity.getCurrentToken(this) {
+                token ->
+            val userId = LoginActivity.getCurrentUserId(this)
+
+            val jsonData = JSONObject().apply {
+                put("token", token)
+            }
+
+            val url = URL("${BuildConfig.SERVER_URL}/notification/deviceToken")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "DELETE"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    Log.d(TAG, "JSON data: $jsonData")
+
+                    val outputStream = OutputStreamWriter(connection.outputStream)
+                    outputStream.write(jsonData.toString())
+                    outputStream.flush()
+                    outputStream.close()
+
+                    // Handle the response
+                    val responseCode = connection.responseCode
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        val response = connection.inputStream.bufferedReader().use { it.readText() }
+                        Log.d(TAG, "Response: $response")
+                    } else {
+                        Log.e(TAG, "Server returned error code: $responseCode")
+                        val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
+                        Log.e(TAG, "Error Response: $errorResponse")
+                    }
+                } catch (e: Exception) {
+                    // Log and handle exceptions
+                    Log.e(TAG, "Error sending data: ${e.message}", e)
+                } finally {
+                    connection.disconnect()
+                }
+            }
+        }
     }
 
     // Override back button behavior for new users completing their profile

@@ -1,5 +1,6 @@
 package com.cpen321.study_wimme
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,6 +57,30 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(activity, "Signed out", Toast.LENGTH_SHORT).show()
             }
         }
+
+        fun getCurrentToken(activity: FragmentActivity, callback: (String?) -> Unit) {
+            // Check local storage first
+            val sharedPreferences = activity.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+            val localToken = sharedPreferences.getString("fcm_token", null)
+
+            if (localToken != null) {
+                Log.d("FCM", "Getting token from local storage")
+                callback(localToken)
+            } else {
+                // Fetch the token from Firebase
+                Log.d("FCM", "Fetching token from Firebase")
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val token = task.result
+                        // Save the token locally
+                        sharedPreferences.edit().putString("fcm_token", token).apply()
+                        callback(token)
+                    } else {
+                        callback(null)
+                    }
+                }
+            }
+        }
         
         // Static method to get current user's Google ID
         fun getCurrentUserGoogleId(activity: FragmentActivity): String? {
@@ -73,8 +99,8 @@ class LoginActivity : AppCompatActivity() {
             Log.d(TAG, "All SharedPreferences values:")
             for ((key, value) in allValues) {
                 Log.d(TAG, "Key: $key, Value: $value")
+            }
         }
-    }
     }
 
     private lateinit var googleSignInClient: GoogleSignInClient

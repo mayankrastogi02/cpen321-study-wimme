@@ -4,7 +4,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -19,13 +22,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d("FCM", "Message recieved: ${remoteMessage.notification}")
         if (remoteMessage.data.isNotEmpty()) {
+            Log.d("FCM", "Data: ${remoteMessage.data}")
             val title = remoteMessage.data["title"]
             val body = remoteMessage.data["body"]
-            showNotification(title, body)
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(this, body, Toast.LENGTH_SHORT).show()
+            }
         }
-        remoteMessage.notification?.let {
-            showNotification(it.title, it.body)
-        }
+        //Un-comment if we want notification to pop up in task bar when app is in the foreground
+//        remoteMessage.notification?.let {
+//            showNotification(it.title, it.body)
+//        }
     }
 
     private fun showNotification(title: String?, message: String?) {
@@ -44,6 +51,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(message)
+            .setSmallIcon(R.drawable.studywimme_logo)
             .setAutoCancel(true)
 
         notificationManager.notify(0, notificationBuilder.build())
