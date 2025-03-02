@@ -10,10 +10,11 @@ import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes"; // Import the new AuthRoutes
 import * as fs from 'fs';
+import * as https from 'https'
 
 const app = express();
 app.use(express.json());
-const port = 3000;
+
 const Routes = [
   ...UserRoutes,
   ...SessionRoutes,
@@ -21,6 +22,13 @@ const Routes = [
   ...NotificationRoutes,
   ...AuthRoutes,
 ];
+
+const certKey = fs.readFileSync("key.pem", "utf8")
+const certificate = fs.readFileSync("cert.pem", "utf8")
+const credentials  = {
+  key: certKey,
+  cert: certificate
+}
 
 const utf8GCPKeyBuffer = Buffer.from(process.env.GCP_PRIVATE_KEY as string, "utf-8");
 const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
@@ -60,10 +68,10 @@ Routes.forEach((route) => {
 
 mongoose.connect(process.env.DB_URI as string).then(() => {
   console.log("MongoDB Client Connected");
-
-  app.listen(process.env.PORT, () => {
-    console.log(`Example app listening on port ${process.env.PORT}`);
-  });
+  
+  https.createServer(credentials, app).listen(process.env.PORT, () => {
+    console.log(`HTTPS server listening on port ${process.env.PORT}`);
+  })
 }).catch(err => {
   console.error(err)
   client.close();
