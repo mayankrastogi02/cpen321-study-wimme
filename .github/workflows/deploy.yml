@@ -30,7 +30,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd /home/ubuntu/cpen321-project/server
+            cd /home/ubuntu/cpen321-project
 
             # Write secrets into .env
             printf "DB_URI=%s\nPORT=%s\nGCP_PROJECT_ID=%s\nGCP_CLIENT_EMAIL=%s\n" \
