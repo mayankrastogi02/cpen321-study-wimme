@@ -179,47 +179,56 @@ export class SessionController {
 
     async getAvailableSessions(req: Request, res: Response, next: NextFunction) {
         try {
-            // Get userId from query parameters instead of body
+            console.log("Fetching sessions");
+            // Get userId from query parameters
             const userId = req.query.userId as string;
 
             if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
-            // Find sessions where the user is not the host
-            const availableSessions = await Session.find({
-                hostId: { $ne: userId },
-                $or: [
-                    { isPublic: true },
-                    { isPublic: false, invitees: userId }
-                ]
-            })
-                .populate("hostId", "firstName lastName")
-                .populate("participants", "firstName lastName");
-
-            // Also find hosted sessions by the user
+            // Find sessions where the user is the host
             const hostedSessions = await Session.find({
                 hostId: userId
-            })
-                .populate("participants", "firstName lastName");
+            }).populate("hostId", "firstName lastName");
 
-            // Also find sessions where the user is a participant
+            // Find sessions where the user is a participant
             const participantSessions = await Session.find({
                 hostId: { $ne: userId },
                 participants: userId
-            })
-                .populate("hostId", "firstName lastName");
+            }).populate("hostId", "firstName lastName");
+
+            // Find public sessions where the user is neither host nor participant
+            const publicSessions = await Session.find({
+                hostId: { $ne: userId },
+                participants: { $nin: [userId] },
+                isPublic: true
+            }).populate("hostId", "firstName lastName");
+
+            // Private sessions where the user is invited
+            const invitedSessions = await Session.find({
+                hostId: { $ne: userId },
+                participants: { $nin: [userId] },
+                isPublic: false,
+                invitees: userId
+            }).populate("hostId", "firstName lastName");
 
             // Combine all sessions
-            const allSessions = [...hostedSessions, ...participantSessions, ...availableSessions];
+            const allSessions = [
+                ...hostedSessions,
+                ...participantSessions,
+                ...publicSessions,
+                ...invitedSessions
+            ];
 
-            // Return success response with sessions
+            console.log(`Found ${allSessions.length} sessions`);
+
             return res.status(200).json({
                 success: true,
                 sessions: allSessions
             });
         } catch (error) {
-            console.error(error);
+            console.error("Error in getAvailableSessions:", error);
             return res.status(500).json({ message: "Internal server error" });
         }
     }

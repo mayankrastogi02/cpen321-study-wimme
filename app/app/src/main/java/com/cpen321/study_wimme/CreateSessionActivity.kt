@@ -218,12 +218,18 @@ class CreateSessionActivity : AppCompatActivity() {
                 dateFormat.timeZone = TimeZone.getTimeZone("UTC") // Ensure UTC timezone
 
                 // Create JSON data - making sure hostId is properly formatted
+                // Replace the existing JSON creation for API call with this:
                 val jsonData = JSONObject().apply {
                     put("name", name)
                     put("description", description)
-                    put("hostId", userId) // Ensure this matches exactly what the server expects
-                    put("latitude", latitude)
-                    put("longitude", longitude)
+                    put("hostId", userId)
+                    put("location", JSONObject().apply {
+                        put("type", "Point")
+                        put("coordinates", JSONArray().apply {
+                            put(longitude) // Note: GeoJSON uses [longitude, latitude] order!
+                            put(latitude)
+                        })
+                    })
                     put("dateRange", JSONObject().apply {
                         put("startDate", dateFormat.format(startDate))
                         put("endDate", dateFormat.format(endDate))
@@ -232,7 +238,7 @@ class CreateSessionActivity : AppCompatActivity() {
                     put("subject", subject)
                     put("faculty", faculty)
                     put("year", year)
-                    put("invitees", JSONArray()) // Empty array if no invitees
+                    put("invitees", JSONArray())
                 }
 
                 // Log the request body for debugging
