@@ -3,6 +3,8 @@ import User from "../schemas/UserSchema";
 import Group from "../schemas/GroupSchema";
 import Session from "../schemas/SessionSchema";
 import mongoose from "mongoose";
+import { sendPushNotification } from "../utils/notificationUtils";
+import Device from "../schemas/DeviceSchema";
 
 export class UserController {
     async createUser(req: Request, res: Response, next: NextFunction) {
@@ -60,8 +62,8 @@ export class UserController {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
+            // user: person sending friend request, friend: person receiving friend request
             const user = await User.findById(userId);
-
             const friend = await User.findOne({ userName: friendUserName });
 
             if (!user || !friend) {
@@ -85,6 +87,8 @@ export class UserController {
 
             friend.friendRequests.push(userId);
             await friend.save();
+
+            await sendPushNotification(friendId, "Friend Request", `${user.userName} sent a you friend Request`, );
 
             res.status(200).json({ message: "Sent friend request" });
         } catch (error) {
@@ -135,6 +139,7 @@ export class UserController {
                     .json({ message: "Invalid user ID or friend ID" });
             }
 
+            // user: person who received friend request, friend: person who sent the friend request originally
             const user = await User.findById(userId);
             const friend = await User.findById(friendId);
 
@@ -169,6 +174,15 @@ export class UserController {
                     ? "Friend request accepted"
                     : "Friend request rejected",
             });
+
+            await sendPushNotification(
+                friendId, 
+                accepted ? "Friend Request Accepted"
+                : "Friend Request Rejected", 
+                accepted ? `${user.userName} accepted your friend request` 
+                : `${user.userName} rejected your friend request`
+            );
+
         } catch (error) {
             console.error("Error handling friend request:", error);
             res.status(500).json({ message: "Server error" });
@@ -357,6 +371,9 @@ export class UserController {
                     { $pull: { friendRequests: userId, friends: userId } }
                 ),
                 await User.findByIdAndDelete(userId);
+
+            // Delete all devices associated with the user
+            await Device.deleteMany({ userId: userId });
 
             res.status(200).json({ message: "User deleted successfully" });
         } catch (error) {

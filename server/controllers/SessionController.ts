@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import Session from "../schemas/SessionSchema"
 import User from "../schemas/UserSchema";
+import { sendPushNotification } from "../utils/notificationUtils";
 
 export class SessionController {
     async hostSession(req: Request, res: Response, next: NextFunction) {
@@ -58,6 +59,10 @@ export class SessionController {
 
             const savedSession = await newSession.save();
 
+            for (const inviteeId of savedSession.invitees) {
+                await sendPushNotification(inviteeId, "Study Session Invite", `${host.userName} invited you to session '${savedSession.name}'`);
+            }
+          
             res.status(200).json({ message: "Session created successfully", session: savedSession });
         } catch (error) {
             console.error(error);
@@ -80,6 +85,10 @@ export class SessionController {
             }
 
             await Session.findByIdAndDelete(sessionId);
+
+            for (const inviteeId of session.invitees) {
+                await sendPushNotification(inviteeId, "Study Session Ended", `Session '${session.name}' has ended `);
+            }
 
             res.status(200).json({ message: "Session deleted successfully" });
         } catch (error) {
@@ -126,6 +135,8 @@ export class SessionController {
             session.participants.push(userId);
             await session.save();
 
+            await sendPushNotification(session.hostId, "User Joined Session", `${user.userName} joined session '${session.name}'`);
+
             res.status(200).json({ message: "User joined session successfully", session });
         } catch (error) {
             console.error(error);
@@ -164,6 +175,8 @@ export class SessionController {
                 (participantId) => participantId.toString() !== userId
             );
             await session.save();
+
+            await sendPushNotification(session.hostId, "User Left Session", `${user.userName} left session '${session.name}'`);
 
             res.status(200).json({ message: "User left session successfully", session });
         } catch (error) {
