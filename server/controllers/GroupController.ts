@@ -42,14 +42,14 @@ export class GroupController {
 
     async getGroups(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId } = req.body;
+            const { userId } = req.params;
 
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
             const groups = await Group.find({ userId: userId})
-                .populate("members", "firstName lastName");
+                .populate("members", "userName");
 
             res.status(200).json({ groups });
         } catch (error) {

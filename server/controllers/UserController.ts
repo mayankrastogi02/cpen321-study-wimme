@@ -70,6 +70,10 @@ export class UserController {
                 return res.status(404).json({ message: "User or friend not found" });
             }
 
+            if (user.userName === friendUserName) {
+                return res.status(400).json({ message: "Cannot add yourself as a friend" });
+            }
+
             const friendId = friend._id;
 
             if (user.friends.includes(friendId)) {

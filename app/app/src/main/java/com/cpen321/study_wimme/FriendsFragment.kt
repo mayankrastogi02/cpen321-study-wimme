@@ -282,7 +282,8 @@ class FriendsFragment : Fragment() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/group?userId=$userId")
+                val url = URL("${BuildConfig.SERVER_URL}/group/${userId}")
+
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -295,10 +296,23 @@ class FriendsFragment : Fragment() {
 
                     for (i in 0 until groupsArray.length()) {
                         val groupObj = groupsArray.getJSONObject(i)
+
+                        val membersArray = groupObj.getJSONArray("members")
+                        val membersArrayList = ArrayList<GroupMember>()
+
+                        for (j in 0 until membersArray.length())  {
+                            val memberObj = membersArray.getJSONObject(j)
+                            val member = GroupMember(
+                                memberObj.getString("_id"),
+                                memberObj.getString("userName")
+                            )
+                            membersArrayList.add(member)
+                        }
+
                         val group = Group(
                             groupObj.getString("_id"),
                             groupObj.getString("name"),
-                            groupObj.optString("description", "")
+                            membersArrayList
                         )
                         fetchedGroups.add(group)
                     }
@@ -311,6 +325,7 @@ class FriendsFragment : Fragment() {
                                 is Group -> {
                                     val intent = Intent(context, EditGroupActivity::class.java)
                                     intent.putExtra("group", item)
+                                    intent.putExtra("friends", friendList)
                                     startActivity(intent)
                                 }
                             }
@@ -439,7 +454,7 @@ class FriendsFragment : Fragment() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/group")
+                val url = URL("${BuildConfig.SERVER_URL}/group")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")
