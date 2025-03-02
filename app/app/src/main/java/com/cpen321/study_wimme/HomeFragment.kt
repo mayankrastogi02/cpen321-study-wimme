@@ -191,6 +191,10 @@ class HomeFragment : Fragment() {
                             
                             // Check if public/private
                             val isPublic = sessionObj.getBoolean("isPublic")
+                            Log.d(TAG, "Session '${name}' isPublic: $isPublic")
+
+                            val visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
+                            Log.d(TAG, "Setting session visibility to: $visibility")
 
                             // Inside the loop that processes sessions in fetchSessions
                             val subject = sessionObj.optString("subject", "")
@@ -211,7 +215,7 @@ class HomeFragment : Fragment() {
                                 time = formattedTime,
                                 location = formattedLocation,
                                 description = description,
-                                visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE,
+                                visibility = visibility,
                                 subject = subject,
                                 faculty = faculty,
                                 year = year,
@@ -303,6 +307,11 @@ class HomeFragment : Fragment() {
     private fun updateSessionsDisplay() {
         // Filter sessions based on current visibility
         val filteredSessions = sessionsList.filter { it.visibility == currentVisibility }
+
+        Log.d(TAG, "Total sessions: ${sessionsList.size}")
+        Log.d(TAG, "Public sessions: ${sessionsList.count { it.visibility == SessionVisibility.PUBLIC }}")
+        Log.d(TAG, "Private sessions: ${sessionsList.count { it.visibility == SessionVisibility.PRIVATE }}")
+        Log.d(TAG, "Currently showing ${currentVisibility} sessions: ${filteredSessions.size}")
         
         if (filteredSessions.isEmpty()) {
             showEmptyState("No ${if(currentVisibility == SessionVisibility.PRIVATE) "private" else "public"} sessions found")
