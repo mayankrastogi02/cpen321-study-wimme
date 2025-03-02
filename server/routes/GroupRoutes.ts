@@ -11,7 +11,7 @@ export const GroupRoutes = [
     },
     {
         method: "get",
-        route: "/group",
+        route: "/group/:userId",
         action: controller.getGroups,
         validation: [],
     },
