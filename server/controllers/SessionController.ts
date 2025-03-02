@@ -235,8 +235,13 @@ export class SessionController {
 
     async getNearbySessions(req: Request, res: Response, next: NextFunction) {
         try {
-            const { latitude, longitude, radius } = req.query;
+            const { latitude, longitude, radius, userId } = req.query;
+            const userIdStr = userId as string;
 
+            if (!mongoose.Types.ObjectId.isValid(userIdStr)) {
+                return res.status(400).json({ message: "Invalid user ID" });
+            }
+          
             if (!latitude || !longitude || !radius) {
                 return res.status(400).json({ message: "Latitude, longitude, and radius are required." });
             }
@@ -245,14 +250,23 @@ export class SessionController {
             const lng = parseFloat(longitude as string);
             const rad = parseFloat(radius as string);
 
-            const sessions = await Session.find({
+
+            const filter: any = {
                 location: {
                     $near: {
                         $geometry: { type: "Point", coordinates: [lng, lat] },
                         $maxDistance: rad // distance in meters
                     }
                 }
-            }).populate("hostId", "firstName lastName")
+            };
+
+            filter.$or = [
+                { isPublic: true },
+                { isPublic: false, invitees: userId }
+            ];
+
+            const sessions = await Session.find(filter)
+                .populate("hostId", "firstName lastName")
                 .populate("participants", "firstName lastName");
 
             res.status(200).json({ sessions });
