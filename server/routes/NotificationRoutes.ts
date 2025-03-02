@@ -6,7 +6,7 @@ export const NotificationRoutes = [
     {
         method: "post",
         route: "/notification/deviceToken",
-        action: controller.addToken,
+        action: controller.associateDevice,
         validation: [],
     },
     {
@@ -14,5 +14,11 @@ export const NotificationRoutes = [
         route: "/notification/sendMessageTest",
         action: controller.testMessage,
         validation: [],
-    }
+    },
+    {
+        method: "delete",
+        route: "/notification/deviceToken",
+        action: controller.deleteToken,
+        validation: [],
+    },
 ]
