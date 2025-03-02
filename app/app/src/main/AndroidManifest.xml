@@ -25,6 +25,9 @@
             </intent-filter>
         </service>
         <activity
+            android:name=".SessionDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".FriendRequestsActivity"
             android:exported="false" />
         <activity
@@ -36,9 +39,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-         <meta-data
+
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}"/>
+            android:value="${MAPS_API_KEY}" />
+
         <activity
             android:name=".MapLocationPickerActivity"
             android:exported="false" />
