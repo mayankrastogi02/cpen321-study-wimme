@@ -81,6 +81,25 @@ class HomeFragment : Fragment() {
             }
         }
 
+        sessionsAdapter.setOnSessionClickListener { session ->
+            // Get session ID and other detailed info from your data source
+            val sessionId = session.id // Make sure Session class has an ID field
+            
+            // Launch SessionDetailsActivity with session details
+            val intent = Intent(requireContext(), SessionDetailsActivity::class.java).apply {
+                putExtra("SESSION_NAME", session.name)
+                putExtra("SESSION_TIME", session.time)
+                putExtra("SESSION_LOCATION", session.location)
+                putExtra("SESSION_DESCRIPTION", session.description)
+                putExtra("SESSION_SUBJECT", session.subject) // You'll need to add these fields to Session
+                putExtra("SESSION_FACULTY", session.faculty)
+                putExtra("SESSION_YEAR", session.year)
+                putExtra("SESSION_HOST", session.hostName)
+                putExtra("SESSION_ID", sessionId)
+            }
+            startActivity(intent)
+        }
+
         // Set default visibility
         visibilityToggleGroup.check(R.id.privateButton)
 
@@ -172,14 +191,33 @@ class HomeFragment : Fragment() {
                             
                             // Check if public/private
                             val isPublic = sessionObj.getBoolean("isPublic")
-                            
+
+                            // Inside the loop that processes sessions in fetchSessions
+                            val subject = sessionObj.optString("subject", "")
+                            val faculty = sessionObj.optString("faculty", "")
+                            val year = sessionObj.optString("year", "").toString()
+
+                            // Get host information if available
+                            val hostObj = sessionObj.optJSONObject("hostId")
+                            val hostName = if (hostObj != null) {
+                                "${hostObj.optString("firstName", "")} ${hostObj.optString("lastName", "")}"
+                            } else {
+                                "Unknown Host"
+                            }
+
                             val session = Session(
+                                id = sessionObj.getString("_id"),
                                 name = name,
                                 time = formattedTime,
                                 location = formattedLocation,
                                 description = description,
-                                visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
+                                visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE,
+                                subject = subject,
+                                faculty = faculty,
+                                year = year,
+                                hostName = hostName
                             )
+                            
                             fetchedSessions.add(session)
                         } catch (e: Exception) {
                             Log.e(TAG, "Error parsing session", e)
