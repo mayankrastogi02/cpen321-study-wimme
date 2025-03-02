@@ -19,21 +19,14 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.button.MaterialButtonToggleGroup
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
-    private val client = OkHttpClient()
     private var currentLocationLatLng: LatLng? = null
     private var allSessions: List<SessionDto> = emptyList()
     private var sessionFilter: String = "both"
@@ -161,85 +154,31 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun fetchNearbySessions(latitude: Double, longitude: Double, radius: Double) {
         val userId = LoginActivity.getCurrentUserId(requireActivity())
-        val url = "${BuildConfig.SERVER_URL}/session/nearbySessions?latitude=$latitude&longitude=$longitude&radius=$radius&userId=$userId"
-        Log.d("MapFragment", "Fetching sessions from URL: $url")
-
-        // Launch a coroutine to fetch sessions in background
+        if (userId == null) {
+            Toast.makeText(requireContext(), "Invalid User ID", Toast.LENGTH_SHORT).show()
+            return
+        }
         lifecycleScope.launch {
-            allSessions = withContext(Dispatchers.IO) {
-                val request = Request.Builder().url(url).build()
-                try {
-                    val response = client.newCall(request).execute()
-                    Log.d("MapFragment", "Response code: ${response.code}")
-                    if (!response.isSuccessful) {
-                        response.close()
-                        emptyList<SessionDto>()
-                    } else {
-                        val bodyString = response.body?.string() ?: ""
-                        response.close()
-                        parseSessionsJson(bodyString)
-                    }
-                } catch (e: Exception) {
-                    Log.e("MapFragment", "JSON parsing error", e)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            requireContext(),
-                            "Error occurred, please return to home screen and try again",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    emptyList<SessionDto>()
+            val result = SessionService.fetchNearbySessions(latitude, longitude, radius, userId)
+            withContext(Dispatchers.Main) {
+                if (result.errorMessage != null) {
+                    Toast.makeText(requireContext(), result.errorMessage, Toast.LENGTH_LONG).show()
+                } else if (result.sessions != null) {
+                    allSessions = result.sessions
+                    updateMapMarkers(filterSessions())
                 }
             }
-            updateMapMarkers(filterSessions())
         }
     }
 
     private fun joinSession(sessionId: String, userId: String) {
         lifecycleScope.launch {
-            // Create JSON body with the userId
-            val json = JSONObject().apply { put("userId", userId) }
-            val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
-
-            // Build the join URL using the session ID
-            val joinUrl = "${BuildConfig.SERVER_URL}/session/$sessionId/join"
-            Log.d("MapFragment", "Join URL: $joinUrl")
-
-            // Build the PUT request
-            val request = Request.Builder()
-                .url(joinUrl)
-                .put(requestBody)
-                .build()
-
-            try {
-                val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
-                if (response.isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Joined session successfully!", Toast.LENGTH_SHORT).show()
-                    }
+            val result = SessionService.joinSession(sessionId, userId)
+            withContext(Dispatchers.Main) {
+                if (result.success) {
+                    Toast.makeText(requireContext(), "Joined session successfully!", Toast.LENGTH_SHORT).show()
                 } else {
-                    // Try to extract a detailed error message from the response
-                    val errorBody = response.body?.string()
-                    var errorMessage = "Failed to join session."
-                    if (!errorBody.isNullOrEmpty()) {
-                        try {
-                            val errorJson = JSONObject(errorBody)
-                            if (errorJson.has("message")) {
-                                errorMessage = errorJson.getString("message")
-                            }
-                        } catch (e: Exception) {
-                            Log.e("MapFragment", "Error parsing error message", e)
-                        }
-                    }
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                    }
-                }
-                response.close()
-            } catch (e: Exception) {
-                Log.e("MapFragment", "Error joining session", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error joining session: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), result.errorMessage ?: "Failed to join session.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -270,14 +209,3 @@ data class SessionDto(
     val dateRange: DateRange,
     val isPublic: Boolean,
 )
-
-fun parseSessionsJson(jsonString: String): List<SessionDto> {
-    return try {
-        val gson = Gson()
-        val response = gson.fromJson(jsonString, NearbySessionsResponse::class.java)
-        response.sessions
-    } catch (e: Exception) {
-        e.printStackTrace()
-        emptyList()
-    }
-}
