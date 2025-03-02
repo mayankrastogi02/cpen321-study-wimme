@@ -187,9 +187,7 @@ export class SessionController {
 
     async getAvailableSessions(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log("Fetching sessions");
-            // Get userId from query parameters
-            const userId = req.query.userId as string;
+            const { userId } = req.params;
 
             if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
@@ -228,8 +226,6 @@ export class SessionController {
                 ...publicSessions,
                 ...invitedSessions
             ];
-
-            console.log(`Found ${allSessions.length} sessions`);
 
             return res.status(200).json({
                 success: true,
