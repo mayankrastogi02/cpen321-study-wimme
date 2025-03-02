@@ -10,8 +10,7 @@ export class SessionController {
                 name,
                 description,
                 hostId,
-                latitude,
-                longitude,
+                location,
                 dateRange,
                 isPublic,
                 subject,
@@ -40,13 +39,9 @@ export class SessionController {
                 return res.status(400).json({ message: "End date must be in the future" });
             }
 
-            const lat = parseFloat(latitude);
-            const lng = parseFloat(longitude);
-
-            const location = {
-                type: "Point",
-                coordinates: [lng, lat]
-            };
+            if (!location || location.type !== 'Point' || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+                return res.status(400).json({ message: "Invalid location format. Expected GeoJSON Point." });
+            }
 
             const newSession = new Session({
                 name,
@@ -241,7 +236,7 @@ export class SessionController {
             if (!mongoose.Types.ObjectId.isValid(userIdStr)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
-          
+
             if (!latitude || !longitude || !radius) {
                 return res.status(400).json({ message: "Latitude, longitude, and radius are required." });
             }

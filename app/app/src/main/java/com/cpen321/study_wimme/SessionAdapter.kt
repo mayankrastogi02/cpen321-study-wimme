@@ -1,5 +1,6 @@
 package com.cpen321.study_wimme
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -58,11 +59,16 @@ class SessionAdapter : RecyclerView.Adapter<SessionAdapter.SessionViewHolder>() 
     }
 
     fun updateSessions(newSessions: List<Session>) {
+        Log.d("SessionAdapter", "Updating sessions: ${newSessions.size} sessions")
+
         allSessions.clear()
         allSessions.addAll(newSessions)
         
         displayedSessions.clear()
-        displayedSessions.addAll(newSessions.filter { it.visibility == currentVisibility })
+        displayedSessions.addAll(newSessions)
+
+        Log.d("SessionAdapter", "Displayed sessions: ${displayedSessions.size}")
+
         notifyDataSetChanged()
     }
 
