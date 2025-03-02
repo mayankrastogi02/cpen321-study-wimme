@@ -33,16 +33,22 @@ class EditGroupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_group)
 
-        val backButton: ImageButton = findViewById(R.id.backButton)
-        backButton.setOnClickListener {
-            finish()
-        }
-
         group = intent.getSerializableExtra("group") as Group
         friendList = intent.getSerializableExtra("friends") as ArrayList<Friend>
 
         Log.d(TAG, "$group")
         Log.d(TAG, "$friendList")
+
+        val backButton: ImageButton = findViewById(R.id.backButton)
+        backButton.setOnClickListener {
+            finish()
+        }
+
+        val deleteButton: ImageButton = findViewById(R.id.deleteButton)
+        deleteButton.setOnClickListener {
+            deleteGroup(group.id)
+            finish()
+        }
 
         // Initialize the map with the current selections
         friendList.forEach { friend ->
@@ -71,7 +77,6 @@ class EditGroupActivity : AppCompatActivity() {
 
             Log.d(TAG, "$selectedFriends")
 
-            Toast.makeText(this, "Changes Saved", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
@@ -117,4 +122,29 @@ class EditGroupActivity : AppCompatActivity() {
         }
     }
 
+    private fun deleteGroup(groupId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val url = URL("${BuildConfig.SERVER_URL}/group/${groupId}")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "DELETE"
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                val responseCode = connection.responseCode
+                withContext(Dispatchers.Main) {
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        Toast.makeText(this@EditGroupActivity, "Group deleted", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@EditGroupActivity, "Failed to delete group", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting group", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@EditGroupActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 }
