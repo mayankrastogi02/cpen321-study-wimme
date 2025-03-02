@@ -23,7 +23,7 @@
         android:layout_gravity="top|center_horizontal"
         android:orientation="horizontal"
         app:singleSelection="true"
-        app:checkedButton="@id/publicButton">
+        app:selectionRequired="false">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/publicButton"

@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
     private val client = OkHttpClient()
+    private var currentLocationLatLng: LatLng? = null
+    private var allSessions: List<SessionDto> = emptyList()
+    private var sessionFilter: String = "both"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +47,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val toggleGroup = view.findViewById<MaterialButtonToggleGroup>(R.id.sessionToggleGroup)
+        toggleGroup?.addOnButtonCheckedListener { group, _, _ ->
+            sessionFilter = when (group.checkedButtonId) {
+                R.id.publicButton -> "public"
+                R.id.privateButton -> "private"
+                else -> "both"
+            }
+            updateMapMarkers(filterSessions())
+        }
 
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.map_fragment) as? SupportMapFragment
@@ -62,6 +76,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 val currentLatLng = LatLng(location.latitude, location.longitude)
+                currentLocationLatLng = currentLatLng
                 val currentLocation = googleMap.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
                 currentLocation?.showInfoWindow()
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
@@ -109,6 +124,41 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             true
         }
     }
+
+    private fun filterSessions(): List<SessionDto> {
+        return when (sessionFilter) {
+            "public" -> allSessions.filter { it.isPublic }
+            "private" -> allSessions.filter { !it.isPublic }
+            else -> allSessions
+        }
+    }
+
+    private fun updateMapMarkers(sessions: List<SessionDto>) {
+        googleMap.clear()
+
+        // Re-add the current location marker
+        currentLocationLatLng?.let { latLng ->
+            val currentMarker = googleMap.addMarker(
+                MarkerOptions().position(latLng).title("Current Location")
+            )
+            currentMarker?.showInfoWindow()
+        }
+
+        sessions.forEach { session ->
+            Log.d("MapFragment", "Session: ${session.name}, Coordinates: ${session.location.coordinates}")
+            val lng = session.location.coordinates[0]
+            val lat = session.location.coordinates[1]
+            val sessionLatLng = LatLng(lat, lng)
+            val marker = googleMap.addMarker(
+                MarkerOptions()
+                    .position(sessionLatLng)
+                    .title(session.name)
+                    .snippet(session.description)
+            )
+            marker?.tag = session
+        }
+    }
+
     private fun fetchNearbySessions(latitude: Double, longitude: Double, radius: Double) {
         val userId = LoginActivity.getCurrentUserId(requireActivity())
         val url = "${BuildConfig.SERVER_URL}/session/nearbySessions?latitude=$latitude&longitude=$longitude&radius=$radius&userId=$userId"
@@ -116,7 +166,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         // Launch a coroutine to fetch sessions in background
         lifecycleScope.launch {
-            val sessions = withContext(Dispatchers.IO) {
+            allSessions = withContext(Dispatchers.IO) {
                 val request = Request.Builder().url(url).build()
                 try {
                     val response = client.newCall(request).execute()
@@ -141,21 +191,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     emptyList<SessionDto>()
                 }
             }
-
-            sessions.forEach { session ->
-                // session.location.coordinates: [longitude, latitude]
-                Log.d("MapFragment", "Session: ${session.name}, Coordinates: ${session.location.coordinates}")
-                val lng = session.location.coordinates[0]
-                val lat = session.location.coordinates[1]
-                val sessionLatLng = LatLng(lat, lng)
-                val marker = googleMap.addMarker(
-                    MarkerOptions()
-                        .position(sessionLatLng)
-                        .title(session.name)
-                        .snippet(session.description)
-                )
-                marker?.tag = session
-            }
+            updateMapMarkers(filterSessions())
         }
     }
 
@@ -231,7 +267,8 @@ data class SessionDto(
     val name: String,
     val description: String,
     val location: LocationDto,
-    val dateRange: DateRange
+    val dateRange: DateRange,
+    val isPublic: Boolean,
 )
 
 fun parseSessionsJson(jsonString: String): List<SessionDto> {
