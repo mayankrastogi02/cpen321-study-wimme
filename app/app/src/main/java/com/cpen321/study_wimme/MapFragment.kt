@@ -19,12 +19,15 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.LocationServices
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
@@ -74,27 +77,41 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 return@setOnMarkerClickListener true
             }
 
-            // Get the session associated with the marker
             val session = marker.tag as? SessionDto
             session?.let {
-                // Show a dialog asking the user if they want to join the session
+                val message = """
+                    Would you like to join this session?
+                    
+                    ${it.description}
+                    
+                    Start Date: ${it.dateRange.startDate}
+                    End Date: ${it.dateRange.endDate}
+                """.trimIndent()
                 androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle(it.name)
-                    .setMessage("Would you like to join this session?\n\n${it.description}")
+                    .setMessage(message)
                     .setPositiveButton("Join") { dialog, which ->
-                        // TODO: Call API to join the session using its id
+                        val userId = LoginActivity.getCurrentUserId(requireActivity())
+                        Log.d("MapFragment", "Current user ID: $userId")
                         Toast.makeText(requireContext(), "Joining session...", Toast.LENGTH_SHORT).show()
+
+                        if (userId != null) {
+                            joinSession(it.sessionId, userId)
+                        } else {
+                            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
             }
             // Optionally, show the marker's info window as well.
             marker.showInfoWindow()
-            true // Consume the event.
+            true
         }
     }
     private fun fetchNearbySessions(latitude: Double, longitude: Double, radius: Double) {
-        val url = "${BuildConfig.SERVER_URL}/session/nearbySessions?latitude=$latitude&longitude=$longitude&radius=$radius"
+        val userId = LoginActivity.getCurrentUserId(requireActivity())
+        val url = "${BuildConfig.SERVER_URL}/session/nearbySessions?latitude=$latitude&longitude=$longitude&radius=$radius&userId=$userId"
         Log.d("MapFragment", "Fetching sessions from URL: $url")
 
         // Launch a coroutine to fetch sessions in background
@@ -141,6 +158,56 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
+
+    private fun joinSession(sessionId: String, userId: String) {
+        lifecycleScope.launch {
+            // Create JSON body with the userId
+            val json = JSONObject().apply { put("userId", userId) }
+            val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
+
+            // Build the join URL using the session ID
+            val joinUrl = "${BuildConfig.SERVER_URL}/session/$sessionId/join"
+            Log.d("MapFragment", "Join URL: $joinUrl")
+
+            // Build the PUT request
+            val request = Request.Builder()
+                .url(joinUrl)
+                .put(requestBody)
+                .build()
+
+            try {
+                val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Joined session successfully!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Try to extract a detailed error message from the response
+                    val errorBody = response.body?.string()
+                    var errorMessage = "Failed to join session."
+                    if (!errorBody.isNullOrEmpty()) {
+                        try {
+                            val errorJson = JSONObject(errorBody)
+                            if (errorJson.has("message")) {
+                                errorMessage = errorJson.getString("message")
+                            }
+                        } catch (e: Exception) {
+                            Log.e("MapFragment", "Error parsing error message", e)
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                response.close()
+            } catch (e: Exception) {
+                Log.e("MapFragment", "Error joining session", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Error joining session: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 }
 
 // Data classes for JSON parsing using Gson
@@ -148,15 +215,23 @@ data class NearbySessionsResponse(
     val sessions: List<SessionDto>
 )
 
-data class SessionDto(
-    val name: String,
-    val description: String,
-    val location: LocationDto
+data class DateRange(
+    val startDate: String,
+    val endDate: String
 )
 
 data class LocationDto(
     val type: String,
     val coordinates: List<Double> // [longitude, latitude]
+)
+
+data class SessionDto(
+    @SerializedName("_id")
+    val sessionId: String,
+    val name: String,
+    val description: String,
+    val location: LocationDto,
+    val dateRange: DateRange
 )
 
 fun parseSessionsJson(jsonString: String): List<SessionDto> {
