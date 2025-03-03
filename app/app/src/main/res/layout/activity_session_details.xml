@@ -224,6 +224,14 @@
                     android:textSize="16sp"
                     android:layout_marginTop="8dp" />
             </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/deleteButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Delete Session"
+                android:textSize="16sp"
+                android:visibility="gone"
+                android:layout_marginTop="8dp" />
         </FrameLayout>
     </LinearLayout>
 </ScrollView>

@@ -1,5 +1,6 @@
 package com.cpen321.study_wimme
 
+import SessionService
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -33,10 +34,12 @@ class SessionDetailsActivity : AppCompatActivity() {
     private lateinit var hostTextView: TextView
     private lateinit var joinButton: MaterialButton
     private lateinit var leaveButton: MaterialButton
+    private lateinit var deleteButton: MaterialButton
     private lateinit var progressBar: ProgressBar
 
-    // Save sessionId for API calls
+    // Save sessionId and hostID for API calls
     private var sessionId: String? = null
+    private var sessionHostId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +56,7 @@ class SessionDetailsActivity : AppCompatActivity() {
         hostTextView = findViewById(R.id.hostTextView)
         joinButton = findViewById(R.id.joinButton)
         leaveButton = findViewById(R.id.leaveButton)
+        deleteButton = findViewById(R.id.deleteButton)
         progressBar = findViewById(R.id.progressBar)
 
         findViewById<ImageButton>(R.id.backButton).setOnClickListener {
@@ -69,6 +73,7 @@ class SessionDetailsActivity : AppCompatActivity() {
         val sessionYear = intent.getStringExtra("SESSION_YEAR") ?: ""
         val sessionHost = intent.getStringExtra("SESSION_HOST") ?: "Unknown Host"
         sessionId = intent.getStringExtra("SESSION_ID")
+        sessionHostId = intent.getStringExtra("HOST_ID")
 
         // Set data to views
         sessionNameTextView.text = sessionName
@@ -80,12 +85,24 @@ class SessionDetailsActivity : AppCompatActivity() {
         yearTextView.text = sessionYear
         hostTextView.text = "Hosted by: $sessionHost"
 
-        // Set up join and leave button
-        joinButton.setOnClickListener {
-            joinSession()
-        }
-        leaveButton.setOnClickListener {
-            leaveSession()
+        val currentUserId = LoginActivity.getCurrentUserId(this)
+
+        // Set up join,delete and leave button
+        if (currentUserId != null && sessionHostId != null && currentUserId == sessionHostId) {
+            joinButton.visibility = View.GONE
+            leaveButton.visibility = View.GONE
+            deleteButton.visibility = View.VISIBLE
+
+            deleteButton.setOnClickListener {
+                deleteSession()
+            }
+        } else {
+            joinButton.visibility = View.VISIBLE
+            leaveButton.visibility = View.VISIBLE
+            deleteButton.visibility = View.GONE
+
+            joinButton.setOnClickListener { joinSession() }
+            leaveButton.setOnClickListener { leaveSession() }
         }
     }
 
@@ -132,8 +149,9 @@ class SessionDetailsActivity : AppCompatActivity() {
                     if (responseCode == HttpURLConnection.HTTP_OK) {
                         Toast.makeText(this@SessionDetailsActivity,
                             "Successfully joined session!", Toast.LENGTH_SHORT).show()
-                        joinButton.text = "Joined"
-                        joinButton.isEnabled = false
+//                        This does not work as expected at the moment
+//                        joinButton.text = "Joined"
+//                        joinButton.isEnabled = false
                     } else {
                         // Read error message
                         val errorStream = if (responseCode >= 400) connection.errorStream else connection.inputStream
@@ -169,7 +187,7 @@ class SessionDetailsActivity : AppCompatActivity() {
             return
         }
 
-        // Optionally show a progress indicator and disable the leave button
+        // Show a progress indicator and disable the leave button
         progressBar.visibility = View.VISIBLE
         leaveButton.isEnabled = false
 
@@ -187,4 +205,33 @@ class SessionDetailsActivity : AppCompatActivity() {
         }
     }
 
+    private fun deleteSession() {
+        val currentUserId = LoginActivity.getCurrentUserId(this)
+        if (sessionId == null || currentUserId == null || sessionHostId == null) {
+            Toast.makeText(this, "Session ID or User ID is missing.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (currentUserId != sessionHostId) {
+            Toast.makeText(this, "Only the host can delete this session.", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
+        progressBar.visibility = View.VISIBLE
+        deleteButton.isEnabled = false
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = SessionService.deleteSession(sessionId!!)
+            withContext(Dispatchers.Main) {
+                progressBar.visibility = View.GONE
+                deleteButton.isEnabled = true
+                if (result.success) {
+                    Toast.makeText(this@SessionDetailsActivity, "Session deleted successfully!", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this@SessionDetailsActivity, result.errorMessage ?: "Failed to delete session.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 }
