@@ -12,7 +12,7 @@ interface Route {
 export const AuthRoutes: Route[] = [
   {
     method: "get",
-    route: "/api/auth/verify",
+    route: "/auth/verify",
     validation: [],
     action: async (req: Request, res: Response, next: NextFunction) => {
       await AuthController.verifyUser(req, res);
@@ -20,7 +20,7 @@ export const AuthRoutes: Route[] = [
   },
   {
     method: "post",
-    route: "/api/auth/google",
+    route: "/auth/google",
     validation: [
       check("googleId").exists().withMessage("Google ID is required"),
       check("email").isEmail().withMessage("Valid email is required"),
@@ -32,7 +32,7 @@ export const AuthRoutes: Route[] = [
   },
   {
     method: "put",
-    route: "/api/auth/profile/:googleId",
+    route: "/auth/profile/:googleId",
     validation: [
       check("googleId").exists().withMessage("Google ID is required"),
       check("firstName").exists().withMessage("First name is required"),

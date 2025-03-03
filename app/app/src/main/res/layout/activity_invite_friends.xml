@@ -36,8 +36,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Select friends to invite to your study session"
+        android:text="Select friends or groups to invite to your study session"
         android:textSize="16sp" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/inviteToggleGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:singleSelection="true">
+
+        <Button
+            android:id="@+id/friendsButton"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Friends" />
+
+        <Button
+            android:id="@+id/groupsButton"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Groups" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <FrameLayout
         android:layout_width="match_parent"

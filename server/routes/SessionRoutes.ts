@@ -12,7 +12,7 @@ export const SessionRoutes = [
     },
     {
         method: "post",
-        route: "/api/session",
+        route: "/session",
         validation: [
             body("name").exists().withMessage("Session name is required"),
             body("description").optional(),
@@ -42,7 +42,7 @@ export const SessionRoutes = [
     },
     {
         method: "get",
-        route: "/api/session/availableSessions",
+        route: "/session/availableSessions",
         action: controller.getAvailableSessions,
         validation: [],
     },

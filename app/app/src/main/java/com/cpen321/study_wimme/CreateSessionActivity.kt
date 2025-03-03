@@ -224,7 +224,7 @@ class CreateSessionActivity : AppCompatActivity() {
                 Log.d(TAG, "Creating session with hostId: $userId")
 
                 // Verify API endpoint - use the correct one from your SessionController
-                val url = URL("${BuildConfig.SERVER_URL}/api/session")
+                val url = URL("${BuildConfig.SERVER_URL}/session")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")

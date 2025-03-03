@@ -171,7 +171,7 @@ class LoginActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Request to verify user exists in backend
-                val url = URL("${BuildConfig.SERVER_URL}/api/auth/verify?googleId=${account.id}")
+                val url = URL("${BuildConfig.SERVER_URL}/auth/verify?googleId=${account.id}")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -241,7 +241,7 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 // Make HTTP request to your server
-                val url = URL("${BuildConfig.SERVER_URL}/api/auth/google")
+                val url = URL("${BuildConfig.SERVER_URL}/auth/google")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")

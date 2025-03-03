@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -13,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButtonToggleGroup
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,12 +23,21 @@ import java.net.URL
 
 class InviteFriendsActivity : AppCompatActivity() {
 
-    private val TAG = "FriendSelectActivity"
+    private val TAG = "InviteFriendsActivity"
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var emptyStateTextView: TextView
     private lateinit var continueButton: Button
-    private val selectedFriends = mutableListOf<Friend>()
+    private lateinit var toggleGroup: MaterialButtonToggleGroup
+    private val selectedFriends = mutableSetOf<Friend>() // Changed to Set to avoid duplicates
+    private var friendsList = ArrayList<Friend>()
+    private var groupsList = ArrayList<Group>()
+    private var currentMode = DisplayMode.FRIENDS
+
+    // Define display modes
+    enum class DisplayMode {
+        FRIENDS, GROUPS
+    }
 
     // Session data passed from CreateSessionActivity
     private lateinit var sessionName: String
@@ -62,6 +71,7 @@ class InviteFriendsActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         emptyStateTextView = findViewById(R.id.emptyStateTextView)
         continueButton = findViewById(R.id.continueButton)
+        toggleGroup = findViewById(R.id.inviteToggleGroup)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -75,8 +85,52 @@ class InviteFriendsActivity : AppCompatActivity() {
             continueWithSelectedFriends()
         }
 
-        // Fetch friends
+        // Setup toggle group
+        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.friendsButton -> {
+                        currentMode = DisplayMode.FRIENDS
+                        showFriends()
+                    }
+                    R.id.groupsButton -> {
+                        currentMode = DisplayMode.GROUPS
+                        showGroups()
+                    }
+                }
+            }
+        }
+
+        // Default to friends view
+        toggleGroup.check(R.id.friendsButton)
+
+        // Fetch data
         fetchFriends()
+        fetchGroups()
+    }
+
+    private fun showFriends() {
+        if (friendsList.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            emptyStateTextView.visibility = View.VISIBLE
+            emptyStateTextView.text = "You don't have any friends yet.\nAdd friends to invite them to your session."
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            emptyStateTextView.visibility = View.GONE
+            setupFriendsAdapter(friendsList)
+        }
+    }
+
+    private fun showGroups() {
+        if (groupsList.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            emptyStateTextView.visibility = View.VISIBLE
+            emptyStateTextView.text = "You don't have any groups yet.\nCreate groups in the Friends tab to quickly invite multiple friends."
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            emptyStateTextView.visibility = View.GONE
+            setupGroupsAdapter(groupsList)
+        }
     }
 
     private fun fetchFriends() {
@@ -94,7 +148,7 @@ class InviteFriendsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user/friends?userId=$userId")
+                val url = URL("${BuildConfig.SERVER_URL}/user/friends?userId=$userId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -121,14 +175,10 @@ class InviteFriendsActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         progressBar.visibility = View.GONE
+                        friendsList = fetchedFriends
 
-                        if (fetchedFriends.isEmpty()) {
-                            emptyStateTextView.visibility = View.VISIBLE
-                            recyclerView.visibility = View.GONE
-                        } else {
-                            emptyStateTextView.visibility = View.GONE
-                            recyclerView.visibility = View.VISIBLE
-                            setupAdapter(fetchedFriends)
+                        if (currentMode == DisplayMode.FRIENDS) {
+                            showFriends()
                         }
                     }
                 } else {
@@ -139,7 +189,6 @@ class InviteFriendsActivity : AppCompatActivity() {
                             "Failed to fetch friends",
                             Toast.LENGTH_SHORT
                         ).show()
-                        finish()
                     }
                 }
                 connection.disconnect()
@@ -152,18 +201,88 @@ class InviteFriendsActivity : AppCompatActivity() {
                         "Error: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
-                    finish()
                 }
             }
         }
     }
 
-    private fun setupAdapter(friends: List<Friend>) {
+    private fun fetchGroups() {
+        val userId = LoginActivity.getCurrentUserId(this)
+
+        if (userId == null) {
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val url = URL("${BuildConfig.SERVER_URL}/group/${userId}")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    val jsonResponse = JSONObject(response)
+                    val groupsArray = jsonResponse.getJSONArray("groups")
+                    val fetchedGroups = ArrayList<Group>()
+
+                    for (i in 0 until groupsArray.length()) {
+                        val groupObj = groupsArray.getJSONObject(i)
+                        val membersArray = groupObj.getJSONArray("members")
+                        val groupMembers = ArrayList<GroupMember>()
+
+                        for (j in 0 until membersArray.length()) {
+                            val memberObj = membersArray.getJSONObject(j)
+                            val member = GroupMember(
+                                memberObj.getString("_id"),
+                                memberObj.getString("userName")
+                            )
+                            groupMembers.add(member)
+                        }
+
+                        val group = Group(
+                            groupObj.getString("_id"),
+                            groupObj.getString("name"),
+                            groupMembers
+                        )
+                        fetchedGroups.add(group)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        groupsList = fetchedGroups
+
+                        if (currentMode == DisplayMode.GROUPS) {
+                            showGroups()
+                        }
+                    }
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching groups", e)
+            }
+        }
+    }
+
+    private fun setupFriendsAdapter(friends: List<Friend>) {
         val adapter = InviteFriendsAdapter(friends) { friend, isSelected ->
             if (isSelected) {
                 selectedFriends.add(friend)
             } else {
                 selectedFriends.remove(friend)
+            }
+            updateContinueButtonText()
+        }
+        recyclerView.adapter = adapter
+    }
+
+    private fun setupGroupsAdapter(groups: List<Group>) {
+        val adapter = InviteGroupsAdapter(groups, friendsList) { groupMembers, isSelected ->
+            if (isSelected) {
+                // Add all friends in the group to selected friends
+                selectedFriends.addAll(groupMembers)
+            } else {
+                // Remove all friends in the group from selected friends
+                selectedFriends.removeAll(groupMembers)
             }
             updateContinueButtonText()
         }

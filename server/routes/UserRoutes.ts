@@ -7,7 +7,7 @@ const controller = new UserController();
 export const UserRoutes = [
     {
         method: "put",
-        route: "/api/user/friendRequest",
+        route: "/user/friendRequest",
         action: controller.sendFriendRequest,
         validation: [
             body("userId").exists().withMessage("User ID is required"),
@@ -16,7 +16,7 @@ export const UserRoutes = [
     },
     {
         method: "get",
-        route: "/api/user/friendRequests",
+        route: "/user/friendRequests",
         validation: [
             query("userId").exists().withMessage("User ID is required")
         ],
@@ -24,7 +24,7 @@ export const UserRoutes = [
     },
     {
         method: "get",
-        route: "/api/user/friends",
+        route: "/user/friends",
         validation: [
             query("userId").exists().withMessage("User ID is required")
         ],
@@ -32,7 +32,7 @@ export const UserRoutes = [
     },
     {
         method: "put",
-        route: "/api/user/friend",
+        route: "/user/friend",
         validation: [
             body("userId").exists().withMessage("User ID is required"),
             body("friendId").exists().withMessage("Friend ID is required"),
@@ -42,7 +42,7 @@ export const UserRoutes = [
     },
     {
         method: "post",
-        route: "/api/user",
+        route: "/user",
         action: controller.createUser,
         validation: [
             body("userName").exists().withMessage("Username is required"),
@@ -55,7 +55,7 @@ export const UserRoutes = [
     },
     {
         method: "delete",
-        route: "/api/user/removeFriend",
+        route: "/user/removeFriend",
         validation: [
             body("userId").exists().withMessage("User ID is required"),
             body("friendId").exists().withMessage("Friend ID is required")
@@ -64,7 +64,7 @@ export const UserRoutes = [
     },
     {
         method: "get",
-        route: "/api/user",
+        route: "/user",
         action: controller.getUser,
         validation: [
             query("userId").exists().withMessage("User ID is required")
@@ -72,7 +72,7 @@ export const UserRoutes = [
     },
     {
         method: "put",
-        route: "/api/user",
+        route: "/user",
         action: controller.updateUser,
         validation: [
             body("userId").exists().withMessage("User ID is required")
@@ -80,7 +80,7 @@ export const UserRoutes = [
     },
     {
         method: "delete",
-        route: "/api/user",
+        route: "/user",
         action: controller.deleteUser,
         validation: [
             body("userId").exists().withMessage("User ID is required")
