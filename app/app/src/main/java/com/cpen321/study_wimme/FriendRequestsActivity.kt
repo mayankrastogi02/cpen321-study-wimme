@@ -56,7 +56,7 @@ class FriendRequestsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user/friendRequests?userId=$userId")
+                val url = URL("${BuildConfig.SERVER_URL}/user/friendRequests?userId=$userId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Content-Type", "application/json")
@@ -119,7 +119,7 @@ class FriendRequestsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user/friend")
+                val url = URL("${BuildConfig.SERVER_URL}/user/friend")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "PUT"
                 connection.setRequestProperty("Content-Type", "application/json")

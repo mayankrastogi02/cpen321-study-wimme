@@ -36,6 +36,7 @@ class CreateSessionActivity : AppCompatActivity() {
 
     companion object {
         private const val LOCATION_PICKER_REQUEST_CODE = 1001
+        private const val FRIEND_SELECT_REQUEST_CODE = 1002
         private const val TAG = "CreateSessionActivity"
     }
 
@@ -98,68 +99,84 @@ class CreateSessionActivity : AppCompatActivity() {
             val subject = subjectInput.text?.toString()
             val faculty = facultyInput.text?.toString()
             val yearString = yearInput.text?.toString()
-            
+
             if (name.isNullOrEmpty()) {
                 nameInput.error = "Session name is required"
                 return@setOnClickListener
             }
-            
+
             if (startDateMillis == 0L) {
                 startTimeInput.error = "Start time is required"
                 return@setOnClickListener
             }
-            
+
             if (endDateMillis == 0L) {
                 endTimeInput.error = "End time is required"
                 return@setOnClickListener
             }
-            
+
             if (startDateMillis >= endDateMillis) {
                 endTimeInput.error = "End time must be after start time"
                 return@setOnClickListener
             }
-            
+
             if (selectedLatitude == null || selectedLongitude == null) {
                 // Inform the user to pick a location first
                 Toast.makeText(this, "Please select a location", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            
+
             if (subject.isNullOrEmpty()) {
                 subjectInput.error = "Subject is required"
                 return@setOnClickListener
             }
-            
+
             if (faculty.isNullOrEmpty()) {
                 facultyInput.error = "Faculty is required"
                 return@setOnClickListener
             }
-            
+
             if (yearString.isNullOrEmpty()) {
                 yearInput.error = "Year is required"
                 return@setOnClickListener
             }
-            
+
             val year = yearString.toIntOrNull()
             if (year == null || year < 1) {
                 yearInput.error = "Valid year is required"
                 return@setOnClickListener
             }
 
-            // Create session via API
-            createSessionOnServer(
-                name = name,
-                description = description ?: "",
-                latitude = selectedLatitude!!,
-                longitude = selectedLongitude!!,
-                startDate = Date(startDateMillis),
-                endDate = Date(endDateMillis),
-                isPublic = sessionVisibility == SessionVisibility.PUBLIC,
-                subject = subject,
-                faculty = faculty,
-                year = year,
-                invitees = arrayListOf() // Add functionality to invite friends
-            )
+            // If session is private, show friend selection activity
+            if (sessionVisibility == SessionVisibility.PRIVATE) {
+                val intent = Intent(this, InviteFriendsActivity::class.java)
+                intent.putExtra("SESSION_NAME", name)
+                intent.putExtra("SESSION_DESCRIPTION", description ?: "")
+                intent.putExtra("SESSION_LATITUDE", selectedLatitude)
+                intent.putExtra("SESSION_LONGITUDE", selectedLongitude)
+                intent.putExtra("SESSION_START_DATE", startDateMillis)
+                intent.putExtra("SESSION_END_DATE", endDateMillis)
+                intent.putExtra("SESSION_IS_PUBLIC", false)
+                intent.putExtra("SESSION_SUBJECT", subject)
+                intent.putExtra("SESSION_FACULTY", faculty)
+                intent.putExtra("SESSION_YEAR", year)
+                startActivityForResult(intent, FRIEND_SELECT_REQUEST_CODE)
+            } else {
+                // For public sessions, create directly
+                createSessionOnServer(
+                    name = name,
+                    description = description ?: "",
+                    latitude = selectedLatitude!!,
+                    longitude = selectedLongitude!!,
+                    startDate = Date(startDateMillis),
+                    endDate = Date(endDateMillis),
+                    isPublic = true,
+                    subject = subject,
+                    faculty = faculty,
+                    year = year,
+                    invitees = arrayListOf()
+                )
+            }
         }
     }
 
@@ -207,7 +224,7 @@ class CreateSessionActivity : AppCompatActivity() {
                 Log.d(TAG, "Creating session with hostId: $userId")
 
                 // Verify API endpoint - use the correct one from your SessionController
-                val url = URL("${BuildConfig.SERVER_URL}/api/session")
+                val url = URL("${BuildConfig.SERVER_URL}/session")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")
@@ -226,7 +243,7 @@ class CreateSessionActivity : AppCompatActivity() {
                     put("location", JSONObject().apply {
                         put("type", "Point")
                         put("coordinates", JSONArray().apply {
-                            put(longitude) // Note: GeoJSON uses [longitude, latitude] order!
+                            put(longitude)
                             put(latitude)
                         })
                     })
@@ -238,7 +255,13 @@ class CreateSessionActivity : AppCompatActivity() {
                     put("subject", subject)
                     put("faculty", faculty)
                     put("year", year)
-                    put("invitees", JSONArray())
+
+                    // Add invitees array
+                    put("invitees", JSONArray().apply {
+                        invitees.forEach { friendId ->
+                            put(friendId)
+                        }
+                    })
                 }
 
                 // Log the request body for debugging
@@ -317,6 +340,7 @@ class CreateSessionActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == LOCATION_PICKER_REQUEST_CODE && resultCode == RESULT_OK) {
             val lat = data?.getDoubleExtra("LATITUDE", 0.0)
             val lng = data?.getDoubleExtra("LONGITUDE", 0.0)
@@ -325,6 +349,36 @@ class CreateSessionActivity : AppCompatActivity() {
                 selectedLongitude = lng
                 findViewById<TextInputEditText>(R.id.sessionLocationInput).setText("Lat: ${lat.toString().take(7)}, Lng: ${lng.toString().take(7)}")
             }
+        }
+        else if (requestCode == FRIEND_SELECT_REQUEST_CODE && resultCode == RESULT_OK) {
+            // Get all the session data and selected friends
+            val name = data?.getStringExtra("SESSION_NAME") ?: ""
+            val description = data?.getStringExtra("SESSION_DESCRIPTION") ?: ""
+            val latitude = data?.getDoubleExtra("SESSION_LATITUDE", 0.0) ?: 0.0
+            val longitude = data?.getDoubleExtra("SESSION_LONGITUDE", 0.0) ?: 0.0
+            val startDate = Date(data?.getLongExtra("SESSION_START_DATE", 0L) ?: 0L)
+            val endDate = Date(data?.getLongExtra("SESSION_END_DATE", 0L) ?: 0L)
+            val subject = data?.getStringExtra("SESSION_SUBJECT") ?: ""
+            val faculty = data?.getStringExtra("SESSION_FACULTY") ?: ""
+            val year = data?.getIntExtra("SESSION_YEAR", 1) ?: 1
+
+            // Get selected friend IDs
+            val selectedFriendIds = data?.getStringArrayExtra("SELECTED_FRIEND_IDS")?.toList() ?: listOf()
+
+            // Create the session with selected invitees
+            createSessionOnServer(
+                name = name,
+                description = description,
+                latitude = latitude,
+                longitude = longitude,
+                startDate = startDate,
+                endDate = endDate,
+                isPublic = false,
+                subject = subject,
+                faculty = faculty,
+                year = year,
+                invitees = ArrayList(selectedFriendIds)
+            )
         }
     }
 }

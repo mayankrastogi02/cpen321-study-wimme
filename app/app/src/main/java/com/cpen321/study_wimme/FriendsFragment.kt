@@ -152,7 +152,7 @@ class FriendsFragment : Fragment() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user/friends?userId=$userId")
+                val url = URL("${BuildConfig.SERVER_URL}/user/friends?userId=$userId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -211,7 +211,7 @@ class FriendsFragment : Fragment() {
     private fun fetchUserIdFromGoogleId(googleId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/auth/verify?googleId=$googleId")
+                val url = URL("${BuildConfig.SERVER_URL}/auth/verify?googleId=$googleId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -404,7 +404,7 @@ class FriendsFragment : Fragment() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user/friendRequest")
+                val url = URL("${BuildConfig.SERVER_URL}/user/friendRequest")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "PUT"
                 connection.setRequestProperty("Content-Type", "application/json")

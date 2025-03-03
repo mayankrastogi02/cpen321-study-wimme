@@ -122,7 +122,7 @@ class UserSettingsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user")
+                val url = URL("${BuildConfig.SERVER_URL}/user")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "DELETE"
                 connection.setRequestProperty("Content-Type", "application/json")
@@ -214,7 +214,7 @@ class UserSettingsActivity : AppCompatActivity() {
     private fun fetchUserProfile(googleId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/auth/verify?googleId=$googleId")
+                val url = URL("${BuildConfig.SERVER_URL}/auth/verify?googleId=$googleId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -306,7 +306,7 @@ class UserSettingsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/auth/profile/$googleId")
+                val url = URL("${BuildConfig.SERVER_URL}/auth/profile/$googleId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "PUT"
                 connection.setRequestProperty("Content-Type", "application/json")
