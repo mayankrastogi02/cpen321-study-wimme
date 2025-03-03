@@ -97,9 +97,7 @@ class HomeFragment : Fragment() {
         }
 
         sessionsAdapter.setOnSessionClickListener { session ->
-            // Get session ID and other detailed info from your data source
-            val sessionId = session.id // Make sure Session class has an ID field
-            
+            Log.d("HomeFragment", "Host ID: ${session.hostId}")
             // Launch SessionDetailsActivity with session details
             val intent = Intent(requireContext(), SessionDetailsActivity::class.java).apply {
                 putExtra("SESSION_NAME", session.name)
@@ -110,7 +108,8 @@ class HomeFragment : Fragment() {
                 putExtra("SESSION_FACULTY", session.faculty)
                 putExtra("SESSION_YEAR", session.year)
                 putExtra("SESSION_HOST", session.hostName)
-                putExtra("SESSION_ID", sessionId)
+                putExtra("SESSION_ID", session.id)
+                putExtra("HOST_ID", session.hostId)
             }
             startActivity(intent)
         }
@@ -148,7 +147,7 @@ class HomeFragment : Fragment() {
 
         return view
     }
-    
+
     override fun onResume() {
         super.onResume()
         // We might not need to automatically fetch on resume if we have the fetch button
@@ -164,51 +163,51 @@ class HomeFragment : Fragment() {
             showEmptyState("You need to be logged in to see sessions")
             return
         }
-        
+
         if (showLoading) {
             // Show loading state
             isLoading = true
             fetchSessionsButton.isEnabled = false
         }
-        
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/session/availableSessions/${userId}")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                
+
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     Log.d(TAG, "Response: $response")
-                    
+
                     val jsonResponse = JSONObject(response)
                     val sessionsArray = jsonResponse.getJSONArray("sessions")
-                    
+
                     val fetchedSessions = ArrayList<Session>()
                     for (i in 0 until sessionsArray.length()) {
                         try {
                             val sessionObj = sessionsArray.getJSONObject(i)
-                            
+
                             // Get name, description
                             val name = sessionObj.getString("name")
                             val description = sessionObj.optString("description", "")
-                            
+
                             // Parse date range
                             val dateRangeObj = sessionObj.getJSONObject("dateRange")
                             val startDate = dateRangeObj.getString("startDate")
                             val endDate = dateRangeObj.getString("endDate")
-                            
+
                             // Format date and time for display
                             val formattedTime = formatSessionTime(startDate, endDate)
-                            
+
                             // Get location from GeoJSON format
                             val locationObj = sessionObj.getJSONObject("location")
                             val coordinates = locationObj.getJSONArray("coordinates")
                             val longitude = coordinates.getDouble(0)
                             val latitude = coordinates.getDouble(1)
                             val formattedLocation = formatLocation(latitude, longitude)
-                            
+
                             // Check if public/private
                             val isPublic = sessionObj.getBoolean("isPublic")
                             Log.d(TAG, "Session '${name}' isPublic: $isPublic")
@@ -251,39 +250,39 @@ class HomeFragment : Fragment() {
                                 hostId = hostId ?: "",
                                 participants = participants
                             )
-                            
+
                             fetchedSessions.add(session)
                         } catch (e: Exception) {
                             Log.e(TAG, "Error parsing session", e)
                             // Continue to next session if one fails to parse
                         }
                     }
-                    
+
                     withContext(Dispatchers.Main) {
                         sessionsList.clear()
                         sessionsList.addAll(fetchedSessions)
                         updateSessionsDisplay()
-                        
+
                         // Reset loading state
                         isLoading = false
                         fetchSessionsButton.isEnabled = true
                         // Show success message if this was a manual refresh
                         if (showLoading) {
-                            Toast.makeText(context, 
-                                "Sessions updated! Found ${fetchedSessions.size} sessions", 
+                            Toast.makeText(context,
+                                "Sessions updated! Found ${fetchedSessions.size} sessions",
                                 Toast.LENGTH_SHORT).show()
                         }
-                        
+
                         Log.d(TAG, "Loaded ${fetchedSessions.size} sessions")
                     }
                 } else {
                     // Handle error response
                     val errorMessage = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
                     Log.e(TAG, "Error response: $errorMessage")
-                    
+
                     withContext(Dispatchers.Main) {
                         showEmptyState("Error loading sessions (${responseCode})")
-                        
+
                         // Reset loading state
                         isLoading = false
                         fetchSessionsButton.isEnabled = true
@@ -294,7 +293,7 @@ class HomeFragment : Fragment() {
                 Log.e(TAG, "Error fetching sessions", e)
                 withContext(Dispatchers.Main) {
                     showEmptyState("Error: ${e.message}")
-                    
+
                     // Reset loading state
                     isLoading = false
                     fetchSessionsButton.isEnabled = true
