@@ -2,6 +2,14 @@
 
 ## 1. Change History
 
+| Date | Modified Section(s) | Change Description | Rationale |
+|------|---------------------|-------------------|-----------|
+| 2025-03-02 | 3.1 Use Case Diagram | Use Case diagram modified | Corrected diagram to combine Session use cases and added Authentication use case |
+| 2025-03-02 | 3.3 Functional Requirements | 3.3.7 Authenticate added | To properly document the authentication workflow, the functional requirements for Authentication flow were added |
+| 2025-03-02 | 4.2 Databases | Modified databases and tables | We only need one database with multiple tables |
+| 2025-03-02 | 4.5 Dependencies Diagram | Changed component dependencies| Merged SessionsDB and UserDB into one DB for the entire system |
+| 2025-03-02 | 4.6 Functional Requirements Sequence Diagrams | Authentication sequence diagrams added | Log In and Sign Out sequence diagrams were added |
+
 ## 2. Project Description
 
 Study Wimme targets university students who seek a collaborative study environment to feel motivated and accountable. Many students prefer studying with a companion to help them stay focused, organized, and accountable while studying. However, traditional study groups can be difficult to organize on a regular group chat and can create social barriers to organizing group study sessions. Study Wimme aims to bridge this gap by providing a social platform to efficiently organize study sessions with friends and like-minded peers.
@@ -164,8 +172,6 @@ Study Wimme targets university students who seek a collaborative study environme
             4. The system adds the newly created group to the database
 
         - **Failure scenario(s)**:
-          - 2a. The user has no groups
-            - 2a1. System displays a message saying that user has no created groups
           - 3a. The user has no friends when creating the group
             - 3a1. Inform the user that they can only create groups with friends and to add some friends before trying again
           - 3b. The user already has a group with the same people
@@ -318,7 +324,50 @@ Study Wimme targets university students who seek a collaborative study environme
                     - 3a1. System displays error that session cannot be found
                     - 3a2. Returns to sessions list
 
-        
+7. **Authenticate**
+
+   - **Overview**:
+     1. Sign in with Google
+     2. Sign out
+   - **Detailed Flow for Each Independent Scenario**:
+     1. **Sign in with Google**:
+        - **Description**: The actor can sign in using their Google account
+        - **Primary actor(s)**: Student
+        - **Main success scenario**:
+            1. The actor clicks the Google sign-in button on the login screen
+            2. The system displays a Google account selection dialog
+            3. The actor selects their account
+            4. The system verifies the Google authentication token
+            5. The system checks if the user already exists in the database
+            6. If the user exists and has completed their profile, the system navigates to the sessions screen
+            7. If the user exists but hasn't completed their profile, the system navigates to the user settings screen
+            8. If the user doesn't exist, the system creates a new user in the database and navigates to the user settings screen
+
+        - **Failure scenario(s)**:
+            - 3a. User cancels Google sign-in
+                - 3a1. System returns to login screen without changes
+            - 4a. Google authentication fails
+                - 4a1. System displays error message about authentication failure
+                - 4a2. Returns to login screen
+            - 5a. Network connectivity issue
+                - 5a1. System displays message about connection issue
+                - 5a2. Prompts user to check their internet connection and try again
+
+     2. **Sign out**:
+        - **Description**: The actor can sign out from their account
+        - **Primary actor(s)**: Student
+        - **Main success scenario**:
+            1. The actor clicks the sign out button in the user settings screen
+            2. The system removes user authentication tokens and session data from local storage
+            3. The system unregisters device token from notification service
+            4. The system redirects the user to the login screen
+
+        - **Failure scenario(s)**:
+            - 2a. Failed to clear local user data
+                - 2a1. System attempts to sign out again
+                - 2a2. If still unsuccessful, system displays error message
+            - 3a. Failed to unregister device token
+                - 3a1. System logs the error but continues with sign out process
 
 
 ### **3.4. Screen Mockups**
@@ -355,7 +404,7 @@ Study Wimme targets university students who seek a collaborative study environme
         - **Purpose**: Updates user profile information
      3. `void deleteProfile(UserID)` 
         - **Purpose**: Deletes the user’s profile
-     4. `void viewProfile(UserID)` 
+     4. `User viewProfile(UserID)` 
         - **Purpose**: Views the user’s profile
 2. **FriendGroupManagement**
    - **Purpose**: Handles creation, modification, and deletion of groups. It also manages users' friends list
@@ -364,17 +413,17 @@ Study Wimme targets university students who seek a collaborative study environme
         - **Purpose**: Send friend request to another user
      2. `void decideFriendRequest(Decision, SenderID, ReceiverID)` 
         - **Purpose**: Adds user to friends list if accepted, otherwise remove the friend request
-     3. `void getFriends(UserID)` 
+     3. `List<Friend> getFriends(UserID)` 
         - **Purpose**: Get all friends for user
      4. `void deleteFriend(UserID, FriendID)` 
         - **Purpose**: Delete a friend that the user has selected
      5. `void createGroup(UserID, List<UserId> members)` 
         - **Purpose**: Create a group using the friends user has selected
      6. `void editGroup(UserID, GroupID, List<UserID> newGroupMembers)` 
-        - **Purpose**: make changes to an existing group
+        - **Purpose**: Make changes to an existing group
      7. `void deleteGroup(UserID, GroupID)` 
         - **Purpose**: Delete a preexisting group
-     8. `void getGroups(UserID)` 
+     8. `List<Group> getGroups(UserID)` 
         - **Purpose**: Get all groups made by that user
 
 3. **Session**
@@ -386,7 +435,7 @@ Study Wimme targets university students who seek a collaborative study environme
           - **Purpose**: Updates existing session details
       3. `void deleteSession(SessionID)` 
           - **Purpose**: Deletes existing study session
-      4. `void viewSession(SessionID)` 
+      4. `Session viewSession(SessionID)` 
           - **Purpose**: View the details of a session
       5. `boolean isUserJoined(UserId, SessionId)` 
           - **Purpose**: Checks if User has joined a particular session
@@ -396,22 +445,31 @@ Study Wimme targets university students who seek a collaborative study environme
           - **Purpose**: Removes from a user from the joined attribute of a session
       8. `void sendJoinNotificationToCreator(SessionId)` 
           - **Purpose**: Send notification to creator of session notifying that someone joins
-4. **Session Viewer**
-   - **Purpose**: Handles the presentation and filtering of study sessions in both map and list views
-   - **Interfaces**:
-      1. `List<Session> getFilteredSessions(filters: FilterOptions)` 
+      9. `List<Session> getFilteredSessions(filters: FilterOptions)` 
           - **Purpose**: Retrieves sessions based on applied filters
-      2. `void toggleView(viewType: ViewType)` 
-          - **Purpose**: Switches between map and list views
+
+4. **Authentication**
+   - **Purpose**: Handles user authentication, verification, and account management
+   - **Interfaces**:
+     1. `UserID signIn(GoogleToken)` 
+        - **Purpose**: Authenticates a user using their Google account
+     2. `boolean verifyUserProfile(UserID)` 
+        - **Purpose**: Checks if a user has completed their profile
+     3. `void signOut(UserID)` 
+        - **Purpose**: Signs out a user from the application
+     5. `DeviceToken registerDeviceToken(UserID, Token)` 
+        - **Purpose**: Registers a device for push notifications
+     6. `void unregisterDeviceToken(DeviceToken)` 
+        - **Purpose**: Removes a device from receiving push notifications
       
 ### **4.2. Databases**
 
-1. **UserDB**
+1. **DB**
     - **Purpose**:
       - `User table` - Stores user profile information (name, faculty, year, friends).
       - `Group table`- Stores the group that have been made by users along with the group members.
-2. **SessionDB**
-   - **Purpose**: Stores session data including session ID, creator ID, invitee ID, and session details.
+      - `Device table` - Stores the association between a user and their device token for push notifications.
+      - `Sessions table` - Stores session data including session ID, creator ID, invitee ID, and session details.
 
 ### **4.3. External Modules**
 
