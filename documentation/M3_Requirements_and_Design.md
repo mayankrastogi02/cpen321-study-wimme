@@ -540,7 +540,7 @@ Study Wimme targets university students who seek a collaborative study environme
         ![createSessionSD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Create_Session_SD.jpg?raw=true)
 
       - **Delete Session**<br>
-        ![deleteSessionD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Session_SD.png?raw=true)
+        ![deleteSessionD](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Delete_Session_SD.jpg?raw=true)
 
    6. [**Join/Leave Sessions**](#fr5)
       - **Join Session**<br>
