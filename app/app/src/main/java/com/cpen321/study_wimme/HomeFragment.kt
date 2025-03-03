@@ -234,10 +234,6 @@ class HomeFragment : Fragment() {
 
                             val participants = List(participantsArray.length()) { p ->
                                 participantsArray.getString(p)
-                            val hostId = if (sessionObj.has("hostId") && sessionObj.get("hostId") is JSONObject) {
-                                sessionObj.getJSONObject("hostId").getString("_id")
-                            } else {
-                                sessionObj.optString("hostId", "Unknown")
                             }
 
                             val session = Session(
