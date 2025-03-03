@@ -117,9 +117,12 @@ class HomeFragment : Fragment() {
 
         // Set default session type
         visibilityToggleGroup.check(R.id.privateButton)
+        visibilityToggleGroup.isSelectionRequired = true
+
 
         // Set default visibility
         sessionFilterToggleGroup.check(R.id.findButton)
+        sessionFilterToggleGroup.isSelectionRequired = true
 
         // Set up profile icon click
         profileIcon.setOnClickListener {
