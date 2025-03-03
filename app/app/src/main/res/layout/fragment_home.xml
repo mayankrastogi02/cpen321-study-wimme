@@ -26,13 +26,6 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/fetchSessionsButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="Fetch New Sessions" />
-
             <ImageView
                 android:id="@+id/profileIcon"
                 android:layout_width="48dp"
@@ -42,6 +35,38 @@
         </LinearLayout>
 
         <!-- Rest of your layout remains the same -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/sessionFilterToggleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/findButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Find" />
+
+            <Button
+                android:id="@+id/joinedButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Joined" />
+
+            <Button
+                android:id="@+id/hostedButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Hosted" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/visibilityToggleGroup"
             android:layout_width="match_parent"
@@ -82,6 +107,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fetchSessionsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="95dp"
+        android:contentDescription="Refresh"
+        app:srcCompat="@drawable/ic_refresh" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addSessionFab"

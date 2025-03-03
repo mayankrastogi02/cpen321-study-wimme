@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -33,13 +32,15 @@ class HomeFragment : Fragment() {
     private lateinit var sessionsRecyclerView: RecyclerView
     private lateinit var sessionsAdapter: SessionAdapter
     private lateinit var visibilityToggleGroup: MaterialButtonToggleGroup
+    private lateinit var sessionFilterToggleGroup: MaterialButtonToggleGroup
     private lateinit var profileIcon: ImageView
     private lateinit var addSessionFab: FloatingActionButton
     private lateinit var emptyStateTextView: TextView
-    private lateinit var fetchSessionsButton: Button
+    private lateinit var fetchSessionsButton: FloatingActionButton
     private var isLoading = false
     private val sessionsList = ArrayList<Session>()
     private var currentVisibility = SessionVisibility.PRIVATE
+    private var currentSessionFilter = SessionFilter.FIND
 
     // Register for activity result
     private val createSessionLauncher = registerForActivityResult(
@@ -59,6 +60,7 @@ class HomeFragment : Fragment() {
         // Initialize UI components
         sessionsRecyclerView = view.findViewById(R.id.sessionsRecyclerView)
         visibilityToggleGroup = view.findViewById(R.id.visibilityToggleGroup)
+        sessionFilterToggleGroup = view.findViewById(R.id.sessionFilterToggleGroup)
         profileIcon = view.findViewById(R.id.profileIcon)
         addSessionFab = view.findViewById(R.id.addSessionFab)
         emptyStateTextView = view.findViewById(R.id.emptyStateTextView)
@@ -76,6 +78,19 @@ class HomeFragment : Fragment() {
                     R.id.privateButton -> SessionVisibility.PRIVATE
                     R.id.publicButton -> SessionVisibility.PUBLIC
                     else -> SessionVisibility.PRIVATE
+                }
+                updateSessionsDisplay()
+            }
+        }
+
+        sessionFilterToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                currentSessionFilter = when (checkedId) {
+                    R.id.findButton -> SessionFilter.FIND
+                    R.id.joinedButton -> SessionFilter.JOINED
+                    R.id.hostedButton -> SessionFilter.HOSTED
+
+                    else -> SessionFilter.FIND
                 }
                 updateSessionsDisplay()
             }
@@ -100,8 +115,14 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
 
-        // Set default visibility
+        // Set default session type
         visibilityToggleGroup.check(R.id.privateButton)
+        visibilityToggleGroup.isSelectionRequired = true
+
+
+        // Set default visibility
+        sessionFilterToggleGroup.check(R.id.findButton)
+        sessionFilterToggleGroup.isSelectionRequired = true
 
         // Set up profile icon click
         profileIcon.setOnClickListener {
@@ -118,12 +139,12 @@ class HomeFragment : Fragment() {
         // Set up fetch sessions button
         fetchSessionsButton.setOnClickListener {
             if (!isLoading) {
-                fetchSessions(true) // Pass true to show a loading indicator
+                fetchAllSessions(true) // Pass true to show a loading indicator
             }
         }
 
         // Load sessions
-        fetchSessions(false)
+        fetchAllSessions(false)
 
         return view
     }
@@ -133,11 +154,11 @@ class HomeFragment : Fragment() {
         // We might not need to automatically fetch on resume if we have the fetch button
         // But keeping it could be useful for when returning from other screens
         if (LoginActivity.getCurrentUserId(requireActivity()) != null && !isLoading) {
-            fetchSessions(false)
+            fetchAllSessions(false)
         }
     }
 
-    private fun fetchSessions(showLoading: Boolean) {
+    private fun fetchAllSessions(showLoading: Boolean) {
         val userId = LoginActivity.getCurrentUserId(requireActivity())
         if (userId == null) {
             showEmptyState("You need to be logged in to see sessions")
@@ -148,12 +169,11 @@ class HomeFragment : Fragment() {
             // Show loading state
             isLoading = true
             fetchSessionsButton.isEnabled = false
-            fetchSessionsButton.text = "Loading..."
         }
         
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/session/availableSessions?userId=$userId")
+                val url = URL("${BuildConfig.SERVER_URL}/api/session/availableSessions/$userId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 
@@ -203,10 +223,18 @@ class HomeFragment : Fragment() {
 
                             // Get host information if available
                             val hostObj = sessionObj.optJSONObject("hostId")
+                            val hostId = hostObj?.optString("_id", "")
+
                             val hostName = if (hostObj != null) {
                                 "${hostObj.optString("firstName", "")} ${hostObj.optString("lastName", "")}"
                             } else {
                                 "Unknown Host"
+                            }
+
+                            val participantsArray = sessionObj.getJSONArray("participants")
+
+                            val participants = List(participantsArray.length()) { p ->
+                                participantsArray.getString(p)
                             }
 
                             val session = Session(
@@ -219,7 +247,9 @@ class HomeFragment : Fragment() {
                                 subject = subject,
                                 faculty = faculty,
                                 year = year,
-                                hostName = hostName
+                                hostName = hostName,
+                                hostId = hostId ?: "",
+                                participants = participants
                             )
                             
                             fetchedSessions.add(session)
@@ -237,8 +267,6 @@ class HomeFragment : Fragment() {
                         // Reset loading state
                         isLoading = false
                         fetchSessionsButton.isEnabled = true
-                        fetchSessionsButton.text = "Fetch New Sessions"
-                        
                         // Show success message if this was a manual refresh
                         if (showLoading) {
                             Toast.makeText(context, 
@@ -259,7 +287,6 @@ class HomeFragment : Fragment() {
                         // Reset loading state
                         isLoading = false
                         fetchSessionsButton.isEnabled = true
-                        fetchSessionsButton.text = "Fetch New Sessions"
                     }
                 }
                 connection.disconnect()
@@ -271,7 +298,6 @@ class HomeFragment : Fragment() {
                     // Reset loading state
                     isLoading = false
                     fetchSessionsButton.isEnabled = true
-                    fetchSessionsButton.text = "Fetch New Sessions"
                 }
             }
         }
@@ -306,15 +332,27 @@ class HomeFragment : Fragment() {
 
     private fun updateSessionsDisplay() {
         // Filter sessions based on current visibility
-        val filteredSessions = sessionsList.filter { it.visibility == currentVisibility }
+        val userId = LoginActivity.getCurrentUserId(requireActivity())
+        val privateOrPublicSessions = sessionsList.filter { it.visibility == currentVisibility }
+        var filteredSessions = privateOrPublicSessions
+        Log.d(TAG, "UserId: ${userId}")
+        Log.d(TAG, "Filtered sessions: ${filteredSessions}")
+
+        if (currentSessionFilter == SessionFilter.FIND) {
+            filteredSessions = privateOrPublicSessions.filter { it.hostId != userId }
+        } else if (currentSessionFilter == SessionFilter.HOSTED) {
+            filteredSessions = privateOrPublicSessions.filter { it.hostId == userId }
+        } else if (currentSessionFilter == SessionFilter.JOINED) {
+            filteredSessions = privateOrPublicSessions.filter { it.participants.contains(userId) }
+        }
 
         Log.d(TAG, "Total sessions: ${sessionsList.size}")
         Log.d(TAG, "Public sessions: ${sessionsList.count { it.visibility == SessionVisibility.PUBLIC }}")
         Log.d(TAG, "Private sessions: ${sessionsList.count { it.visibility == SessionVisibility.PRIVATE }}")
-        Log.d(TAG, "Currently showing ${currentVisibility} sessions: ${filteredSessions.size}")
+        Log.d(TAG, "Currently showing ${currentVisibility} sessions: ${privateOrPublicSessions.size}")
         
         if (filteredSessions.isEmpty()) {
-            showEmptyState("No ${if(currentVisibility == SessionVisibility.PRIVATE) "private" else "public"} sessions found")
+            showEmptyState("No sessions found")
         } else {
             emptyStateTextView.visibility = View.GONE
             sessionsRecyclerView.visibility = View.VISIBLE
