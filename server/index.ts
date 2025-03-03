@@ -8,11 +8,11 @@ import { SessionRoutes } from "./routes/SessionRoutes";
 import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
-import { AuthRoutes } from "./routes/AuthRoutes"; // Import the new AuthRoutes
+import { AuthRoutes } from "./routes/AuthRoutes";
 
 const app = express();
 app.use(express.json());
-const port = 3000;
+
 const Routes = [
   ...UserRoutes,
   ...SessionRoutes,
@@ -21,10 +21,15 @@ const Routes = [
   ...AuthRoutes,
 ];
 
-const serviceAccountKey = require("./serviceAccountKey");
+const utf8GCPKeyBuffer = Buffer.from(process.env.GCP_PRIVATE_KEY as string, "utf-8");
+const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountKey),
+  credential: admin.credential.cert({
+    projectId: process.env.GCP_PROJECT_ID,
+    clientEmail: process.env.GCP_CLIENT_EMAIL,
+    privateKey: utf8GCPKeyString
+  })
 });
 
 export const messaging = admin.messaging();
@@ -52,16 +57,14 @@ Routes.forEach((route) => {
   );
 });
 
-mongoose
-  .connect("mongodb://localhost:27017/studywimme")
-  .then(() => {
-    console.log("MongoDB Client Connected");
-
-    app.listen(port, () => {
-      console.log(`Example app listening on port ${port}`);
-    });
-  })
-  .catch((err) => {
-    console.error(err);
-    client.close();
+mongoose.connect(process.env.DB_URI as string).then(() => {
+  console.log("MongoDB Client Connected");
+  
+  app.listen(process.env.PORT, () => {
+    console.log(`Example app listening on port ${process.env.PORT}`);
   });
+}).catch(err => {
+  console.error(err)
+  client.close();
+});
+
