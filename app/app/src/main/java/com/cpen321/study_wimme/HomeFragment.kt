@@ -173,7 +173,7 @@ class HomeFragment : Fragment() {
         
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/session/availableSessions/$userId")
+                val url = URL("${BuildConfig.SERVER_URL}/session/availableSessions/${userId}")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 

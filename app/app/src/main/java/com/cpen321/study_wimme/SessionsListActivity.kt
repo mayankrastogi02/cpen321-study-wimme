@@ -121,7 +121,7 @@ class SessionsListActivity : AppCompatActivity() {
         // Check with the server if the profile is created
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/auth/verify?googleId=$googleId")
+                val url = URL("${BuildConfig.SERVER_URL}/auth/verify?googleId=$googleId")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 

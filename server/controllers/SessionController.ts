@@ -62,7 +62,7 @@ export class SessionController {
             for (const inviteeId of savedSession.invitees) {
                 await sendPushNotification(inviteeId, "Study Session Invite", `${host.userName} invited you to session '${savedSession.name}'`);
             }
-          
+
             res.status(200).json({ message: "Session created successfully", session: savedSession });
         } catch (error) {
             console.error(error);
@@ -188,7 +188,7 @@ export class SessionController {
     async getAvailableSessions(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.params;
-
+            console.log(userId);
             if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }

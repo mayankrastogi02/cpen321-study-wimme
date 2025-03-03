@@ -90,7 +90,7 @@ class FriendsInfoActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/api/user/removeFriend")
+                val url = URL("${BuildConfig.SERVER_URL}/user/removeFriend")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "DELETE"
                 connection.setRequestProperty("Content-Type", "application/json")

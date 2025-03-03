@@ -7,7 +7,7 @@ export class GroupController {
     async createGroup(req: Request, res: Response, next: NextFunction) {
         try {
             const { name, userId } = req.body;
-            
+
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
@@ -19,12 +19,12 @@ export class GroupController {
             }
 
             const existingGroup = await Group.findOne({
-				$and: [{ name: name }, { userId: userId }]
-			});
+                $and: [{ name: name }, { userId: userId }]
+            });
 
             if (existingGroup) {
-				return res.status(400).json({ message: "Group has already been created" });
-			}
+                return res.status(400).json({ message: "Group has already been created" });
+            }
 
             const newGroup = new Group({
                 name,
@@ -32,7 +32,7 @@ export class GroupController {
             });
 
             const savedGroup = await newGroup.save();
-    
+
             res.status(200).json({ message: "Group created successfully", group: savedGroup });
         } catch (error) {
             console.error(error);
@@ -43,12 +43,15 @@ export class GroupController {
     async getGroups(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.params;
+            console.log(userId);
 
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
-            const groups = await Group.find({ userId: userId})
+            console.log(userId);
+
+            const groups = await Group.find({ userId: userId })
                 .populate("members", "userName");
 
             res.status(200).json({ groups });
