@@ -32,6 +32,7 @@ class SessionDetailsActivity : AppCompatActivity() {
     private lateinit var yearTextView: TextView
     private lateinit var hostTextView: TextView
     private lateinit var joinButton: MaterialButton
+    private lateinit var leaveButton: MaterialButton
     private lateinit var progressBar: ProgressBar
 
     // Save sessionId for API calls
@@ -51,6 +52,7 @@ class SessionDetailsActivity : AppCompatActivity() {
         yearTextView = findViewById(R.id.yearTextView)
         hostTextView = findViewById(R.id.hostTextView)
         joinButton = findViewById(R.id.joinButton)
+        leaveButton = findViewById(R.id.leaveButton)
         progressBar = findViewById(R.id.progressBar)
 
         findViewById<ImageButton>(R.id.backButton).setOnClickListener {
@@ -78,12 +80,16 @@ class SessionDetailsActivity : AppCompatActivity() {
         yearTextView.text = sessionYear
         hostTextView.text = "Hosted by: $sessionHost"
 
-        // Set up join button
+        // Set up join and leave button
         joinButton.setOnClickListener {
             joinSession()
         }
+        leaveButton.setOnClickListener {
+            leaveSession()
+        }
     }
 
+    //TODO:: For future move this to sessionService (or use the preexisting logic there)
     private fun joinSession() {
         if (sessionId == null) {
             Toast.makeText(this, "Session ID is missing. Cannot join.", Toast.LENGTH_SHORT).show()
@@ -155,4 +161,30 @@ class SessionDetailsActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun leaveSession() {
+        val userId = LoginActivity.getCurrentUserId(this)
+        if (sessionId == null || userId == null) {
+            Toast.makeText(this, "Session ID or User ID is missing.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Optionally show a progress indicator and disable the leave button
+        progressBar.visibility = View.VISIBLE
+        leaveButton.isEnabled = false
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = SessionService.leaveSession(sessionId!!, userId)
+            withContext(Dispatchers.Main) {
+                progressBar.visibility = View.GONE
+                leaveButton.isEnabled = true
+                if (result.success) {
+                    Toast.makeText(this@SessionDetailsActivity, "Left session successfully!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@SessionDetailsActivity, result.errorMessage ?: "Failed to leave session.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
 }
