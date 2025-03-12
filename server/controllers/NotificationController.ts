@@ -46,7 +46,7 @@ export class NotificationController {
 		  const { token } = req.body;
 		  await removeToken(token);
 		  return res.status(200).json({ message: "Token deleted" });
-		} catch(error: any) {
+		} catch(error: unknown) {
 		  res.status(500).send(error);
 		}
 	}

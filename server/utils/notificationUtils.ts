@@ -7,7 +7,7 @@ export const sendPushNotification = async (userId: Types.ObjectId, title: string
     try {
         const devices = await Device.find({ userId }).select("token -_id");
 
-        let tokens = devices.map(device => device.token);
+        const tokens = devices.map(device => device.token);
 
         // send push notifications to each of the devices that the user has identified by their unique tokens
         for (const token of tokens) {
@@ -26,7 +26,7 @@ export const sendPushNotification = async (userId: Types.ObjectId, title: string
 
             try {
                 await messaging.send(message);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Error sending notification to ${token}:`, error);
 
                 // if the device token is invalid or not registered (expired), delete it from the DB

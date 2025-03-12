@@ -41,12 +41,12 @@ export const protect = async (
     req.user = user;
 
     next();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Authentication error:", error);
     return res.status(500).json({
       success: false,
       message: "Server error",
-      error: error.message,
+      error: (error as Error).message,
     });
   }
 };
