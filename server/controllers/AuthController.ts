@@ -10,7 +10,7 @@ export class AuthController {
       if (!googleId) {
         return res.status(400).json({
           success: false,
-      message: "Google ID is required",
+          message: "Google ID is required",
         });
       }
 
