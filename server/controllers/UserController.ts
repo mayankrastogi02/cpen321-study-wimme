@@ -368,13 +368,13 @@ export class UserController {
             await Session.updateMany(
                 { $or: [{ participants: userId }, { invitees: userId }] },
                 { $pull: { participants: userId, invitees: userId } }
-            ),
-                // Remove the user from friend requests or friends lists
-                await User.updateMany(
-                    { $or: [{ friendRequests: userId }, { friends: userId }] },
-                    { $pull: { friendRequests: userId, friends: userId } }
-                ),
-                await User.findByIdAndDelete(userId);
+            );
+            // Remove the user from friend requests or friends lists
+            await User.updateMany(
+                { $or: [{ friendRequests: userId }, { friends: userId }] },
+                { $pull: { friendRequests: userId, friends: userId } }
+            );
+            await User.findByIdAndDelete(userId);
 
             // Delete all devices associated with the user
             await Device.deleteMany({ userId: userId });
