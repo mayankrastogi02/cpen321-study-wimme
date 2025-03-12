@@ -10,7 +10,7 @@ import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const Routes = [
