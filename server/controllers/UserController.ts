@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import User from "../schemas/UserSchema";
 import Group from "../schemas/GroupSchema";
 import Session from "../schemas/SessionSchema";
@@ -7,7 +7,7 @@ import { sendPushNotification } from "../utils/notificationUtils";
 import Device from "../schemas/DeviceSchema";
 
 export class UserController {
-    async createUser(req: Request, res: Response, next: NextFunction) {
+    async createUser(req: Request, res: Response) {
         try {
             const {
                 userName,
@@ -54,7 +54,7 @@ export class UserController {
         }
     }
 
-    async sendFriendRequest(req: Request, res: Response, next: NextFunction) {
+    async sendFriendRequest(req: Request, res: Response) {
         try {
             const { userId, friendUserName } = req.body;
 
@@ -92,7 +92,7 @@ export class UserController {
             friend.friendRequests.push(userId);
             await friend.save();
 
-            await sendPushNotification(friendId, "Friend Request", `${user.userName} sent a you friend Request`, );
+            await sendPushNotification(friendId, "Friend Request", `${user.userName} sent a you friend Request`,);
 
             res.status(200).json({ message: "Sent friend request" });
         } catch (error) {
@@ -101,7 +101,7 @@ export class UserController {
         }
     }
 
-    async getFriendRequests(req: Request, res: Response, next: NextFunction) {
+    async getFriendRequests(req: Request, res: Response) {
         try {
             const { userId } = req.query;
 
@@ -130,7 +130,7 @@ export class UserController {
         }
     }
 
-    async handleFriend(req: Request, res: Response, next: NextFunction) {
+    async handleFriend(req: Request, res: Response) {
         try {
             const { userId, friendId, accepted } = req.body;
 
@@ -180,11 +180,11 @@ export class UserController {
             });
 
             await sendPushNotification(
-                friendId, 
+                friendId,
                 accepted ? "Friend Request Accepted"
-                : "Friend Request Rejected", 
-                accepted ? `${user.userName} accepted your friend request` 
-                : `${user.userName} rejected your friend request`
+                    : "Friend Request Rejected",
+                accepted ? `${user.userName} accepted your friend request`
+                    : `${user.userName} rejected your friend request`
             );
 
         } catch (error) {
@@ -193,7 +193,7 @@ export class UserController {
         }
     }
 
-    async getFriends(req: Request, res: Response, next: NextFunction) {
+    async getFriends(req: Request, res: Response) {
         try {
             const { userId } = req.query;
 
@@ -222,7 +222,7 @@ export class UserController {
         }
     }
 
-    async removeFriend(req: Request, res: Response, next: NextFunction) {
+    async removeFriend(req: Request, res: Response) {
         try {
             const { userId, friendId } = req.body;
 
@@ -271,7 +271,7 @@ export class UserController {
         }
     }
 
-    async getUser(req: Request, res: Response, next: NextFunction) {
+    async getUser(req: Request, res: Response) {
         try {
             const { userId } = req.body;
 
@@ -295,7 +295,7 @@ export class UserController {
         }
     }
 
-    async updateUser(req: Request, res: Response, next: NextFunction) {
+    async updateUser(req: Request, res: Response) {
         try {
             const { userId, firstName, lastName, profilePic, year, faculty } =
                 req.body;
@@ -338,7 +338,7 @@ export class UserController {
         }
     }
 
-    async deleteUser(req: Request, res: Response, next: NextFunction) {
+    async deleteUser(req: Request, res: Response) {
         try {
             const { userId } = req.body;
 

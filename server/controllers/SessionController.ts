@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from "express";
+import {Request, Response } from "express";
 import mongoose from "mongoose";
 import Session from "../schemas/SessionSchema"
 import User from "../schemas/UserSchema";
 import { sendPushNotification } from "../utils/notificationUtils";
 
 export class SessionController {
-    async hostSession(req: Request, res: Response, next: NextFunction) {
+    async hostSession(req: Request, res: Response) {
         try {
             const {
                 name,
@@ -70,7 +70,7 @@ export class SessionController {
         }
     }
 
-    async deleteSession(req: Request, res: Response, next: NextFunction) {
+    async deleteSession(req: Request, res: Response) {
         try {
             const { sessionId } = req.params;
 
@@ -97,7 +97,7 @@ export class SessionController {
         }
     }
 
-    async joinSession(req: Request, res: Response, next: NextFunction) {
+    async joinSession(req: Request, res: Response) {
         try {
             const { sessionId } = req.params;
 
@@ -144,7 +144,7 @@ export class SessionController {
         }
     }
 
-    async leaveSession(req: Request, res: Response, next: NextFunction) {
+    async leaveSession(req: Request, res: Response) {
         try {
             const { sessionId } = req.params;
 
@@ -185,7 +185,7 @@ export class SessionController {
         }
     }
 
-    async getAvailableSessions(req: Request, res: Response, next: NextFunction) {
+    async getAvailableSessions(req: Request, res: Response) {
         try {
             const { userId } = req.params;
             console.log(userId);
@@ -237,7 +237,7 @@ export class SessionController {
         }
     }
 
-    async getNearbySessions(req: Request, res: Response, next: NextFunction) {
+    async getNearbySessions(req: Request, res: Response) {
         try {
             const { latitude, longitude, radius, userId } = req.query;
             const userIdStr = userId as string;
@@ -255,18 +255,30 @@ export class SessionController {
             const rad = parseFloat(radius as string);
 
 
-            const filter: any = {
+            const filter: {
+                location: {
+                    $near: {
+                        $geometry: { type: string; coordinates: number[] };
+                        $maxDistance: number;
+                    };
+                };
+                $or: { isPublic: boolean; invitees?: string }[];
+            } = {
                 location: {
                     $near: {
                         $geometry: { type: "Point", coordinates: [lng, lat] },
                         $maxDistance: rad // distance in meters
                     }
-                }
+                },
+                $or: [
+                    { isPublic: true },
+                    { isPublic: false, invitees: userIdStr }
+                ]
             };
 
             filter.$or = [
                 { isPublic: true },
-                { isPublic: false, invitees: userId }
+                { isPublic: false, invitees: userId as string }
             ];
 
             const sessions = await Session.find(filter)
@@ -280,7 +292,7 @@ export class SessionController {
         }
     }
 
-    async getJoinedSessions(req: Request, res: Response, next: NextFunction) {
+    async getJoinedSessions(req: Request, res: Response) {
         try {
             const { userId } = req.body;
 
@@ -298,7 +310,7 @@ export class SessionController {
         }
     }
 
-    async getHostedSessions(req: Request, res: Response, next: NextFunction) {
+    async getHostedSessions(req: Request, res: Response) {
         try {
             const { userId } = req.body;
 
