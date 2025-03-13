@@ -49,8 +49,6 @@ export class GroupController {
                 return res.status(400).json({ message: "Invalid user ID" });
             }
 
-            console.log(userId);
-
             const groups = await Group.find({ userId: userId })
                 .populate("members", "userName");
 
@@ -76,7 +74,15 @@ export class GroupController {
                 return res.status(404).json({ message: "Group not found" });
             }
 
+            if (members && members.includes(group.userId.toString())) {
+                return res.status(400).json({ message: "Host cannot be a member of their own group" });
+            }
+
             if (members) {
+                const validUsers = await User.find({ _id: { $in: members } });
+                if (validUsers.length !== members.length) {
+                    return res.status(400).json({ message: "One or more members are invalid" });
+                }
                 group.members = members
             }
 

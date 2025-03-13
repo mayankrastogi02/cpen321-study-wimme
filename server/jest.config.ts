@@ -196,6 +196,10 @@ const config: Config = {
   // watchman: true,
   setupFilesAfterEnv: ['./testing/configs/jest.setup.ts'],
   testEnvironment: 'node',
+  
+  globals: {
+    'NODE_ENV': 'test',
+  },
 };
 
 export default config;

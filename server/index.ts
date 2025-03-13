@@ -1,5 +1,4 @@
 import express, { NextFunction, Request, Response } from "express";
-import { client } from "./services";
 import { validationResult } from "express-validator";
 import morgan from "morgan";
 import { UserRoutes } from "./routes/UserRoutes";
@@ -57,14 +56,16 @@ Routes.forEach((route) => {
   );
 });
 
-mongoose.connect(process.env.DB_URI as string).then(() => {
-  console.log("MongoDB Client Connected");
-  
-  app.listen(process.env.PORT, () => {
-    console.log(`Example app listening on port ${process.env.PORT}`);
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(process.env.DB_URI as string).then(() => {
+    console.log("MongoDB Client Connected");
+
+    app.listen(process.env.PORT, () => {
+      console.log(`Example app listening on port ${process.env.PORT}`);
+    });
+  }).catch(err => {
+    console.error(err);
+    mongoose.disconnect();
   });
-}).catch(err => {
-  console.error(err)
-  client.close();
-});
+}
 
