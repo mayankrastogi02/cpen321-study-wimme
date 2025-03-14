@@ -41,19 +41,6 @@ export const UserRoutes = [
         action: controller.handleFriend,
     },
     {
-        method: "post",
-        route: "/user",
-        action: controller.createUser,
-        validation: [
-            body("userName").exists().withMessage("Username is required"),
-            body("email").isEmail().withMessage("Valid email is required"),
-            body("firstName").exists().withMessage("First name is required"),
-            body("lastName").exists().withMessage("Last name is required"),
-            body("year").isNumeric().withMessage("Year must be a number"),
-            body("faculty").exists().withMessage("Faculty is required")
-        ],
-    },
-    {
         method: "delete",
         route: "/user/removeFriend",
         validation: [
