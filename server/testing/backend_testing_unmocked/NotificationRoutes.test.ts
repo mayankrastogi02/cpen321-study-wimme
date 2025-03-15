@@ -52,7 +52,7 @@ describe("Unmocked: POST /notification/deviceToken", () => {
             .send({ userId: testUser1._id,  token: "testToken123"});
         expect(response.status).toBe(200);
         const testDevice = await Device.findOne({userId: testUser1._id});
-        expect(testDevice?.token).toBe("testToken123")
+        expect(testDevice?.token).toBe("testToken123");
     });
 
     // Input: 

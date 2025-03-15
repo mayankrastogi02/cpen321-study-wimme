@@ -27,10 +27,15 @@ export const sendPushNotification = async (userId: Types.ObjectId, title: string
             try {
                 await messaging.send(message);
             } catch (error: any) {
+                console.log("error occurred");
                 console.error(`Error sending notification to ${token}:`, error);
-
                 // if the device token is invalid or not registered (expired), delete it from the DB
-                if (error.code === "messaging/registration-token-not-registered" || error.code === "messaging/invalid-registration-token") {
+                if (
+                    error.code === "messaging/registration-token-not-registered" || 
+                    error.code === "messaging/invalid-registration-token" || 
+                    error.code === "messaging/invalid-argument" ||
+                    error.code === "messaging/invalid-recipient"
+                ) {
                     console.log(`Removing invalid token: ${token}`);
                     await removeToken(token)
                 }

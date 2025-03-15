@@ -67,7 +67,24 @@ beforeEach(async () => {
 });
 
 describe("sendPushNotification", () => {
-    test("Remove invalid device token if push sending notification fails with 'invalid' error message", async () => {
+    test("Remove invalid device token if push sending notification fails with 'messaging/invalid-argument' error message", async () => {
+        //We are not using a valid device token so it will return messaging/invalid-argument by default
+        const spy = jest.spyOn(messaging, "send");
+
+        const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceBeforeSend).toBeTruthy();
+
+        await sendPushNotification(testUser1._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        const deviceAfterSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceAfterSend).toBeFalsy();
+
+        spy.mockRestore();
+    });
+
+    test("Remove invalid device token if push sending notification fails with 'messaging/registration-token-not-registered' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/registration-token-not-registered",
@@ -86,9 +103,47 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
-    test("Send notifications valid device tokens", async () => {
+    test("Remove invalid device token if push sending notification fails with 'messaging/invalid-registration-token' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
-        const spy = jest.spyOn(messaging, "send")
+        const spy = jest.spyOn(messaging, "send").mockRejectedValue({
+            code: "messaging/invalid-registration-token",
+        });
+
+        const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceBeforeSend).toBeTruthy();
+
+        await sendPushNotification(testUser1._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        const deviceAfterSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceAfterSend).toBeFalsy();
+
+        spy.mockRestore();
+    });
+
+    test("Remove invalid device token if push sending notification fails with 'messaging/invalid-recipient' error message", async () => {
+        //mock messaging.send() to return error so that sendPushNotification deletes the token
+        const spy = jest.spyOn(messaging, "send").mockRejectedValue({
+            code: "messaging/invalid-recipient",
+        });
+
+        const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceBeforeSend).toBeTruthy();
+
+        await sendPushNotification(testUser1._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        const deviceAfterSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceAfterSend).toBeFalsy();
+
+        spy.mockRestore();
+    });
+
+    test("Send notifications with valid device tokens", async () => {
+        //mock messaging.send() to not return error to simulate message going through
+        const spy = jest.spyOn(messaging, "send").mockResolvedValue("");
 
         await sendPushNotification(testUser2._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
 
@@ -99,7 +154,7 @@ describe("sendPushNotification", () => {
         const device1 = await Device.findOne({token: "abc456"});
         expect(device1).toBeTruthy();
 
-        const device2 = await Device.findOne({token: "abc456"});
+        const device2 = await Device.findOne({token: "abc789"});
         expect(device2).toBeTruthy();
 
         spy.mockRestore();
