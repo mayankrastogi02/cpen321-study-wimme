@@ -44,23 +44,29 @@ export class NotificationController {
 	async deleteToken (req: Request, res: Response, next: NextFunction) {
 		try {
 		  const { token } = req.body;
-		  await removeToken(token);
-		  return res.status(200).json({ message: "Token deleted" });
+		  const deleted = await removeToken(token);
+
+		  if (deleted) {
+			return res.status(200).json({ message: "Token deleted" });
+		  } else {
+			return res.status(404).json({ message: "Token not found" });
+		  }
+
 		} catch(error: any) {
-		  res.status(500).send(error);
+			return res.status(500).json({ error: "Internal server error" });
 		}
 	}
 
     // for testing purposes only
-    async testMessage(req: Request, res: Response, next: NextFunction) {
-      try {
-        const { userId, title, body} = req.body;
-        sendPushNotification(userId, title, body);
-        res.status(200).json({ message: "Message sent"});
+    // async testMessage(req: Request, res: Response, next: NextFunction) {
+    //   try {
+    //     const { userId, title, body} = req.body;
+    //     sendPushNotification(userId, title, body);
+    //     res.status(200).json({ message: "Message sent"});
 
-      } catch (error) {
-        	console.error(error);
-        	res.status(500).send(error);
-      }
-    }
+    //   } catch (error) {
+    //     	console.error(error);
+    //     	res.status(500).send(error);
+    //   }
+    // }
 }

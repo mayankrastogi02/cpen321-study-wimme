@@ -12,7 +12,7 @@ let testGroup1: mongoose.Document;
 let testGroup2: mongoose.Document;
 
 beforeEach(async () => {
-    // Create the user before each test
+    // Create users before each test
     testUser1 = new User({
         userName: "testuser1",
         email: "testuser1@example.com",
@@ -25,7 +25,6 @@ beforeEach(async () => {
         interests: "Programming, Math",
         profileCreated: true,
         googleId: "googleIdHere",
-        displayName: "Test User 1"
     });
     await testUser1.save();
 
@@ -41,7 +40,6 @@ beforeEach(async () => {
         interests: "English, History",
         profileCreated: true,
         googleId: "googleId1",
-        displayName: "Test User 2"
     });
     await testUser2.save();
 
@@ -57,11 +55,10 @@ beforeEach(async () => {
         interests: "Espresso, Singing, Acting",
         profileCreated: true,
         googleId: "googleId2",
-        displayName: "My GOAT"
     });
     await sabrinaCarpenter.save();
     
-    // Create the group before each test
+    // Create groups before each test
     testGroup1 = new Group({
         name: "Test Group 1",
         userId: testUser1._id,
@@ -69,18 +66,12 @@ beforeEach(async () => {
     });
     await testGroup1.save();
 
-    // Create the group before each test
     testGroup2 = new Group({
         name: "Test Group 2",
         userId: testUser2._id,
         members: [testUser1._id]
     });
     await testGroup2.save();
-});
-
-afterEach(async () => {
-    // Cleanup the user after each test
-    await User.deleteMany({});
 });
 
 // Interface POST /group
