@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -381,4 +382,11 @@ class CreateSessionActivity : AppCompatActivity() {
             )
         }
     }
+
+    @VisibleForTesting
+    fun setTestDates(startMillis: Long, endMillis: Long) {
+        startDateMillis = startMillis
+        endDateMillis = endMillis
+    }
+
 }
