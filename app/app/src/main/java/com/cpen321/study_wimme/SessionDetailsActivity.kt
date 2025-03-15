@@ -161,6 +161,10 @@ class SessionDetailsActivity : AppCompatActivity() {
                             val errorJson = JSONObject(response)
                             val errorMessage = errorJson.optString("message", "Failed to join session")
                             Toast.makeText(this@SessionDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                            //return to previous activity if already a participant
+                            if (errorMessage == "User is already a participant") {
+                                finish()
+                            }
                         } catch (e: Exception) {
                             Toast.makeText(this@SessionDetailsActivity,
                                 "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()
