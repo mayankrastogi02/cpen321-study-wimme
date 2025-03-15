@@ -67,7 +67,7 @@ beforeEach(async () => {
 });
 
 describe("sendPushNotification", () => {
-    test("Remove invalid device token if push sending notification fails with 'messaging/invalid-argument' error message", async () => {
+    test("Remove invalid device token if sending push notification fails with 'messaging/invalid-argument' error message", async () => {
         //We are not using a valid device token so it will return messaging/invalid-argument by default
         const spy = jest.spyOn(messaging, "send");
 
@@ -84,7 +84,7 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
-    test("Remove invalid device token if push sending notification fails with 'messaging/registration-token-not-registered' error message", async () => {
+    test("Remove invalid device token if sending push notification fails with 'messaging/registration-token-not-registered' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/registration-token-not-registered",
@@ -103,7 +103,7 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
-    test("Remove invalid device token if push sending notification fails with 'messaging/invalid-registration-token' error message", async () => {
+    test("Remove invalid device token if sending push notification fails with 'messaging/invalid-registration-token' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/invalid-registration-token",
@@ -122,7 +122,7 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
-    test("Remove invalid device token if push sending notification fails with 'messaging/invalid-recipient' error message", async () => {
+    test("Remove invalid device token if sending push notification fails with 'messaging/invalid-recipient' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/invalid-recipient",

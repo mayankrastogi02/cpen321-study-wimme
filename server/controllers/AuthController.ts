@@ -119,15 +119,7 @@ export class AuthController {
   async updateUserProfile(req: Request, res: Response) {
     try {
       const { googleId } = req.params;
-      const { firstName, lastName, userName, year, faculty, interests } =
-        req.body;
-
-      if (!googleId) {
-        return res.status(400).json({
-          success: false,
-          message: "Google ID is required",
-        });
-      }
+      const { firstName, lastName, userName, year, faculty, interests } = req.body;
 
       const user = await User.findOne({ googleId });
 

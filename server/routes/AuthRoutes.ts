@@ -33,14 +33,7 @@ export const AuthRoutes: Route[] = [
   {
     method: "put",
     route: "/auth/profile/:googleId",
-    validation: [
-      check("googleId").exists().withMessage("Google ID is required"),
-      check("firstName").exists().withMessage("First name is required"),
-      check("lastName").exists().withMessage("Last name is required"),
-      check("userName").exists().withMessage("Username is required"),
-      check("year").isNumeric().withMessage("Year must be a number"),
-      check("faculty").exists().withMessage("Faculty is required"),
-    ],
+    validation: [],
     action: async (req: Request, res: Response, next: NextFunction) => {
       await AuthController.updateUserProfile(req, res);
     },
