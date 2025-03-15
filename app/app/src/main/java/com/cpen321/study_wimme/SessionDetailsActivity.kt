@@ -169,7 +169,7 @@ class SessionDetailsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error joining session", e)
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE

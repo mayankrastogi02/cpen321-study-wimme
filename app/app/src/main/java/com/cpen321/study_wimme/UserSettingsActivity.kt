@@ -168,7 +168,7 @@ class UserSettingsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error deleting account", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@UserSettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -236,7 +236,7 @@ class UserSettingsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching user profile", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
@@ -383,7 +383,7 @@ class UserSettingsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error saving profile", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
@@ -431,7 +431,7 @@ class UserSettingsActivity : AppCompatActivity() {
                         val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
                         Log.e(TAG, "Error Response: $errorResponse")
                     }
-                } catch (e: Exception) {
+                } catch (e: JSONException) {
                     // Log and handle exceptions
                     Log.e(TAG, "Error sending data: ${e.message}", e)
                 } finally {

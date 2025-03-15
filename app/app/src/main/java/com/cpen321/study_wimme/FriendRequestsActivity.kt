@@ -171,7 +171,7 @@ class FriendRequestsActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@FriendRequestsActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Unexpected error handling friend request", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@FriendRequestsActivity, "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()

@@ -263,7 +263,7 @@ class FriendsFragment : Fragment() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching user ID", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -339,7 +339,7 @@ class FriendsFragment : Fragment() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching groups", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -435,7 +435,7 @@ class FriendsFragment : Fragment() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error sending friend request", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -483,7 +483,7 @@ class FriendsFragment : Fragment() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error creating group", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

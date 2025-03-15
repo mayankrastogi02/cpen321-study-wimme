@@ -140,7 +140,7 @@ class EditGroupActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error deleting group", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@EditGroupActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

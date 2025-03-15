@@ -63,14 +63,14 @@ object SessionService {
                         if (errorJson.has("message")) {
                             errorMessage = errorJson.getString("message")
                         }
-                    } catch (e: Exception) {
+                    } catch (e: JSONException) {
                         Log.e("SessionService", "Error parsing error message", e)
                     }
                 }
                 response.close()
                 JoinSessionResult(false, errorMessage)
             }
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             Log.e("SessionService", "Error joining session", e)
             return@withContext JoinSessionResult(false, "Error joining session: ${e.message}")
         }
@@ -96,14 +96,14 @@ object SessionService {
                         if (errorJson.has("message")) {
                             errorMessage = errorJson.getString("message")
                         }
-                    } catch (e: Exception) {
+                    } catch (e: JSONException) {
                         Log.e("SessionService", "Error parsing error message", e)
                     }
                 }
                 response.close()
                 LeaveSessionResult(false, errorMessage)
             }
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             Log.e("SessionService", "Error leaving session", e)
             LeaveSessionResult(false, "Error leaving session: ${e.message}")
         }
@@ -130,14 +130,14 @@ object SessionService {
                         if (errorJson.has("message")) {
                             errorMessage = errorJson.getString("message")
                         }
-                    } catch (e: Exception) {
+                    } catch (e: JSONException) {
                         Log.e("SessionService", "Error parsing error message", e)
                     }
                 }
                 response.close()
                 DeleteSessionResult(false, errorMessage)
             }
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             Log.e("SessionService", "Error deleting session", e)
             DeleteSessionResult(false, "Error deleting session: ${e.message}")
         }
@@ -168,7 +168,7 @@ object SessionService {
             val gson = Gson()
             val response = gson.fromJson(jsonString, NearbySessionsResponse::class.java)
             response.sessions
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             e.printStackTrace()
             emptyList()
         }

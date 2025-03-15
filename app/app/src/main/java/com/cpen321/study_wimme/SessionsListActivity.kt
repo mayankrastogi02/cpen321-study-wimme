@@ -151,7 +151,7 @@ class SessionsListActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 // In case of error, continue with the activity
                 // The user will still be able to use the app if there's a temporary connection issue
             }

@@ -258,7 +258,7 @@ class InviteFriendsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching groups", e)
             }
         }
