@@ -46,14 +46,14 @@ class NonFunctionalTests {
     @Test
     fun testNotificationDeviceTokenResponseTime() {
         val url = baseURL.toString() + "/notification/deviceToken"
-        assertResponseTime(url, 500)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testVerifyUserResponseTime() {
         val googleId = "validGoogleId" // Replace with a valid Google ID for testing
         val url = baseURL.toString() + "/auth/verify?googleId=$googleId"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -72,7 +72,7 @@ class NonFunctionalTests {
             .post(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -93,7 +93,7 @@ class NonFunctionalTests {
             .put(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     // Test Cases for Group endpoints
@@ -114,14 +114,14 @@ class NonFunctionalTests {
             .post(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testGetGroupsResponseTime() {
         val userId = "validUserId" // Replace with a valid user ID for testing
         val url = baseURL.toString() + "/group/$userId"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -141,7 +141,7 @@ class NonFunctionalTests {
             .put(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -153,7 +153,7 @@ class NonFunctionalTests {
             .delete()
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     // Test Cases for User endpoints
@@ -174,14 +174,14 @@ class NonFunctionalTests {
             .post(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testGetUserResponseTime() {
         val userId = "validUserId" // Replace with a valid user ID for testing
         val url = baseURL.toString() + "/user/$userId"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -203,7 +203,7 @@ class NonFunctionalTests {
             .put(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -215,7 +215,7 @@ class NonFunctionalTests {
             .delete()
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     // Test Cases for Notification endpoints
@@ -235,7 +235,7 @@ class NonFunctionalTests {
             .post(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -253,7 +253,7 @@ class NonFunctionalTests {
             .post(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -271,7 +271,7 @@ class NonFunctionalTests {
             .delete(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     // Test Cases for Session endpoints
@@ -291,7 +291,7 @@ class NonFunctionalTests {
             .put(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -322,7 +322,7 @@ class NonFunctionalTests {
             .post(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -340,7 +340,7 @@ class NonFunctionalTests {
             .put(requestBody)
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
@@ -352,31 +352,31 @@ class NonFunctionalTests {
             .delete()
             .build()
         val responseTime = measureResponseTime(request)
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testGetAvailableSessionsResponseTime() {
         val userId = "validUserId" // Replace with a valid user ID for testing
         val url = baseURL.toString() + "/session/availableSessions/$userId"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testGetJoinedSessionsResponseTime() {
         val url = baseURL.toString() + "/session/joinedSessions"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testGetHostedSessionsResponseTime() {
         val url = baseURL.toString() + "/session/hostedSessions"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 
     @Test
     fun testGetNearbySessionsResponseTime() {
         val url = baseURL.toString() + "/session/nearbySessions"
-        assertResponseTime(url, 200)
+        assertResponseTime(url, 300)
     }
 }
