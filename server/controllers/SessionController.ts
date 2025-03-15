@@ -40,10 +40,6 @@ export class SessionController {
                 return res.status(400).json({ message: "End date must be in the future" });
             }
 
-            if (!location || location.type !== 'Point' || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
-                return res.status(400).json({ message: "Invalid location format. Expected GeoJSON Point." });
-            }
-
             const newSession = new Session({
                 name,
                 description,
@@ -265,48 +261,13 @@ export class SessionController {
             };
 
             filter.$or = [
-                { isPublic: true },
+                { isPublic: true , hostId: { $ne: userId }},
                 { isPublic: false, invitees: userId }
             ];
 
             const sessions = await Session.find(filter)
                 .populate("hostId", "firstName lastName")
                 .populate("participants", "firstName lastName");
-
-            res.status(200).json({ sessions });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Internal server error" });
-        }
-    }
-
-    async getJoinedSessions(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { userId } = req.body;
-
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-                return res.status(400).json({ message: "Invalid user ID" });
-            }
-
-            const sessions = await Session.find({ participants: userId })
-                .populate("hostId", "firstName lastName")
-
-            res.status(200).json({ sessions });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Internal server error" });
-        }
-    }
-
-    async getHostedSessions(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { userId } = req.body;
-
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-                return res.status(400).json({ message: "Invalid user ID" });
-            }
-
-            const sessions = await Session.find({ hostId: userId })
 
             res.status(200).json({ sessions });
         } catch (error) {
