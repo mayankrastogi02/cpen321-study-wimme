@@ -9,6 +9,7 @@
 | 2025-03-02 | 4.2 Databases | Modified databases and tables | We only need one database with multiple tables |
 | 2025-03-02 | 4.5 Dependencies Diagram | Changed component dependencies| Merged SessionsDB and UserDB into one DB for the entire system |
 | 2025-03-02 | 4.6 Functional Requirements Sequence Diagrams | Authentication sequence diagrams added | Log In and Sign Out sequence diagrams were added |
+|2025-03-15 | 3.5 Non-Functional Requirements | Added new non-functional requirements | Added new non-functional requirements for performance, reliability, and error recovery |
 
 ## 2. Project Description
 
@@ -381,15 +382,20 @@ Study Wimme targets university students who seek a collaborative study environme
 | ![User Settings](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/User%20Settings.jpg) | ![Friends](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Friends.jpg) | ![Groups](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Groups.jpg) | ![Edit Groups](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Edit%20Group.jpg) |
 
 ### **3.5. Non-Functional Requirements**
-<a name="nfr1"></a>
 
-
-1. **Real-time Updates**
+1. <a name="nfr1">**Real-time Updates**</a>
    - **Description**: The system must update session information and notifications within 5 seconds
    - **Justification**: This is critical for maintaining accurate session information and participant coordination
-2. **Location Accuracy**
+2. <a name="nfr2">**Location Accuracy**</a>
    - **Description**: The system must maintain location accuracy within 10 meters for session locations
    - **Justification**: This is essential for students to find study locations efficiently
+3. <a name="nfr2">**Performance**</a>
+   - **Description**: The server endpoints should have a response time of less than 300 milliseconds for 95% of the requests.
+   - **Justification**: Fast response times are crucial for providing a good user experience. Users are likely to abandon the application if it takes too long to respond.  
+4. <a name="nfr2">**Reliability and Error Recovery**</a>
+   - **Description**: The application should be able to recover gracefully from errors. In the event of bad requests, the system should provide a clear error message to the user without crashing the app and loosing any user data.
+   - **Justification**: This is essential for ensuring that user data is not lost and that the system is reliable.
+
 
 ## 4. Design Specification
 
@@ -562,6 +568,17 @@ Study Wimme targets university students who seek a collaborative study environme
         - Compare reported location with actual physical location using multiple devices
         - Measure deviation from true coordinates using reference points
         - Verify accuracy remains within 10-meter threshold in 95% of test cases
+3. [**Performance**](#nfr3)
+    - **Validation**:
+          - Measure response time for server endpoints using automated tests
+          - Monitor server performance under load testing
+          - Verify response time is < 300ms for 95% of requests
+
+4. [**Reliability and Error Recovery**](#nfr4)
+    - **Validation**:
+          - Simulate bad requests and network failures to test error recovery
+          - Monitor server logs for error messages and exceptions
+          - Verify system can recover gracefully from errors without data loss
 
 
 ### **4.8. Main Project Complexity Design**
