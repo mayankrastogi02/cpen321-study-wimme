@@ -9,6 +9,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONException
 import org.json.JSONObject
 
 object SessionService {
@@ -36,7 +37,7 @@ object SessionService {
                 val sessions = parseSessionsJson(bodyString)
                 FetchSessionsResult(sessions = sessions)
             }
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             Log.e("SessionService", "Error fetching sessions", e)
             FetchSessionsResult(sessions = emptyList(), errorMessage = "Error occurred, please return to home screen and try again")
         }

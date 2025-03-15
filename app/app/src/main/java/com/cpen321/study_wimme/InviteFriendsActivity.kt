@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -192,7 +193,7 @@ class InviteFriendsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching friends", e)
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE

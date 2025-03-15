@@ -341,11 +341,6 @@ class CreateSessionActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CreateSessionActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Unexpected error creating session", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CreateSessionActivity, "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
             }
         }
     }

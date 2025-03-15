@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -161,7 +162,7 @@ class SessionDetailsActivity : AppCompatActivity() {
                             val errorJson = JSONObject(response)
                             val errorMessage = errorJson.optString("message", "Failed to join session")
                             Toast.makeText(this@SessionDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                        } catch (e: Exception) {
+                        } catch (e: JSONException) {
                             Toast.makeText(this@SessionDetailsActivity,
                                 "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()
                         }

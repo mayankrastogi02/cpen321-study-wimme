@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -115,7 +116,7 @@ class FriendsInfoActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error removing friend", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@FriendsInfoActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

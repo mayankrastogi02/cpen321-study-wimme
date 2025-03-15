@@ -311,15 +311,6 @@ class HomeFragment : Fragment() {
                     isLoading = false
                     fetchSessionsButton.isEnabled = true
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Unexpected error fetching sessions", e)
-                withContext(Dispatchers.Main) {
-                    showEmptyState("Unexpected error: ${e.message}")
-
-                    // Reset loading state
-                    isLoading = false
-                    fetchSessionsButton.isEnabled = true
-                }
             }
         }
     }

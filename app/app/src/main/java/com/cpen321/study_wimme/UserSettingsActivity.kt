@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -161,7 +162,7 @@ class UserSettingsActivity : AppCompatActivity() {
                             val jsonError = JSONObject(errorResponse)
                             val errorMessage = jsonError.optString("message", "Failed to delete account")
                             Toast.makeText(this@UserSettingsActivity, errorMessage, Toast.LENGTH_LONG).show()
-                        } catch (e: Exception) {
+                        } catch (e: JSONException) {
                             Toast.makeText(this@UserSettingsActivity, "Failed to delete account: $responseCode", Toast.LENGTH_SHORT).show()
                         }
                     }

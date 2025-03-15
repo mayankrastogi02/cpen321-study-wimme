@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -198,7 +199,7 @@ class FriendsFragment : Fragment() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching friends", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
