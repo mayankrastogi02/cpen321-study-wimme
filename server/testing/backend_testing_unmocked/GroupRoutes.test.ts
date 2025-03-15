@@ -25,7 +25,6 @@ beforeEach(async () => {
         interests: "Programming, Math",
         profileCreated: true,
         googleId: "googleIdHere",
-        displayName: "Test User 1"
     });
     await testUser1.save();
 
@@ -41,7 +40,6 @@ beforeEach(async () => {
         interests: "English, History",
         profileCreated: true,
         googleId: "googleId1",
-        displayName: "Test User 2"
     });
     await testUser2.save();
 
@@ -57,7 +55,6 @@ beforeEach(async () => {
         interests: "Espresso, Singing, Acting",
         profileCreated: true,
         googleId: "googleId2",
-        displayName: "My GOAT"
     });
     await sabrinaCarpenter.save();
     
@@ -76,11 +73,6 @@ beforeEach(async () => {
         members: [testUser1._id]
     });
     await testGroup2.save();
-});
-
-afterEach(async () => {
-    // Cleanup the user after each test
-    await User.deleteMany({});
 });
 
 // Interface POST /group

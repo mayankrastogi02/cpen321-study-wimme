@@ -45,5 +45,7 @@ export const removeToken = async(token: string) => {
     const result = await Device.deleteOne({ token });
     if (result.deletedCount === 0) {
         console.error('Could not delete token', token)
+        return false;
     }
+    return true;
 }

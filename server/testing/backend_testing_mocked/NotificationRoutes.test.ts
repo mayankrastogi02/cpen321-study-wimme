@@ -1,17 +1,113 @@
+import Device from "../../schemas/DeviceSchema";
+import mongoose from "mongoose";
+import User from "../../schemas/UserSchema";
+import { sendPushNotification } from "../../utils/notificationUtils";
+import { messaging } from "../..";
 
-// Interface POST /notification/deviceToken
-describe("Mocked: POST /notification/deviceToken", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
-    test("", async () => {
-        
+let testUser1: mongoose.Document;
+let testUser2: mongoose.Document;
+let testDevice1: mongoose.Document;
+let testDevice2: mongoose.Document;
+let testDevice3: mongoose.Document;
+
+beforeEach(async () => {
+    // Create the user before each test
+    testUser1 = new User({
+        userName: "testuser1",
+        email: "testuser1@example.com",
+        firstName: "Test1",
+        lastName: "User",
+        year: 2,
+        faculty: "Engineering",
+        friends: [],
+        friendRequests: [],
+        interests: "Programming, Math",
+        profileCreated: true,
+        googleId: "googleIdHere",
+    });
+    await testUser1.save();
+
+    testUser2 = new User({
+        userName: "testuser2",
+        email: "testuser2@example.com",
+        firstName: "Test2",
+        lastName: "User",
+        year: 2,
+        faculty: "English",
+        friends: [],
+        friendRequests: [],
+        interests: "English, History",
+        profileCreated: true,
+        googleId: "googleId1",
+    });
+    await testUser2.save();
+
+    testDevice1 = new Device({
+        userId: testUser1._id,
+        token: "invalidToken"
+    });
+
+    await testDevice1.save();
+
+    testDevice2 = new Device({
+        userId: testUser2._id,
+        token: "abc456"
+    });
+
+    await testDevice2.save();
+
+    testDevice3 = new Device({
+        userId: testUser2._id,
+        token: "abc789"
+    });
+
+    await testDevice3.save();
+
+    jest.clearAllMocks();
+});
+
+describe("sendPushNotification", () => {
+    test("Remove invalid device token if push sending notification fails with 'invalid' error message", async () => {
+        //mock messaging.send() to return error so that sendPushNotification deletes the token
+        const spy = jest.spyOn(messaging, "send").mockRejectedValue({
+            code: "messaging/registration-token-not-registered",
+        });
+
+        const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceBeforeSend).toBeTruthy();
+
+        await sendPushNotification(testUser1._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        const deviceAfterSend = await Device.findOne({token: "invalidToken"});
+        expect(deviceAfterSend).toBeFalsy();
+
+        spy.mockRestore();
+    });
+
+    test("Send notifications valid device tokens", async () => {
+        //mock messaging.send() to return error so that sendPushNotification deletes the token
+        const spy = jest.spyOn(messaging, "send")
+
+        await sendPushNotification(testUser2._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+
+        //make sure messaging.send() is called 2 times, once per device associated with user2
+        expect(spy).toHaveBeenCalledTimes(2);
+
+        //confirm devices have not been delted
+        const device1 = await Device.findOne({token: "abc456"});
+        expect(device1).toBeTruthy();
+
+        const device2 = await Device.findOne({token: "abc456"});
+        expect(device2).toBeTruthy();
+
+        spy.mockRestore();
     });
 });
 
-// Interface POST /notification/sendMessageTest
-describe("Mocked: POST /notification/sendMessageTest", () => {
+// Interface POST /notification/deviceToken
+describe("Mocked: POST /notification/deviceToken", () => {
     // Input: 
     // Expected status code: 
     // Expected behavior: 
