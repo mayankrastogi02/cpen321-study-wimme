@@ -11,7 +11,7 @@ let testDevice2: mongoose.Document;
 let testDevice3: mongoose.Document;
 
 beforeEach(async () => {
-    // Create the user before each test
+    // Create users before each test
     testUser1 = new User({
         userName: "testuser1",
         email: "testuser1@example.com",
@@ -42,6 +42,7 @@ beforeEach(async () => {
     });
     await testUser2.save();
 
+    // create devices before each test
     testDevice1 = new Device({
         userId: testUser1._id,
         token: "invalidToken"

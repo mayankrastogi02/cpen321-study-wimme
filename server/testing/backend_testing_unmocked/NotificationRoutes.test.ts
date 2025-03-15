@@ -8,7 +8,7 @@ let testUser1: mongoose.Document;
 let testUser2: mongoose.Document;
 
 beforeEach(async () => {
-    // Create the user before each test
+    // Create users before each test
     testUser1 = new User({
         userName: "testuser1",
         email: "testuser1@example.com",

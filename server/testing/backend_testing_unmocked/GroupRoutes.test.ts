@@ -12,7 +12,7 @@ let testGroup1: mongoose.Document;
 let testGroup2: mongoose.Document;
 
 beforeEach(async () => {
-    // Create the user before each test
+    // Create users before each test
     testUser1 = new User({
         userName: "testuser1",
         email: "testuser1@example.com",
@@ -58,7 +58,7 @@ beforeEach(async () => {
     });
     await sabrinaCarpenter.save();
     
-    // Create the group before each test
+    // Create groups before each test
     testGroup1 = new Group({
         name: "Test Group 1",
         userId: testUser1._id,
@@ -66,7 +66,6 @@ beforeEach(async () => {
     });
     await testGroup1.save();
 
-    // Create the group before each test
     testGroup2 = new Group({
         name: "Test Group 2",
         userId: testUser2._id,

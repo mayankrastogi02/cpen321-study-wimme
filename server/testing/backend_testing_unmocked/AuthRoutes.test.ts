@@ -5,7 +5,7 @@ import request from 'supertest';
 let testUser1: InstanceType<typeof User>;
 
 beforeEach(async () => {
-    // Create the user before each test
+    // Create user before each test
     testUser1 = new User({
         userName: "testuser1",
         email: "testuser1@example.com",
@@ -24,11 +24,11 @@ beforeEach(async () => {
 
 // Interface GET /auth/verify
 describe("Unmocked: GET /auth/verify", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
-    test("Verify valid user", async () => {
+    // Input: googleId: testUser1.googleId
+    // Expected status code: 200
+    // Expected behavior: Verifies existing user successfully
+    // Expected output: Verified user is returned
+    test("Verify existing user", async () => {
         const response = await request(app)
             .get(`/auth/verify`)
             .query({ googleId: testUser1.googleId});
@@ -50,7 +50,11 @@ describe("Unmocked: GET /auth/verify", () => {
             }
         });
     });
-
+    
+    // Input: empty
+    // Expected status code: 400
+    // Expected behavior: Error is thrown
+    // Expected output: 400 error
     test("Verify user without googleId param", async () => {
         const response = await request(app)
             .get(`/auth/verify`);
@@ -58,7 +62,11 @@ describe("Unmocked: GET /auth/verify", () => {
         expect(response.status).toBe(400);
     });
 
-    test("Verify user without googleId param", async () => {
+    // Input: googleId: nonexistentGoogleId
+    // Expected status code: 404
+    // Expected behavior: No user is found with the passed in googleId
+    // Expected output: 404 not found for the user
+    test("Verify nonexistent user", async () => {
         const response = await request(app)
             .get(`/auth/verify`)
             .query({ googleId: "nonexistentGoogleId"});
@@ -69,18 +77,18 @@ describe("Unmocked: GET /auth/verify", () => {
 
 // Interface POST /auth/google
 describe("Unmocked: POST /auth/google", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: googleId: testGoogleId2, email: testUser2@gmail.com, displayName: test user 2
+    // Expected status code: 201
+    // Expected behavior: New user is inserted into the database
+    // Expected output: 201 status indicating successful creation
     test("Create new user", async () => {
         const response = await request(app)
             .post(`/auth/google`)
-            .send({ googleId: "testGoogleId2", email: "testUser2@gmail.com", displayName: "test user 2"});
+            .send({ googleId: "testGoogleId2", email: "testUser2@gmail.com", displayName: "test user 2" });
 
             expect(response.status).toBe(201);
 
-            //Brand new user so profileCreated is false
+            //Brand new user so profileCreated is false to indicate the user has yet to enter their information in
             expect(response.body.profileCreated).toBe(false);
 
             const createdUser = await User.findOne({googleId:  "testGoogleId2"});
@@ -90,10 +98,10 @@ describe("Unmocked: POST /auth/google", () => {
 
 // Interface PUT /auth/profile/:googleId
 describe("Unmocked: PUT /auth/profile/:googleId", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: firstName: updatedFirstName, lastName: updatedLastName, userName: updatedUserName, year: updatedYear, faculty: updatedFaculty, interests: updatedInterests
+    // Expected status code: 200
+    // Expected behavior: testUser1's information is successfully updated with the new fields from the initial values in the beforeEach
+    // Expected output: 'success' boolean, success message and the User object with updated fields should be returned
     test("Update user", async () => {
         const updatedFirstName = "John";
         const updatedLastName = "Smith";
@@ -104,7 +112,7 @@ describe("Unmocked: PUT /auth/profile/:googleId", () => {
 
         const response = await request(app)
             .put(`/auth/profile/${testUser1.googleId}`)
-            .send({ firstName: updatedFirstName, lastName: updatedLastName, userName: updatedUserName, year: updatedYear, faculty: updatedFaculty, interests: updatedInterests});
+            .send({ firstName: updatedFirstName, lastName: updatedLastName, userName: updatedUserName, year: updatedYear, faculty: updatedFaculty, interests: updatedInterests });
 
         expect(response.status).toBe(200);
 
@@ -126,6 +134,10 @@ describe("Unmocked: PUT /auth/profile/:googleId", () => {
         });
     });
 
+    // Input: {} - empty params object
+    // Expected status code: 200
+    // Expected behavior: testUser1's information should remain unchanged from its initialization in the beforeEach block
+    // Expected output: 'success' boolean, success message and unchanged User object should be returned
     test("Update user with empty params", async () => {
         const response = await request(app)
             .put(`/auth/profile/${testUser1.googleId}`)
@@ -151,6 +163,10 @@ describe("Unmocked: PUT /auth/profile/:googleId", () => {
         });
     });
 
+    // Input: firstName: updatedFirstName, lastName: updatedLastName, userName: updatedUserName, year: updatedYear, faculty: updatedFaculty, interests: updatedInterests
+    // Expected status code: 404
+    // Expected behavior: System should not be able to find User with nonexistentGoogleId extracted from the URI
+    // Expected output: 404 not found for the User
     test("Update with nonexistentGoogleId", async () => {
         const updatedFirstName = "John";
         const updatedLastName = "Smith";
