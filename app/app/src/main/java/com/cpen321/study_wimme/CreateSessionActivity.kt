@@ -16,7 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -323,16 +325,26 @@ class CreateSessionActivity : AppCompatActivity() {
                             val errorJson = JSONObject(responseBody)
                             val errorMessage = errorJson.optString("message", "Failed to create session")
                             Toast.makeText(this@CreateSessionActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                        } catch (e: Exception) {
+                        } catch (e: JSONException) {
                             Toast.makeText(this@CreateSessionActivity, "Failed to create session: $responseCode", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error creating session", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "Network error creating session", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CreateSessionActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CreateSessionActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "JSON error creating session", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@CreateSessionActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error creating session", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@CreateSessionActivity, "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }

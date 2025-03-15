@@ -20,9 +20,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -89,7 +92,6 @@ class HomeFragment : Fragment() {
                     R.id.findButton -> SessionFilter.FIND
                     R.id.joinedButton -> SessionFilter.JOINED
                     R.id.hostedButton -> SessionFilter.HOSTED
-
                     else -> SessionFilter.FIND
                 }
                 updateSessionsDisplay()
@@ -117,7 +119,6 @@ class HomeFragment : Fragment() {
         // Set default session type
         visibilityToggleGroup.check(R.id.privateButton)
         visibilityToggleGroup.isSelectionRequired = true
-
 
         // Set default visibility
         sessionFilterToggleGroup.check(R.id.findButton)
@@ -252,8 +253,11 @@ class HomeFragment : Fragment() {
                             )
 
                             fetchedSessions.add(session)
-                        } catch (e: Exception) {
+                        } catch (e: JSONException) {
                             Log.e(TAG, "Error parsing session", e)
+                            // Continue to next session if one fails to parse
+                        } catch (e: ParseException) {
+                            Log.e(TAG, "Error parsing session date", e)
                             // Continue to next session if one fails to parse
                         }
                     }
@@ -289,10 +293,28 @@ class HomeFragment : Fragment() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching sessions", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "Network error fetching sessions", e)
                 withContext(Dispatchers.Main) {
-                    showEmptyState("Error: ${e.message}")
+                    showEmptyState("Network error: ${e.message}")
+
+                    // Reset loading state
+                    isLoading = false
+                    fetchSessionsButton.isEnabled = true
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "JSON error fetching sessions", e)
+                withContext(Dispatchers.Main) {
+                    showEmptyState("JSON error: ${e.message}")
+
+                    // Reset loading state
+                    isLoading = false
+                    fetchSessionsButton.isEnabled = true
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error fetching sessions", e)
+                withContext(Dispatchers.Main) {
+                    showEmptyState("Unexpected error: ${e.message}")
 
                     // Reset loading state
                     isLoading = false
@@ -318,7 +340,7 @@ class HomeFragment : Fragment() {
             endTimeOnlyFormat.timeZone = TimeZone.getDefault()
             
             displayFormat.format(startDateTime) + " - " + endTimeOnlyFormat.format(endDateTime)
-        } catch (e: Exception) {
+        } catch (e: ParseException) {
             Log.e(TAG, "Error formatting session time", e)
             "Time not specified"
         }
