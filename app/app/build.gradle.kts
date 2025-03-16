@@ -35,6 +35,12 @@ android {
         val webClientId = properties.getProperty("WEB_CLIENT_ID") ?: ""
         buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
 
+        val testGoogleId = properties.getProperty("TEST_GOOGLE_ID") ?: ""
+        buildConfigField("String", "TEST_GOOGLE_ID", "\"$testGoogleId\"")
+
+        val testUserId = properties.getProperty("TEST_USER_ID") ?: ""
+        buildConfigField("String", "TEST_USER_ID", "\"$testUserId\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -71,9 +77,11 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
-    implementation(libs.androidx.junit.ktx)
-    implementation(libs.androidx.rules)
     implementation(libs.androidx.espresso.intents)
+    implementation(libs.androidx.rules)
+//    implementation(libs.androidx.junit.ktx)
+//    implementation(libs.androidx.rules)
+//    implementation(libs.androidx.espresso.intents)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -90,4 +98,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging:23.3.1")
+    androidTestImplementation("com.squareup.okhttp3:okhttp:4.9.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("com.squareup.okhttp3:okhttp:4.9.3")
 }

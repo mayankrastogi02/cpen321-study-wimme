@@ -34,6 +34,7 @@ import android.widget.EditText
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import androidx.test.espresso.matcher.BoundedMatcher
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 
 //For displayed error messages (non-toast)
 fun hasEditTextErrorText(expectedError: String): Matcher<View> {
@@ -235,6 +236,18 @@ class CreateSessionActivityTest {
             )
         onView(withId(R.id.deleteButton)).perform(click())
 
+        //failure scenario
+        onView(withText("Cancel"))
+            .inRoot(isDialog())
+            .perform(click())
+
+        onView(withId(R.id.deleteButton)).perform(click())
+
+        onView(withText("Delete"))
+            .inRoot(isDialog())
+            .perform(click())
+
+        Thread.sleep(1000)
 
         onView(withText("Test Session Espresso"))
             .check(matches(not(isDisplayed())))
