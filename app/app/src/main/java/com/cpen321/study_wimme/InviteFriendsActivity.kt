@@ -156,23 +156,7 @@ class InviteFriendsActivity : AppCompatActivity() {
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
-                    val jsonResponse = JSONObject(response)
-                    val friendsArray = jsonResponse.getJSONArray("friends")
-                    val fetchedFriends = ArrayList<Friend>()
-
-                    for (i in 0 until friendsArray.length()) {
-                        val friendObj = friendsArray.getJSONObject(i)
-                        val friend = Friend(
-                            friendObj.getString("_id"),
-                            friendObj.getString("userName"),
-                            friendObj.getString("firstName"),
-                            friendObj.getString("lastName"),
-                            friendObj.optString("year", ""),
-                            friendObj.optString("faculty", ""),
-                            friendObj.optString("interests", "")
-                        )
-                        fetchedFriends.add(friend)
-                    }
+                    val fetchedFriends = parseFriendsResponse(response)
 
                     withContext(Dispatchers.Main) {
                         progressBar.visibility = View.GONE
@@ -205,6 +189,27 @@ class InviteFriendsActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun parseFriendsResponse(response: String): ArrayList<Friend> {
+        val jsonResponse = JSONObject(response)
+        val friendsArray = jsonResponse.getJSONArray("friends")
+        val fetchedFriends = ArrayList<Friend>()
+
+        for (i in 0 until friendsArray.length()) {
+            val friendObj = friendsArray.getJSONObject(i)
+            val friend = Friend(
+                friendObj.getString("_id"),
+                friendObj.getString("userName"),
+                friendObj.getString("firstName"),
+                friendObj.getString("lastName"),
+                friendObj.optString("year", ""),
+                friendObj.optString("faculty", ""),
+                friendObj.optString("interests", "")
+            )
+            fetchedFriends.add(friend)
+        }
+        return fetchedFriends
     }
 
     private fun fetchGroups() {

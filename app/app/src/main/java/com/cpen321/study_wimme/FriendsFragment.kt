@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -300,7 +301,6 @@ class FriendsFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/group/${userId}")
-
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
 
@@ -309,45 +309,10 @@ class FriendsFragment : Fragment() {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     val jsonResponse = JSONObject(response)
                     val groupsArray = jsonResponse.getJSONArray("groups")
-                    val fetchedGroups = ArrayList<Group>()
-
-                    for (i in 0 until groupsArray.length()) {
-                        val groupObj = groupsArray.getJSONObject(i)
-
-                        val membersArray = groupObj.getJSONArray("members")
-                        val membersArrayList = ArrayList<GroupMember>()
-
-                        for (j in 0 until membersArray.length())  {
-                            val memberObj = membersArray.getJSONObject(j)
-                            val member = GroupMember(
-                                memberObj.getString("_id"),
-                                memberObj.getString("userName")
-                            )
-                            membersArrayList.add(member)
-                        }
-
-                        val group = Group(
-                            groupObj.getString("_id"),
-                            groupObj.getString("name"),
-                            membersArrayList
-                        )
-                        fetchedGroups.add(group)
-                    }
+                    val fetchedGroups = parseGroups(groupsArray)
 
                     withContext(Dispatchers.Main) {
-                        groupList.clear()
-                        groupList.addAll(fetchedGroups)
-                        adapter = FriendAdapter(groupList) { item ->
-                            when (item) {
-                                is Group -> {
-                                    val intent = Intent(context, EditGroupActivity::class.java)
-                                    intent.putExtra("group", item)
-                                    intent.putExtra("friends", friendList)
-                                    startActivity(intent)
-                                }
-                            }
-                        }
-                        recyclerView.adapter = adapter
+                        updateGroupsList(fetchedGroups)
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -362,6 +327,48 @@ class FriendsFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun parseGroups(groupsArray: JSONArray): ArrayList<Group> {
+        val fetchedGroups = ArrayList<Group>()
+        for (i in 0 until groupsArray.length()) {
+            val groupObj = groupsArray.getJSONObject(i)
+            val membersArray = groupObj.getJSONArray("members")
+            val membersArrayList = ArrayList<GroupMember>()
+
+            for (j in 0 until membersArray.length()) {
+                val memberObj = membersArray.getJSONObject(j)
+                val member = GroupMember(
+                    memberObj.getString("_id"),
+                    memberObj.getString("userName")
+                )
+                membersArrayList.add(member)
+            }
+
+            val group = Group(
+                groupObj.getString("_id"),
+                groupObj.getString("name"),
+                membersArrayList
+            )
+            fetchedGroups.add(group)
+        }
+        return fetchedGroups
+    }
+
+    private fun updateGroupsList(fetchedGroups: ArrayList<Group>) {
+        groupList.clear()
+        groupList.addAll(fetchedGroups)
+        adapter = FriendAdapter(groupList) { item ->
+            when (item) {
+                is Group -> {
+                    val intent = Intent(context, EditGroupActivity::class.java)
+                    intent.putExtra("group", item)
+                    intent.putExtra("friends", friendList)
+                    startActivity(intent)
+                }
+            }
+        }
+        recyclerView.adapter = adapter
     }
 
     private fun showAddFriendLayout() {

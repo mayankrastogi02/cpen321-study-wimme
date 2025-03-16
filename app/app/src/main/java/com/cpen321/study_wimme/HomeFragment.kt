@@ -59,8 +59,15 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
+        initializeUIComponents(view)
+        setUpRecyclerView()
+        setUpToggleGroups()
+        setUpClickListeners()
+        fetchAllSessions(false)
+        return view
+    }
 
-        // Initialize UI components
+    private fun initializeUIComponents(view: View) {
         sessionsRecyclerView = view.findViewById(R.id.sessionsRecyclerView)
         visibilityToggleGroup = view.findViewById(R.id.visibilityToggleGroup)
         sessionFilterToggleGroup = view.findViewById(R.id.sessionFilterToggleGroup)
@@ -68,13 +75,15 @@ class HomeFragment : Fragment() {
         addSessionFab = view.findViewById(R.id.addSessionFab)
         emptyStateTextView = view.findViewById(R.id.emptyStateTextView)
         fetchSessionsButton = view.findViewById(R.id.fetchSessionsButton)
+    }
 
-        // Set up RecyclerView
+    private fun setUpRecyclerView() {
         sessionsRecyclerView.layoutManager = LinearLayoutManager(context)
         sessionsAdapter = SessionAdapter()
         sessionsRecyclerView.adapter = sessionsAdapter
+    }
 
-        // Set up visibility toggle
+    private fun setUpToggleGroups() {
         visibilityToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 currentVisibility = when (checkedId) {
@@ -98,15 +107,37 @@ class HomeFragment : Fragment() {
             }
         }
 
+        visibilityToggleGroup.check(R.id.privateButton)
+        visibilityToggleGroup.isSelectionRequired = true
+        sessionFilterToggleGroup.check(R.id.findButton)
+        sessionFilterToggleGroup.isSelectionRequired = true
+    }
+
+    private fun setUpClickListeners() {
+        profileIcon.setOnClickListener {
+            val intent = Intent(context, UserSettingsActivity::class.java)
+            startActivity(intent)
+        }
+
+        addSessionFab.setOnClickListener {
+            val intent = Intent(context, CreateSessionActivity::class.java)
+            createSessionLauncher.launch(intent)
+        }
+
+        fetchSessionsButton.setOnClickListener {
+            if (!isLoading) {
+                fetchAllSessions(true)
+            }
+        }
+
         sessionsAdapter.setOnSessionClickListener { session ->
             Log.d("HomeFragment", "Host ID: ${session.hostId}")
-            // Launch SessionDetailsActivity with session details
             val intent = Intent(requireContext(), SessionDetailsActivity::class.java).apply {
                 putExtra("SESSION_NAME", session.name)
                 putExtra("SESSION_TIME", session.time)
                 putExtra("SESSION_LOCATION", session.location)
                 putExtra("SESSION_DESCRIPTION", session.description)
-                putExtra("SESSION_SUBJECT", session.subject) // You'll need to add these fields to Session
+                putExtra("SESSION_SUBJECT", session.subject)
                 putExtra("SESSION_FACULTY", session.faculty)
                 putExtra("SESSION_YEAR", session.year)
                 putExtra("SESSION_HOST", session.hostName)
@@ -115,38 +146,6 @@ class HomeFragment : Fragment() {
             }
             startActivity(intent)
         }
-
-        // Set default session type
-        visibilityToggleGroup.check(R.id.privateButton)
-        visibilityToggleGroup.isSelectionRequired = true
-
-        // Set default visibility
-        sessionFilterToggleGroup.check(R.id.findButton)
-        sessionFilterToggleGroup.isSelectionRequired = true
-
-        // Set up profile icon click
-        profileIcon.setOnClickListener {
-            val intent = Intent(context, UserSettingsActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Set up add session button
-        addSessionFab.setOnClickListener {
-            val intent = Intent(context, CreateSessionActivity::class.java)
-            createSessionLauncher.launch(intent)
-        }
-
-        // Set up fetch sessions button
-        fetchSessionsButton.setOnClickListener {
-            if (!isLoading) {
-                fetchAllSessions(true) // Pass true to show a loading indicator
-            }
-        }
-
-        // Load sessions
-        fetchAllSessions(false)
-
-        return view
     }
 
     override fun onResume() {
@@ -166,7 +165,6 @@ class HomeFragment : Fragment() {
         }
 
         if (showLoading) {
-            // Show loading state
             isLoading = true
             fetchSessionsButton.isEnabled = false
         }
@@ -182,137 +180,124 @@ class HomeFragment : Fragment() {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     Log.d(TAG, "Response: $response")
 
-                    val jsonResponse = JSONObject(response)
-                    val sessionsArray = jsonResponse.getJSONArray("sessions")
-
-                    val fetchedSessions = ArrayList<Session>()
-                    for (i in 0 until sessionsArray.length()) {
-                        try {
-                            val sessionObj = sessionsArray.getJSONObject(i)
-
-                            // Get name, description
-                            val name = sessionObj.getString("name")
-                            val description = sessionObj.optString("description", "")
-
-                            // Parse date range
-                            val dateRangeObj = sessionObj.getJSONObject("dateRange")
-                            val startDate = dateRangeObj.getString("startDate")
-                            val endDate = dateRangeObj.getString("endDate")
-
-                            // Format date and time for display
-                            val formattedTime = formatSessionTime(startDate, endDate)
-
-                            // Get location from GeoJSON format
-                            val locationObj = sessionObj.getJSONObject("location")
-                            val coordinates = locationObj.getJSONArray("coordinates")
-                            val longitude = coordinates.getDouble(0)
-                            val latitude = coordinates.getDouble(1)
-                            val formattedLocation = formatLocation(latitude, longitude)
-
-                            // Check if public/private
-                            val isPublic = sessionObj.getBoolean("isPublic")
-                            Log.d(TAG, "Session '${name}' isPublic: $isPublic")
-
-                            val visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
-                            Log.d(TAG, "Setting session visibility to: $visibility")
-
-                            // Inside the loop that processes sessions in fetchSessions
-                            val subject = sessionObj.optString("subject", "")
-                            val faculty = sessionObj.optString("faculty", "")
-                            val year = sessionObj.optString("year", "").toString()
-
-                            // Get host information if available
-                            val hostObj = sessionObj.optJSONObject("hostId")
-                            val hostId = hostObj?.optString("_id", "")
-
-                            val hostName = if (hostObj != null) {
-                                "${hostObj.optString("firstName", "")} ${hostObj.optString("lastName", "")}"
-                            } else {
-                                "Unknown Host"
-                            }
-
-                            val participantsArray = sessionObj.getJSONArray("participants")
-
-                            val participants = List(participantsArray.length()) { p ->
-                                participantsArray.getString(p)
-                            }
-
-                            val session = Session(
-                                id = sessionObj.getString("_id"),
-                                name = name,
-                                time = formattedTime,
-                                location = formattedLocation,
-                                description = description,
-                                visibility = visibility,
-                                subject = subject,
-                                faculty = faculty,
-                                year = year,
-                                hostName = hostName,
-                                hostId = hostId ?: "",
-                                participants = participants
-                            )
-
-                            fetchedSessions.add(session)
-                        } catch (e: JSONException) {
-                            Log.e(TAG, "Error parsing session", e)
-                            // Continue to next session if one fails to parse
-                        } catch (e: ParseException) {
-                            Log.e(TAG, "Error parsing session date", e)
-                            // Continue to next session if one fails to parse
-                        }
-                    }
-
+                    val fetchedSessions = parseSessions(response)
                     withContext(Dispatchers.Main) {
-                        sessionsList.clear()
-                        sessionsList.addAll(fetchedSessions)
-                        updateSessionsDisplay()
-
-                        // Reset loading state
-                        isLoading = false
-                        fetchSessionsButton.isEnabled = true
-                        // Show success message if this was a manual refresh
-                        if (showLoading) {
-                            Toast.makeText(context,
-                                "Sessions updated! Found ${fetchedSessions.size} sessions",
-                                Toast.LENGTH_SHORT).show()
-                        }
-
-                        Log.d(TAG, "Loaded ${fetchedSessions.size} sessions")
+                        updateUIWithFetchedSessions(fetchedSessions, showLoading)
                     }
                 } else {
-                    // Handle error response
-                    val errorMessage = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
-                    Log.e(TAG, "Error response: $errorMessage")
-
                     withContext(Dispatchers.Main) {
-                        showEmptyState("Error loading sessions (${responseCode})")
-
-                        // Reset loading state
-                        isLoading = false
-                        fetchSessionsButton.isEnabled = true
+                        handleErrorResponse(connection, responseCode)
                     }
                 }
                 connection.disconnect()
             } catch (e: IOException) {
-                Log.e(TAG, "Network error fetching sessions", e)
                 withContext(Dispatchers.Main) {
-                    showEmptyState("Network error: ${e.message}")
-
-                    // Reset loading state
-                    isLoading = false
-                    fetchSessionsButton.isEnabled = true
+                    handleNetworkError(e)
                 }
             } catch (e: JSONException) {
-                Log.e(TAG, "JSON error fetching sessions", e)
                 withContext(Dispatchers.Main) {
-                    showEmptyState("JSON error: ${e.message}")
-
-                    // Reset loading state
-                    isLoading = false
-                    fetchSessionsButton.isEnabled = true
+                    handleJSONError(e)
                 }
             }
         }
+    }
+
+    private suspend fun handleErrorResponse(connection: HttpURLConnection, responseCode: Int) {
+        val errorMessage = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
+        Log.e(TAG, "Error response: $errorMessage")
+        showEmptyState("Error loading sessions (${responseCode})")
+        isLoading = false
+        fetchSessionsButton.isEnabled = true
+    }
+
+    private suspend fun handleNetworkError(e: IOException) {
+        Log.e(TAG, "Network error fetching sessions", e)
+        showEmptyState("Network error: ${e.message}")
+        isLoading = false
+        fetchSessionsButton.isEnabled = true
+    }
+
+    private suspend fun handleJSONError(e: JSONException) {
+        Log.e(TAG, "JSON error fetching sessions", e)
+        showEmptyState("JSON error: ${e.message}")
+        isLoading = false
+        fetchSessionsButton.isEnabled = true
+    }
+
+    private fun parseSessions(response: String): ArrayList<Session> {
+        val jsonResponse = JSONObject(response)
+        val sessionsArray = jsonResponse.getJSONArray("sessions")
+        val fetchedSessions = ArrayList<Session>()
+
+        for (i in 0 until sessionsArray.length()) {
+            try {
+                val sessionObj = sessionsArray.getJSONObject(i)
+                val session = parseSessionObject(sessionObj)
+                fetchedSessions.add(session)
+            } catch (e: JSONException) {
+                Log.e(TAG, "Error parsing session", e)
+            } catch (e: ParseException) {
+                Log.e(TAG, "Error parsing session date", e)
+            }
+        }
+        return fetchedSessions
+    }
+
+    private fun parseSessionObject(sessionObj: JSONObject): Session {
+        val name = sessionObj.getString("name")
+        val description = sessionObj.optString("description", "")
+        val dateRangeObj = sessionObj.getJSONObject("dateRange")
+        val startDate = dateRangeObj.getString("startDate")
+        val endDate = dateRangeObj.getString("endDate")
+        val formattedTime = formatSessionTime(startDate, endDate)
+        val locationObj = sessionObj.getJSONObject("location")
+        val coordinates = locationObj.getJSONArray("coordinates")
+        val longitude = coordinates.getDouble(0)
+        val latitude = coordinates.getDouble(1)
+        val formattedLocation = formatLocation(latitude, longitude)
+        val isPublic = sessionObj.getBoolean("isPublic")
+        val visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
+        val subject = sessionObj.optString("subject", "")
+        val faculty = sessionObj.optString("faculty", "")
+        val year = sessionObj.optString("year", "").toString()
+        val hostObj = sessionObj.optJSONObject("hostId")
+        val hostId = hostObj?.optString("_id", "")
+        val hostName = if (hostObj != null) {
+            "${hostObj.optString("firstName", "")} ${hostObj.optString("lastName", "")}"
+        } else {
+            "Unknown Host"
+        }
+        val participantsArray = sessionObj.getJSONArray("participants")
+        val participants = List(participantsArray.length()) { p ->
+            participantsArray.getString(p)
+        }
+
+        return Session(
+            id = sessionObj.getString("_id"),
+            name = name,
+            time = formattedTime,
+            location = formattedLocation,
+            description = description,
+            visibility = visibility,
+            subject = subject,
+            faculty = faculty,
+            year = year,
+            hostName = hostName,
+            hostId = hostId ?: "",
+            participants = participants
+        )
+    }
+
+    private fun updateUIWithFetchedSessions(fetchedSessions: ArrayList<Session>, showLoading: Boolean) {
+        sessionsList.clear()
+        sessionsList.addAll(fetchedSessions)
+        updateSessionsDisplay()
+        isLoading = false
+        fetchSessionsButton.isEnabled = true
+        if (showLoading) {
+            Toast.makeText(context, "Sessions updated! Found ${fetchedSessions.size} sessions", Toast.LENGTH_SHORT).show()
+        }
+        Log.d(TAG, "Loaded ${fetchedSessions.size} sessions")
     }
 
     // Helper method for date formatting
