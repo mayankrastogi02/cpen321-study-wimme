@@ -551,7 +551,12 @@ describe("Unmocked: PUT /user", () => {
     test("Update the firstName, lastName, and profilePic", async () => {
         const response = await request(app)
             .put('/user')
-            .send({ userId: testUser1._id, firstName: "Test1Changed", lastName: "UserChanged", profilePic: "profilePicAdded" })
+            .send({ 
+                userId: testUser1._id, 
+                firstName: "Test1Changed", 
+                lastName: "UserChanged", 
+                profilePic: "profilePicAdded" 
+            });
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("User has been updated successfully");
