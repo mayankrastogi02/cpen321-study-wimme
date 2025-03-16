@@ -346,7 +346,8 @@ describe("Unmocked: POST /session", () => {
                 isPublic: true,
                 subject: "testSubject",
                 faculty: "testFaculty",
-                year: 2
+                year: 2,
+                invitees: [testUser2._id]
             });
 
         expect(response.status).toBe(200);
@@ -365,7 +366,8 @@ describe("Unmocked: POST /session", () => {
             isPublic: true,
             subject: "testSubject",
             faculty: "testFaculty",
-            year: 2
+            year: 2,
+            invitees: [(testUser2._id as mongoose.Types.ObjectId).toString()]
         });
     });
 });
@@ -493,6 +495,8 @@ describe("Unmocked: DELETE /session/:sessionId", () => {
     // Expected behavior: Session deleted from database
     // Expected output: message: "Session deleted successfully"
     test("Session deleted successfully", async () => {
+        await Session.findByIdAndUpdate(testSession1._id, { $push: { invitees: testUser2._id } });
+
         const response = await request(app)
             .delete(`/session/${testSession1._id}`)
 
