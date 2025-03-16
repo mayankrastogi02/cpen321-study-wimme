@@ -203,6 +203,19 @@ describe("Unmocked: PUT /group/:groupId", () => {
         expect(response.body.group.members).not.toContain(String(testUser2._id));
     });
 
+    // Input: 
+    // Expected status code: 
+    // Expected behavior: 
+    // Expected output: 
+    test("UpdateGroupWithNoMembersField", async () => {
+        const response = await request(app)
+            .put(`/group/${testGroup1._id}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.group.name).toBe('Test Group 1');
+        expect(response.body.group.members).toContain(String(testUser2._id));
+    });
+
     test("UpdateGroupWithHostId", async () => {
         const response = await request(app)
             .put(`/group/${testGroup1._id}`)

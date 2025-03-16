@@ -9,7 +9,7 @@ jest.spyOn(Session, "findById").mockImplementation(() => {
     throw new Error("Database error");
 });
 
-// Mock findById to throw an error
+// Mock User.findById to throw an error
 jest.spyOn(User, "findById").mockImplementation(() => {
     throw new Error("Database error");
 });
