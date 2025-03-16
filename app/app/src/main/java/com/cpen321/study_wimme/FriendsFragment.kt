@@ -94,7 +94,7 @@ class FriendsFragment : Fragment() {
         addFriendStub = view.findViewById(R.id.addFriendStub)
         createGroupStub = view.findViewById(R.id.createGroupStub)
 
-        visibilityToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+        visibilityToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked -> 
             if (isChecked) {
                 when (checkedId) {
                     R.id.friendsButton -> {
@@ -151,6 +151,10 @@ class FriendsFragment : Fragment() {
             return
         }
 
+        fetchFriendsFromServer(userId)
+    }
+
+    private fun fetchFriendsFromServer(userId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/user/friends?userId=$userId")
@@ -163,35 +167,10 @@ class FriendsFragment : Fragment() {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     val jsonResponse = JSONObject(response)
                     val friendsArray = jsonResponse.getJSONArray("friends")
-                    val fetchedFriends = ArrayList<Friend>()
-
-                    for (i in 0 until friendsArray.length()) {
-                        val friendObj = friendsArray.getJSONObject(i)
-                        val friend = Friend(
-                            friendObj.getString("_id"),
-                            friendObj.getString("userName"),
-                            friendObj.getString("firstName"),
-                            friendObj.getString("lastName"),
-                            friendObj.optString("year", ""),
-                            friendObj.optString("faculty", ""),
-                            friendObj.optString("interests", "")
-                        )
-                        fetchedFriends.add(friend)
-                    }
+                    val fetchedFriends = parseFriends(friendsArray)
 
                     withContext(Dispatchers.Main) {
-                        friendList.clear()
-                        friendList.addAll(fetchedFriends)
-                        adapter = FriendAdapter(friendList) { item ->
-                            when (item) {
-                                is Friend -> {
-                                    val intent = Intent(context, FriendsInfoActivity::class.java)
-                                    intent.putExtra("friend", item)
-                                    startActivity(intent)
-                                }
-                            }
-                        }
-                        recyclerView.adapter = adapter
+                        updateFriendsList(fetchedFriends)
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -206,6 +185,39 @@ class FriendsFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun parseFriends(friendsArray: JSONArray): ArrayList<Friend> {
+        val fetchedFriends = ArrayList<Friend>()
+        for (i in 0 until friendsArray.length()) {
+            val friendObj = friendsArray.getJSONObject(i)
+            val friend = Friend(
+                friendObj.getString("_id"),
+                friendObj.getString("userName"),
+                friendObj.getString("firstName"),
+                friendObj.getString("lastName"),
+                friendObj.optString("year", ""),
+                friendObj.optString("faculty", ""),
+                friendObj.optString("interests", "")
+            )
+            fetchedFriends.add(friend)
+        }
+        return fetchedFriends
+    }
+
+    private fun updateFriendsList(fetchedFriends: ArrayList<Friend>) {
+        friendList.clear()
+        friendList.addAll(fetchedFriends)
+        adapter = FriendAdapter(friendList) { item ->
+            when (item) {
+                is Friend -> {
+                    val intent = Intent(context, FriendsInfoActivity::class.java)
+                    intent.putExtra("friend", item)
+                    startActivity(intent)
+                }
+            }
+        }
+        recyclerView.adapter = adapter
     }
 
     // Helper method to fetch userId using googleId
@@ -247,7 +259,7 @@ class FriendsFragment : Fragment() {
 
                         // Now fetch friends with the retrieved userId
                         withContext(Dispatchers.Main) {
-                            fetchFriends()
+                            fetchFriendsFromServer(mongoUserId)
                         }
                     } else {
                         Log.e(TAG, "MongoDB user ID not found in response")
@@ -281,6 +293,10 @@ class FriendsFragment : Fragment() {
             return
         }
 
+        fetchGroupsFromServer(userId)
+    }
+
+    private fun fetchGroupsFromServer(userId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/group/${userId}")
