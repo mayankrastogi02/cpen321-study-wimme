@@ -35,7 +35,7 @@ describe("Mocked: POST /group", () => {
     // Expected status code: 500
     // Expected behavior: the error is handled
     // Expected output: None
-    test("CreateGroup", async () => {
+    test("Database throws", async () => {
         const response = await request(app)
             .post('/group')
             .send({ name: 'New Group', userId: testUserID });
@@ -52,7 +52,7 @@ describe("Mocked: GET /group/:userId", () => {
     // Expected status code: 500
     // Expected behavior: the error is handled
     // Expected output: message: "Internal server error"
-    test("", async () => {
+    test("Database throws", async () => {
         const response = await request(app)
             .get(`/group/${testUserID}`);
 
@@ -69,7 +69,7 @@ describe("Mocked: PUT /group/:groupId", () => {
     // Expected status code: 500
     // Expected behavior: the error is handled
     // Expected output: message: "Internal server error"
-    test("", async () => {
+    test("Database throws", async () => {
         const response = await request(app)
             .put(`/group/${testGroupID}`)
             .send({ members: [testUserID] });
@@ -87,7 +87,7 @@ describe("Mocked: DELETE /group/:groupId", () => {
     // Expected status code: 500
     // Expected behavior: the error is handled
     // Expected output: message: "Internal server error"
-    test("", async () => {
+    test("Database throws", async () => {
         const response = await request(app)
             .delete(`/group/${testGroupID}`);
 
