@@ -1,6 +1,5 @@
 package com.cpen321.study_wimme
 
-import SessionService
 import android.os.Bundle
 import android.util.Log
 import android.view.View

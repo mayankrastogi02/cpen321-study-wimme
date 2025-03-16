@@ -1,3 +1,5 @@
+package com.cpen321.study_wimme
+
 import android.util.Log
 import com.cpen321.study_wimme.BuildConfig
 import com.cpen321.study_wimme.NearbySessionsResponse
@@ -11,6 +13,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 
 object SessionService {
     private val client = OkHttpClient()
@@ -37,8 +40,11 @@ object SessionService {
                 val sessions = parseSessionsJson(bodyString)
                 FetchSessionsResult(sessions = sessions)
             }
-        } catch (e: JSONException) {
+        } catch (e: IOException) {
             Log.e("SessionService", "Error fetching sessions", e)
+            FetchSessionsResult(sessions = emptyList(), errorMessage = "Error occurred, please return to home screen and try again")
+        } catch (e: JSONException) {
+            Log.e("SessionService", "Error parsing sessions", e)
             FetchSessionsResult(sessions = emptyList(), errorMessage = "Error occurred, please return to home screen and try again")
         }
     }
@@ -51,7 +57,7 @@ object SessionService {
         val request = Request.Builder().url(joinUrl).put(requestBody).build()
         try {
             val response = client.newCall(request).execute()
-            return@withContext if (response.isSuccessful) {
+            if (response.isSuccessful) {
                 response.close()
                 JoinSessionResult(true)
             } else {
@@ -70,9 +76,12 @@ object SessionService {
                 response.close()
                 JoinSessionResult(false, errorMessage)
             }
+        } catch (e: IOException) {
+            Log.e("SessionService", "Network error joining session", e)
+            JoinSessionResult(false, "Network error joining session: ${e.message}")
         } catch (e: JSONException) {
             Log.e("SessionService", "Error joining session", e)
-            return@withContext JoinSessionResult(false, "Error joining session: ${e.message}")
+            JoinSessionResult(false, "Error joining session: ${e.message}")
         }
     }
 
@@ -103,6 +112,9 @@ object SessionService {
                 response.close()
                 LeaveSessionResult(false, errorMessage)
             }
+        } catch (e: IOException) {
+            Log.e("SessionService", "Network error leaving session", e)
+            LeaveSessionResult(false, "Network error leaving session: ${e.message}")
         } catch (e: JSONException) {
             Log.e("SessionService", "Error leaving session", e)
             LeaveSessionResult(false, "Error leaving session: ${e.message}")
@@ -137,6 +149,9 @@ object SessionService {
                 response.close()
                 DeleteSessionResult(false, errorMessage)
             }
+        } catch (e: IOException) {
+            Log.e("SessionService", "Network error deleting session", e)
+            DeleteSessionResult(false, "Network error deleting session: ${e.message}")
         } catch (e: JSONException) {
             Log.e("SessionService", "Error deleting session", e)
             DeleteSessionResult(false, "Error deleting session: ${e.message}")
@@ -173,5 +188,4 @@ object SessionService {
             emptyList()
         }
     }
-
 }

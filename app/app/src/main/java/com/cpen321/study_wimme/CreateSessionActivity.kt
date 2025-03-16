@@ -102,52 +102,11 @@ class CreateSessionActivity : AppCompatActivity() {
             val faculty = facultyInput.text?.toString()
             val yearString = yearInput.text?.toString()
 
-            if (name.isNullOrEmpty()) {
-                nameInput.error = "Session name is required"
+            if (!validateInputs(name, startDateMillis, endDateMillis, selectedLatitude, selectedLongitude, subject, faculty, yearString)) {
                 return@setOnClickListener
             }
 
-            if (startDateMillis == 0L) {
-                startTimeInput.error = "Start time is required"
-                return@setOnClickListener
-            }
-
-            if (endDateMillis == 0L) {
-                endTimeInput.error = "End time is required"
-                return@setOnClickListener
-            }
-
-            if (startDateMillis >= endDateMillis) {
-                endTimeInput.error = "End time must be after start time"
-                return@setOnClickListener
-            }
-
-            if (selectedLatitude == null || selectedLongitude == null) {
-                // Inform the user to pick a location first
-                Toast.makeText(this, "Please select a location", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (subject.isNullOrEmpty()) {
-                subjectInput.error = "Subject is required"
-                return@setOnClickListener
-            }
-
-            if (faculty.isNullOrEmpty()) {
-                facultyInput.error = "Faculty is required"
-                return@setOnClickListener
-            }
-
-            if (yearString.isNullOrEmpty()) {
-                yearInput.error = "Year is required"
-                return@setOnClickListener
-            }
-
-            val year = yearString.toIntOrNull()
-            if (year == null || year < 1) {
-                yearInput.error = "Valid year is required"
-                return@setOnClickListener
-            }
+            val year = yearString!!.toInt()
 
             // If session is private, show friend selection activity
             if (sessionVisibility == SessionVisibility.PRIVATE) {
@@ -166,20 +125,87 @@ class CreateSessionActivity : AppCompatActivity() {
             } else {
                 // For public sessions, create directly
                 createSessionOnServer(
-                    name = name,
+                    name = name!!,
                     description = description ?: "",
                     latitude = selectedLatitude!!,
                     longitude = selectedLongitude!!,
                     startDate = Date(startDateMillis),
                     endDate = Date(endDateMillis),
                     isPublic = true,
-                    subject = subject,
-                    faculty = faculty,
+                    subject = subject!!,
+                    faculty = faculty!!,
                     year = year,
                     invitees = arrayListOf()
                 )
             }
         }
+    }
+
+    private fun validateInputs(
+        name: String?,
+        startDateMillis: Long,
+        endDateMillis: Long,
+        selectedLatitude: Double?,
+        selectedLongitude: Double?,
+        subject: String?,
+        faculty: String?,
+        yearString: String?
+    ): Boolean {
+        val nameInput = findViewById<TextInputEditText>(R.id.sessionNameInput)
+        val startTimeInput = findViewById<TextInputEditText>(R.id.startTimeInput)
+        val endTimeInput = findViewById<TextInputEditText>(R.id.endTimeInput)
+        val subjectInput = findViewById<TextInputEditText>(R.id.subjectInput)
+        val facultyInput = findViewById<TextInputEditText>(R.id.facultyInput)
+        val yearInput = findViewById<TextInputEditText>(R.id.yearInput)
+
+        if (name.isNullOrEmpty()) {
+            nameInput.error = "Session name is required"
+            return false
+        }
+
+        if (startDateMillis == 0L) {
+            startTimeInput.error = "Start time is required"
+            return false
+        }
+
+        if (endDateMillis == 0L) {
+            endTimeInput.error = "End time is required"
+            return false
+        }
+
+        if (startDateMillis >= endDateMillis) {
+            endTimeInput.error = "End time must be after start time"
+            return false
+        }
+
+        if (selectedLatitude == null || selectedLongitude == null) {
+            // Inform the user to pick a location first
+            Toast.makeText(this, "Please select a location", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (subject.isNullOrEmpty()) {
+            subjectInput.error = "Subject is required"
+            return false
+        }
+
+        if (faculty.isNullOrEmpty()) {
+            facultyInput.error = "Faculty is required"
+            return false
+        }
+
+        if (yearString.isNullOrEmpty()) {
+            yearInput.error = "Year is required"
+            return false
+        }
+
+        val year = yearString.toIntOrNull()
+        if (year == null || year < 1) {
+            yearInput.error = "Valid year is required"
+            return false
+        }
+
+        return true
     }
 
     private fun showDateTimePicker(onDateSelected: (Date) -> Unit) {
