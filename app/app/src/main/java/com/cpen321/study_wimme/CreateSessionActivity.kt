@@ -61,7 +61,7 @@ class CreateSessionActivity : AppCompatActivity() {
         setupVisibilityToggle(visibilityGroup)
         setupDateTimePickers(startTimeInput, endTimeInput)
         setupLocationPicker(locationInput)
-        setupHostButton(hostButton, nameInput, descriptionInput, subjectInput, facultyInput, yearInput)
+        setupHostButton(hostButton, HostButtonInputs(nameInput, descriptionInput, subjectInput, facultyInput, yearInput))
     }
 
     private fun setupVisibilityToggle(visibilityGroup: MaterialButtonToggleGroup) {
@@ -169,20 +169,21 @@ class CreateSessionActivity : AppCompatActivity() {
         return true
     }
 
-    private fun setupHostButton(
-        hostButton: MaterialButton,
-        nameInput: TextInputEditText,
-        descriptionInput: TextInputEditText,
-        subjectInput: TextInputEditText,
-        facultyInput: TextInputEditText,
-        yearInput: TextInputEditText
-    ) {
+    data class HostButtonInputs(
+        val nameInput: TextInputEditText,
+        val descriptionInput: TextInputEditText,
+        val subjectInput: TextInputEditText,
+        val facultyInput: TextInputEditText,
+        val yearInput: TextInputEditText
+    )
+
+    private fun setupHostButton(hostButton: MaterialButton, inputs: HostButtonInputs) {
         hostButton.setOnClickListener {
-            val name = nameInput.text?.toString()
-            val description = descriptionInput.text?.toString()
-            val subject = subjectInput.text?.toString()
-            val faculty = facultyInput.text?.toString()
-            val yearString = yearInput.text?.toString()
+            val name = inputs.nameInput.text?.toString()
+            val description = inputs.descriptionInput.text?.toString()
+            val subject = inputs.subjectInput.text?.toString()
+            val faculty = inputs.facultyInput.text?.toString()
+            val yearString = inputs.yearInput.text?.toString()
 
             val inputData = SessionInputData(
                 name = name,
