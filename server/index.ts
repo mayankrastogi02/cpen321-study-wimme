@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import morgan from "morgan";
 import { UserRoutes } from "./routes/UserRoutes";
@@ -50,7 +50,7 @@ Routes.forEach((route) => {
       }
 
       try {
-        await route.action(req, res, next);
+        await route.action(req, res);
       } catch (err) {
         console.log(err);
         return res.sendStatus(500); // Don't expose internal server workings
