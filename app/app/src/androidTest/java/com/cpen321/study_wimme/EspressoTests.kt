@@ -31,6 +31,7 @@ import java.util.Calendar
 import java.util.Properties
 import android.view.View
 import android.widget.EditText
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import androidx.test.espresso.matcher.BoundedMatcher
@@ -250,6 +251,6 @@ class CreateSessionActivityTest {
         Thread.sleep(1000)
 
         onView(withText("Test Session Espresso"))
-            .check(matches(not(isDisplayed())))
+            .check(doesNotExist())
     }
 }

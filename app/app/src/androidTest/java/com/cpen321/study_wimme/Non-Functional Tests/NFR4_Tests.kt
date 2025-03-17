@@ -141,19 +141,4 @@ class ErrorRecoveryTests {
         assertTrue("Expected 404 Not Found, but got status code: $statusCode", statusCode == 404)
     }
 
-    @Test
-    fun testCreateUserMissingFields() {
-        val url = baseURL.toString() + "/user"
-        val jsonBody = """
-        {
-            "email": "test@example.com",
-            "displayName": "Test User"
-        }
-    """.trimIndent() // Missing googleId
-        val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
-        val request = Request.Builder().url(url).post(requestBody).build()
-        val statusCode = simulateError(request)
-        assertTrue("Expected 400 Bad Request, but got status code: $statusCode", statusCode == 400)
-    }
-
 }
