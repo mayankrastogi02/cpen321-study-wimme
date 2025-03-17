@@ -43,7 +43,7 @@
 
 #### 2.1.2. Commit Hash Where Tests Run
 
-`[Insert Commit SHA here]`
+`94da49a72c74aca72d9acce383440749b1a5d019`
 
 #### 2.1.3. Explanation on How to Run the Tests
 
@@ -72,7 +72,7 @@
 
 ### 2.3. Jest Coverage Report Screenshots With Mocks
 
-_(Placeholder for Jest coverage screenshot with mocks enabled)_
+![Placeholder for Jest coverage screenshot with mocks enabled](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/study-wimme-with-mocking.jpg)
 
 We were able to achieve a **97.5%** statement coverage and a **98.6%** branch coverage when we ran our report with mocks
 - Our index.ts file did not have a lot of coverage. This was intentional because we didn't need we want to use an actual database for testing, instead
@@ -81,7 +81,7 @@ using an in-memory database. Additionally, we did not need firebase credentials 
 
 ### 2.4. Jest Coverage Report Screenshots Without Mocks
 
-_(Placeholder for Jest coverage screenshot without mocks)_
+![Placeholder for Jest coverage screenshot without mocks](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/study-wimme-without-mocking.jpg)
 
 We saw a slight decline in both statement and branch coverage when we ran our tests without mocks at **86.4%** and **95.2%** respectively
 - This was partially attributed to the fact that all of our endpoints were wrapped in a try-catch bock that threw an internal server error with code 500 if the server were to unexpectedly fail (ie. from a database error). We were unable to test these unexpected failures without mocks.
