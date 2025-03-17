@@ -190,7 +190,6 @@ class SessionDetailsActivity : AppCompatActivity() {
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 Toast.makeText(this@SessionDetailsActivity, "Successfully joined session!", Toast.LENGTH_SHORT).show()
-                finish() // Redirect to home page
             } else {
                 // Read error message
                 val errorStream = if (responseCode >= 400) connection.errorStream else connection.inputStream
@@ -200,9 +199,9 @@ class SessionDetailsActivity : AppCompatActivity() {
                     val errorJson = JSONObject(response)
                     val errorMessage = errorJson.optString("message", "Failed to join session")
                     Toast.makeText(this@SessionDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                    // Disable join button if already a participant
+                    // Return to previous activity
                     if (errorMessage == "User is already a participant") {
-                        joinButton.isEnabled = false
+                        finish()
                     }
                 } catch (e: JSONException) {
                     Toast.makeText(this@SessionDetailsActivity, "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()

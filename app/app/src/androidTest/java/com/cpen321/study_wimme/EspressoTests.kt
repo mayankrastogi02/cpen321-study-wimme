@@ -169,7 +169,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.joinedButton)).perform(click())
 
         onView(withText("Test Session 1"))
-            .check(matches(not(isDisplayed())))
+            .check(doesNotExist())
 
         onView(withId(R.id.findButton)).perform(click())
 
@@ -214,7 +214,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.backButton)).perform(click())
 
         onView(withText("Test Session 1"))
-            .check(matches(not(isDisplayed())))
+            .check(doesNotExist())
     }
 
     @Test
