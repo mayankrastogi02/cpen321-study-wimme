@@ -136,57 +136,63 @@ class SessionDetailsActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("${BuildConfig.SERVER_URL}/session/${sessionId}/join")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "PUT"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
-
-                // Create request body
-                val jsonBody = JSONObject().apply {
-                    put("userId", userId)
-                }
-
-                // Send request
-                val writer = OutputStreamWriter(connection.outputStream)
-                writer.write(jsonBody.toString())
-                writer.flush()
-
-                val responseCode = connection.responseCode
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    joinButton.isEnabled = true
-
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(this@SessionDetailsActivity,
-                            "Successfully joined session!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        // Read error message
-                        val errorStream = if (responseCode >= 400) connection.errorStream else connection.inputStream
-                        val response = errorStream.bufferedReader().use { it.readText() }
-
-                        try {
-                            val errorJson = JSONObject(response)
-                            val errorMessage = errorJson.optString("message", "Failed to join session")
-                            Toast.makeText(this@SessionDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                            // Return to previous activity if already a participant
-                            if (errorMessage == "User is already a participant") {
-                                finish()
-                            }
-                        } catch (e: JSONException) {
-                            Toast.makeText(this@SessionDetailsActivity,
-                                "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-                connection.disconnect()
+                val responseCode = sendJoinRequest(userId)
+                handleJoinResponse(responseCode)
             } catch (e: JSONException) {
                 Log.e(TAG, "Error joining session", e)
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     joinButton.isEnabled = true
-                    Toast.makeText(this@SessionDetailsActivity,
-                        "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SessionDetailsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private suspend fun sendJoinRequest(userId: String): Int {
+        val url = URL("${BuildConfig.SERVER_URL}/session/${sessionId}/join")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "PUT"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+
+        // Create request body
+        val jsonBody = JSONObject().apply {
+            put("userId", userId)
+        }
+
+        // Send request
+        val writer = OutputStreamWriter(connection.outputStream)
+        writer.write(jsonBody.toString())
+        writer.flush()
+
+        val responseCode = connection.responseCode
+        connection.disconnect()
+        return responseCode
+    }
+
+    private suspend fun handleJoinResponse(responseCode: Int) {
+        withContext(Dispatchers.Main) {
+            progressBar.visibility = View.GONE
+            joinButton.isEnabled = true
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                Toast.makeText(this@SessionDetailsActivity, "Successfully joined session!", Toast.LENGTH_SHORT).show()
+            } else {
+                // Read error message
+                val errorStream = if (responseCode >= 400) connection.errorStream else connection.inputStream
+                val response = errorStream.bufferedReader().use { it.readText() }
+
+                try {
+                    val errorJson = JSONObject(response)
+                    val errorMessage = errorJson.optString("message", "Failed to join session")
+                    Toast.makeText(this@SessionDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                    // Return to previous activity if already a participant
+                    if (errorMessage == "User is already a participant") {
+                        finish()
+                    }
+                } catch (e: JSONException) {
+                    Toast.makeText(this@SessionDetailsActivity, "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()
                 }
             }
         }
