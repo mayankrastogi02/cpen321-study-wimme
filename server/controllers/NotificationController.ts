@@ -52,7 +52,7 @@ export class NotificationController {
       } else {
         return res.status(404).json({ message: "Token not found" });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({ error: "Internal server error" });
     }
   }
