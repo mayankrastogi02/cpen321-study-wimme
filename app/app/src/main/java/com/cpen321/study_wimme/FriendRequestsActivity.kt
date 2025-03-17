@@ -13,7 +13,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -90,10 +92,20 @@ class FriendRequestsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching friend requests", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "Network error fetching friend requests", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@FriendRequestsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@FriendRequestsActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "JSON error fetching friend requests", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@FriendRequestsActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "Unexpected error fetching friend requests", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@FriendRequestsActivity, "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -149,10 +161,20 @@ class FriendRequestsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error handling friend request", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "Network error handling friend request", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@FriendRequestsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@FriendRequestsActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "JSON error handling friend request", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@FriendRequestsActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "Unexpected error handling friend request", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@FriendRequestsActivity, "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
