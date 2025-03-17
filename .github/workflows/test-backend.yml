@@ -23,6 +23,12 @@ jobs:
           npm install
 
       - name: Run tests
+        env:
+          DB_URI: ${{ secrets.PROD_DB_URI }}
+          PORT: ${{ secrets.PROD_PORT }}
+          GCP_PROJECT_ID: ${{ secrets.PROJECTID }}
+          GCP_CLIENT_EMAIL: ${{ secrets.CLIENTEMAIL }}
+          GCP_PRIVATE_KEY: ${{ secrets.PRIVATEKEY }}
         run: |
           cd server
           npm test --coverage
