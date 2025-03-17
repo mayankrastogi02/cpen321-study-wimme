@@ -92,7 +92,7 @@ describe("Unmocked: POST /auth/google", () => {
             .send({ 
                 googleId: "testGoogleId2", 
                 email: "testUser2@gmail.com", 
-                displayName: "test user 2" 
+                displayName: "test user" 
             });
 
         expect(response.status).toBe(201);
@@ -102,6 +102,22 @@ describe("Unmocked: POST /auth/google", () => {
 
         const createdUser = await User.findOne({googleId:  "testGoogleId2"});
         expect(createdUser?.email).toBe("testUser2@gmail.com");
+    });
+
+    // Input: googleId: testGoogleId2, email: testUser2@gmail.com, displayName: test user 2
+    // Expected status code: 500
+    // Expected behavior: New user with emptyString displayName is inserted into the database
+    // Expected output: Fails due to mongoose schema enforcement
+    test("Create new user with emptyString displayName", async () => {
+        const response = await request(app)
+            .post(`/auth/google`)
+            .send({ 
+                googleId: "testGoogleId2", 
+                email: "testUser2@gmail.com", 
+                displayName: " " 
+            });
+
+        expect(response.status).toBe(500);
     });
 
     // Input: googleId: testGoogleId2, displayName: test user 2
@@ -116,6 +132,18 @@ describe("Unmocked: POST /auth/google", () => {
         expect(response.status).toBe(400);
     });
 
+    // Input: googleId: testGoogleId2, email: "testUser2@gmail.com"
+    // Expected status code: 400
+    // Expected behavior: Nothing changed
+    // Expected output: None
+    test("No displayName when creating or updating user", async () => {
+        const response = await request(app)
+            .post(`/auth/google`)
+            .send({ googleId: "testGoogleId2", email: "testUser2@gmail.com" });
+
+        expect(response.status).toBe(400);
+    });
+
     // Input: Existing google ID, different email
     // Expected status code: 201
     // Expected behavior: Updated email and display name in DB
@@ -125,7 +153,7 @@ describe("Unmocked: POST /auth/google", () => {
             .post(`/auth/google`)
             .send({ 
                 googleId: "testGoogleId",
-                email: "testUser2@gmail.com",  
+                email: "newEmail@gmail.com",  
                 displayName: "test user 2" 
             });
 
@@ -133,7 +161,7 @@ describe("Unmocked: POST /auth/google", () => {
         expect(response.body.profileCreated).toBe(true);
 
         const createdUser = await User.findOne({googleId:  "testGoogleId"});
-        expect(createdUser?.email).toBe("testUser2@gmail.com");
+        expect(createdUser?.email).toBe("newEmail@gmail.com");
     });
 });
 

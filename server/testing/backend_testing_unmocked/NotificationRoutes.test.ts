@@ -42,10 +42,10 @@ beforeEach(async () => {
 
 // Interface POST /notification/deviceToken
 describe("Unmocked: POST /notification/deviceToken", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: Valid userId and device token
+    // Expected status code: 200
+    // Expected behavior: Device token is stored in DB with associated user
+    // Expected output: 200 status code
     test("Create new device token associated with a user", async () => {
         const response = await request(app)
             .post('/notification/deviceToken')
@@ -55,10 +55,10 @@ describe("Unmocked: POST /notification/deviceToken", () => {
         expect(testDevice?.token).toBe("testToken123");
     });
 
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: No userId and valid device token
+    // Expected status code: 404
+    // Expected behavior: Error is thrown
+    // Expected output: 404 error with corresponding message
     test("Create device token with no user", async () => {
         const response = await request(app)
             .post('/notification/deviceToken')
@@ -66,22 +66,23 @@ describe("Unmocked: POST /notification/deviceToken", () => {
         expect(response.status).toBe(404);
     });
 
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: Valid userId and no device token
+    // Expected status code: 404
+    // Expected behavior: Error is thrown
+    // Expected output: 404 error with corresponding message
     test("Create device token with no token value", async () => {
         const response = await request(app)
             .post('/notification/deviceToken')
             .send({ userId: testUser1._id });
         expect(response.status).toBe(404);
     });
+    
 
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
-    test("Associate multiple device tokens with a user", async () => {
+    // Input: 2 API calls both with the same valid userId but different tokens
+    // Expected status code: 200
+    // Expected behavior: Device tokens are stored in DB with associated user
+    // Expected output: 200 status code and corresponding message
+    test("Create multiple device tokens associated with the same user", async () => {
         const response = await request(app)
             .post('/notification/deviceToken')
             .send({ userId: testUser1._id,  token: "testToken123"});
@@ -98,11 +99,32 @@ describe("Unmocked: POST /notification/deviceToken", () => {
         expect(testDevices.find(device => device.token == "testToken456")).toBeTruthy();
     });
 
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
-    test("Associate new user with device token", async () => {
+
+    // Input: Valid but identical device token
+    // Expected status code: 200
+    // Expected behavior: Only 1 device token is stored in the DB
+    // Expected output: Success message
+    test("Associate same device token to user twice", async () => {
+        const response = await request(app)
+            .post('/notification/deviceToken')
+            .send({ userId: testUser1._id,  token: "testToken123"});
+        expect(response.status).toBe(200);
+
+        const response2 = await request(app)
+            .post('/notification/deviceToken')
+            .send({ userId: testUser1._id,  token: "testToken123"});
+        expect(response2.status).toBe(200);
+
+        const testDevices = await Device.find({userId: testUser1._id});
+        expect(testDevices.length).toBe(1);
+        expect(testDevices.find(device => device.token == "testToken123")).toBeTruthy();
+    });
+
+    // Input: Same device token, two different users
+    // Expected status code: 200
+    // Expected behavior: Second user associated with device
+    // Expected output: Associated success messages
+    test("Associate different user with existing device token", async () => {
         const response1 = await request(app)
             .post('/notification/deviceToken')
             .send({ userId: testUser1._id,  token: "testToken123"});
@@ -121,10 +143,10 @@ describe("Unmocked: POST /notification/deviceToken", () => {
 
 // Interface DELETE /notification/deviceToken
 describe("Unmocked: DELETE /notification/deviceToken", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: Valid token
+    // Expected status code: 200
+    // Expected behavior: Token is deleted from DB
+    // Expected output: Success message
     test("Delete existing token", async () => {
         //Create device for deletion
         const response1 = await request(app)
@@ -146,6 +168,10 @@ describe("Unmocked: DELETE /notification/deviceToken", () => {
         expect(testDeviceAfterDelete).toBeFalsy();
     });
 
+    // Input: Non-existent token
+    // Expected status code: 404
+    // Expected behavior: Error is thrown
+    // Expected output: Error message
     test("Delete nonexistent token", async () => {
         const response1 = await request(app)
             .delete('/notification/deviceToken')

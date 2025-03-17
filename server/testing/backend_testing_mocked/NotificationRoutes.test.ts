@@ -2,7 +2,8 @@ import Device from "../../schemas/DeviceSchema";
 import mongoose from "mongoose";
 import User from "../../schemas/UserSchema";
 import { sendPushNotification } from "../../utils/notificationUtils";
-import { messaging } from "../..";
+import { app, messaging } from "../..";
+import request from 'supertest';
 
 let testUser1: mongoose.Document;
 let testUser2: mongoose.Document;
@@ -63,15 +64,20 @@ beforeEach(async () => {
     });
 
     await testDevice3.save();
-
-    jest.clearAllMocks();
 });
 
 describe("sendPushNotification", () => {
+    // Mocked behavior: messaging.send throws error with code "messaging/invalid-argument"
+    // Input: userId: testUser1._id, title: "Test Title", body: "TestBody"
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Firebase detects invalid token and raises error. Error is handled properly and invalid token is removed from DB
+    // Expected output: Error is displayed on console
     test("Remove invalid device token if sending push notification fails with 'messaging/invalid-argument' error message", async () => {
-        //We are not using a valid device token so it will return messaging/invalid-argument by default
-        const spy = jest.spyOn(messaging, "send");
+        const spy = jest.spyOn(messaging, "send").mockRejectedValue({
+            code: "messaging/invalid-argument",
+        });
 
+        //ensure invalidToken associated with testUser1 exists initially
         const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
         expect(deviceBeforeSend).toBeTruthy();
 
@@ -85,12 +91,18 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
+    // Mocked behavior: messaging.send throws error with code "messaging/registration-token-not-registered"
+    // Input: userId: testUser1._id, title: "Test Title", body: "TestBody"
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Firebase detects invalid token and raises error. Error is handled properly and invalid token is removed from DB
+    // Expected output: Error is displayed on console
     test("Remove invalid device token if sending push notification fails with 'messaging/registration-token-not-registered' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/registration-token-not-registered",
         });
 
+        //ensure invalidToken associated with testUser1 exists initially
         const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
         expect(deviceBeforeSend).toBeTruthy();
 
@@ -104,12 +116,18 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
+    // Mocked behavior: messaging.send throws error with code "messaging/invalid-registration-token"
+    // Input: userId: testUser1._id, title: "Test Title", body: "TestBody"
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Firebase detects invalid token and raises error. Error is handled properly and invalid token is removed from DB
+    // Expected output: Error is displayed on console
     test("Remove invalid device token if sending push notification fails with 'messaging/invalid-registration-token' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/invalid-registration-token",
         });
 
+        //ensure invalidToken associated with testUser1 exists initially
         const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
         expect(deviceBeforeSend).toBeTruthy();
 
@@ -123,12 +141,18 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
+    // Mocked behavior: messaging.send throws error with code "messaging/invalid-recipient"
+    // Input: userId: testUser1._id, title: "Test Title", body: "TestBody"
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Firebase detects invalid token and raises error. Error is handled properly and invalid token is removed from DB
+    // Expected output: Error is displayed on console
     test("Remove invalid device token if sending push notification fails with 'messaging/invalid-recipient' error message", async () => {
         //mock messaging.send() to return error so that sendPushNotification deletes the token
         const spy = jest.spyOn(messaging, "send").mockRejectedValue({
             code: "messaging/invalid-recipient",
         });
 
+        //ensure invalidToken associated with testUser1 exists initially
         const deviceBeforeSend = await Device.findOne({token: "invalidToken"});
         expect(deviceBeforeSend).toBeTruthy();
 
@@ -142,6 +166,36 @@ describe("sendPushNotification", () => {
         spy.mockRestore();
     });
 
+    // Mocked behavior: messaging.send throws error with code "non-token error"
+    // Input: userId: testUser2._id, title: "Test Title", body: "TestBody"
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Error was not caused by invalid token so token is kept
+    // Expected output: Error is displayed on console
+    test("Keep device if non invalid token error occurred", async () => {
+        //mock messaging.send() to return error so that sendPushNotification deletes the token
+        const spy = jest.spyOn(messaging, "send").mockRejectedValue({
+            code: "non-token error",
+        });
+
+        //ensure abc456 token associated with testUser2 exists initially
+        const deviceBeforeSend = await Device.findOne({token: "abc456"});
+        expect(deviceBeforeSend).toBeTruthy();
+
+        await sendPushNotification(testUser2._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+
+        expect(spy).toHaveBeenCalledTimes(2);
+
+        const deviceAfterSend = await Device.findOne({token: "abc456"});
+        expect(deviceAfterSend).toBeTruthy();
+
+        spy.mockRestore();
+    });
+
+    // Mocked behavior: messaging.send does not throw error
+    // Input: valid userId, message title, and message body
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Error was not caused by invalid token so token is kept
+    // Expected output: Error is displayed on console
     test("Send notifications with valid device tokens", async () => {
         //mock messaging.send() to not return error to simulate message going through
         const spy = jest.spyOn(messaging, "send").mockResolvedValue("");
@@ -160,26 +214,72 @@ describe("sendPushNotification", () => {
 
         spy.mockRestore();
     });
+
+    // Mocked behavior: Device.find throws error, messaging.send does not throw error, spy on console.error
+    // Input: Valid userId, message title, and message body
+    // Expected status code: NA - testing a helper function
+    // Expected behavior: Error is logged on the server
+    // Expected output: Logged error
+    test("Database throws", async () => {
+        //mock messaging.send() to not return error to simulate message going through
+        const findOneSpy = jest.spyOn(Device, "find").mockImplementation(() => {
+            throw new Error("Database error");
+        });
+
+        //mock messaging.send() to not return error to simulate message going through
+        const sendSpy = jest.spyOn(messaging, "send").mockResolvedValue("");
+        
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        await sendPushNotification(testUser2._id as mongoose.Types.ObjectId, "Test Title", "Test Body");
+        expect(consoleErrorSpy).toHaveBeenCalledWith(new Error('Database error'));
+
+        findOneSpy.mockRestore();
+        sendSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+    });
 });
 
 // Interface POST /notification/deviceToken
 describe("Mocked: POST /notification/deviceToken", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
-    test("", async () => {
+    // Mocked behavior: Device.findOne throws error
+    // Input: valid userId and device token
+    // Expected status code: 500
+    // Expected behavior: the error is handled
+    // Expected output: Error is returned
+    test("Database throws", async () => {
+        const spy = jest.spyOn(Device, "findOne").mockImplementation(() => {
+            throw new Error("Database error");
+        });
+
+        const response = await request(app)
+            .post('/notification/deviceToken')
+            .send({ userId: testUser1._id, token: "newToken" });
         
+        expect(response.status).toBe(500);
+        expect(response.serverError).toBe(true);
+        spy.mockRestore();
     });
 });
 
 // Interface DELETE /notification/deviceToken
 describe("Mocked: DELETE /notification/deviceToken", () => {
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
-    test("", async () => {
+    // Mocked behavior: Device.deleteOne throws error
+    // Input: valid device token
+    // Expected status code: 500
+    // Expected behavior: the error is handled
+    // Expected output: Error is returned
+    test("Database throws", async () => {
+        const spy = jest.spyOn(Device, "deleteOne").mockImplementation(() => {
+            throw new Error("Database error");
+        });
+
+        const response = await request(app)
+            .delete('/notification/deviceToken')
+            .send({ token: "invalidToken" });
         
+        expect(response.status).toBe(500);
+        expect(response.serverError).toBe(true);
+        spy.mockRestore();
     });
 });

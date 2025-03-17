@@ -22,9 +22,7 @@ export const AuthRoutes: Route[] = [
     method: "post",
     route: "/auth/google",
     validation: [
-      check("googleId").exists().withMessage("Google ID is required"),
       check("email").isEmail().withMessage("Valid email is required"),
-      check("displayName").exists().withMessage("Display name is required"),
     ],
     action: async (req: Request, res: Response, next: NextFunction) => {
       await AuthController.createOrUpdateUser(req, res);
