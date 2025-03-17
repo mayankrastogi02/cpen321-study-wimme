@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -161,13 +162,13 @@ class UserSettingsActivity : AppCompatActivity() {
                             val jsonError = JSONObject(errorResponse)
                             val errorMessage = jsonError.optString("message", "Failed to delete account")
                             Toast.makeText(this@UserSettingsActivity, errorMessage, Toast.LENGTH_LONG).show()
-                        } catch (e: Exception) {
+                        } catch (e: JSONException) {
                             Toast.makeText(this@UserSettingsActivity, "Failed to delete account: $responseCode", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error deleting account", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@UserSettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -235,7 +236,7 @@ class UserSettingsActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error fetching user profile", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
@@ -297,6 +298,21 @@ class UserSettingsActivity : AppCompatActivity() {
             return
         }
 
+        val userProfileData = collectUserProfileData()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val responseCode = sendUserProfileDataToServer(googleId, userProfileData)
+                handleServerResponse(responseCode)
+            } catch (e: JSONException) {
+                Log.e(TAG, "Error saving profile", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@UserSettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun collectUserProfileData(): JSONObject {
         val username = usernameInput.text.toString().trim()
         val firstName = firstNameInput.text.toString().trim()
         val lastName = lastNameInput.text.toString().trim()
@@ -304,93 +320,45 @@ class UserSettingsActivity : AppCompatActivity() {
         val year = yearInput.text.toString().trim().toInt()
         val interests = interestsInput.text.toString().trim()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val url = URL("${BuildConfig.SERVER_URL}/auth/profile/$googleId")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "PUT"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
+        return JSONObject().apply {
+            put("userName", username)
+            put("firstName", firstName)
+            put("lastName", lastName)
+            put("faculty", faculty)
+            put("year", year)
+            put("interests", interests)
+        }
+    }
 
-                val jsonData = JSONObject().apply {
-                    put("userName", username)
-                    put("firstName", firstName)
-                    put("lastName", lastName)
-                    put("faculty", faculty)
-                    put("year", year)
-                    put("interests", interests)
-                }
+    private suspend fun sendUserProfileDataToServer(googleId: String, userProfileData: JSONObject): Int {
+        val url = URL("${BuildConfig.SERVER_URL}/auth/profile/$googleId")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "PUT"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
 
-                val outputStream = OutputStreamWriter(connection.outputStream)
-                outputStream.write(jsonData.toString())
-                outputStream.flush()
+        val outputStream = OutputStreamWriter(connection.outputStream)
+        outputStream.write(userProfileData.toString())
+        outputStream.flush()
 
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    // Read the response to get user ID
-                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
-                    val response = StringBuilder()
-                    var line: String?
-                    while (reader.readLine().also { line = it } != null) {
-                        response.append(line)
-                    }
-                    reader.close()
+        val responseCode = connection.responseCode
+        connection.disconnect()
+        return responseCode
+    }
 
-                    val jsonResponse = JSONObject(response.toString())
-
-                    // Check if the response contains user data with _id
-                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
-                        val userId = jsonResponse.getJSONObject("data").getString("_id")
-
-                        // Save the user ID in SharedPreferences
-                        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-                        editor.putString("userId", userId)
-                        editor.apply()
-
-                        Log.d(TAG, "Saved user ID: $userId")
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@UserSettingsActivity,
-                            "Profile saved successfully!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        // Log all preferences for debugging
-                        LoginActivity.logAllPreferences(this@UserSettingsActivity)
-
-                        if (isCompletingProfile) {
-                            // Navigate to main activity after completing profile setup
-                            val intent =
-                                Intent(this@UserSettingsActivity, SessionsListActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            // Just finish this activity and go back
-                            finish()
-                        }
-                    }
+    private suspend fun handleServerResponse(responseCode: Int) {
+        withContext(Dispatchers.Main) {
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                Toast.makeText(this@UserSettingsActivity, "Profile saved successfully!", Toast.LENGTH_SHORT).show()
+                if (isCompletingProfile) {
+                    val intent = Intent(this@UserSettingsActivity, SessionsListActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@UserSettingsActivity,
-                            "Failed to save profile: $responseCode",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    finish()
                 }
-                connection.disconnect()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error saving profile", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@UserSettingsActivity,
-                        "Error: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+            } else {
+                Toast.makeText(this@UserSettingsActivity, "Failed to save profile: $responseCode", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -430,7 +398,7 @@ class UserSettingsActivity : AppCompatActivity() {
                         val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
                         Log.e(TAG, "Error Response: $errorResponse")
                     }
-                } catch (e: Exception) {
+                } catch (e: JSONException) {
                     // Log and handle exceptions
                     Log.e(TAG, "Error sending data: ${e.message}", e)
                 } finally {

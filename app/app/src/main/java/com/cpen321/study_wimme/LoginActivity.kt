@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -220,7 +221,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Exception during API call", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@LoginActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -269,10 +270,10 @@ class LoginActivity : AppCompatActivity() {
                     reader.close()
                     
                     val jsonResponse = JSONObject(response.toString())
-                    
+
                     // Extract MongoDB user ID from response
-                    if (jsonResponse.has("user") && jsonResponse.getJSONObject("user").has("_id")) {
-                        val mongoUserId = jsonResponse.getJSONObject("user").getString("_id")
+                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
+                        val mongoUserId = jsonResponse.getJSONObject("data").getString("_id")
                         
                         // Save both Google ID and MongoDB ID to SharedPreferences
                         val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
@@ -297,7 +298,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Exception during API call", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@LoginActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

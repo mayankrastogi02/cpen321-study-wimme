@@ -1,23 +1,23 @@
 package com.cpen321.study_wimme
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import android.Manifest
-import android.content.pm.PackageManager
-import android.util.Log
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.location.LocationServices
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
@@ -79,43 +79,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         // Set a marker click listener for join option
         googleMap.setOnMarkerClickListener { marker ->
-            // If the marker's title is "Current Location", ignore it.
-            if (marker.title == "Current Location") {
-                marker.showInfoWindow()
-                return@setOnMarkerClickListener true
-            }
-
-            val session = marker.tag as? SessionDto
-            session?.let {
-                val message = """
-                    Would you like to join this session?
-                    
-                    ${it.description}
-                    
-                    Start Date: ${it.dateRange.startDate}
-                    End Date: ${it.dateRange.endDate}
-                """.trimIndent()
-                androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle(it.name)
-                    .setMessage(message)
-                    .setPositiveButton("Join") { dialog, which ->
-                        val userId = LoginActivity.getCurrentUserId(requireActivity())
-                        Log.d("MapFragment", "Current user ID: $userId")
-                        Toast.makeText(requireContext(), "Joining session...", Toast.LENGTH_SHORT).show()
-
-                        if (userId != null) {
-                            joinSession(it.sessionId, userId)
-                        } else {
-                            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            }
-            // Optionally, show the marker's info window as well.
-            marker.showInfoWindow()
-            true
+            handleMarkerClick(marker)
         }
+    }
+
+    private fun handleMarkerClick(marker: com.google.android.gms.maps.model.Marker): Boolean {
+        // If the marker's title is "Current Location", ignore it.
+        if (marker.title == "Current Location") {
+            marker.showInfoWindow()
+            return true
+        }
+
+        val session = marker.tag as? SessionDto
+        session?.let {
+            val message = """
+                Would you like to join this session?
+                
+                ${it.description}
+                
+                Start Date: ${it.dateRange.startDate}
+                End Date: ${it.dateRange.endDate}
+            """.trimIndent()
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle(it.name)
+                .setMessage(message)
+                .setPositiveButton("Join") { dialog, which ->
+                    val userId = LoginActivity.getCurrentUserId(requireActivity())
+                    Log.d("MapFragment", "Current user ID: $userId")
+                    Toast.makeText(requireContext(), "Joining session...", Toast.LENGTH_SHORT).show()
+
+                    if (userId != null) {
+                        joinSession(it.sessionId, userId)
+                    } else {
+                        Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+        // Optionally, show the marker's info window as well.
+        marker.showInfoWindow()
+        return true
     }
 
     private fun filterSessions(): List<SessionDto> {

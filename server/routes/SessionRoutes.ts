@@ -48,18 +48,6 @@ export const SessionRoutes = [
     },
     {
         method: "get",
-        route: "/session/joinedSessions/",
-        action: controller.getJoinedSessions,
-        validation: [],
-    },
-    {
-        method: "get",
-        route: "/session/hostedSessions/",
-        action: controller.getHostedSessions,
-        validation: [],
-    },
-    {
-        method: "get",
         route: "/session/nearbySessions/",
         action: controller.getNearbySessions,
         validation: [],

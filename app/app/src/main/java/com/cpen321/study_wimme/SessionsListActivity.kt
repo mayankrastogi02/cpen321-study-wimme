@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -31,48 +32,7 @@ class SessionsListActivity : AppCompatActivity() {
         // First check if the user has completed their profile
         checkProfileCreated()
 
-        LoginActivity.getCurrentToken(this) {
-            token ->
-                val userId = LoginActivity.getCurrentUserId(this)
-
-                val jsonData = JSONObject().apply {
-                    put("userId", userId)
-                    put("token", token)
-                }
-
-                val url = URL("${BuildConfig.SERVER_URL}/notification/deviceToken")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        Log.d(TAG, "JSON data: $jsonData")
-
-                        val outputStream = OutputStreamWriter(connection.outputStream)
-                        outputStream.write(jsonData.toString())
-                        outputStream.flush()
-                        outputStream.close()
-
-                        // Handle the response
-                        val responseCode = connection.responseCode
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                            val response = connection.inputStream.bufferedReader().use { it.readText() }
-                            Log.d(TAG, "Response: $response")
-                        } else {
-                            Log.e(TAG, "Server returned error code: $responseCode")
-                            val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
-                            Log.e(TAG, "Error Response: $errorResponse")
-                        }
-                    } catch (e: Exception) {
-                        // Log and handle exceptions
-                        Log.e(TAG, "Error sending data: ${e.message}", e)
-                    } finally {
-                        connection.disconnect()
-                    }
-                }
-        }
+        registerNotificationToken()
 
         setContentView(R.layout.activity_sessions_list)
 
@@ -82,6 +42,54 @@ class SessionsListActivity : AppCompatActivity() {
         loadFragment(HomeFragment())
         requestNotificationPermission()
 
+        setupBottomNavigation()
+    }
+
+    private fun registerNotificationToken() {
+        LoginActivity.getCurrentToken(this) { token ->
+            val userId = LoginActivity.getCurrentUserId(this)
+
+            val jsonData = JSONObject().apply {
+                put("userId", userId)
+                put("token", token)
+            }
+
+            val url = URL("${BuildConfig.SERVER_URL}/notification/deviceToken")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    Log.d(TAG, "JSON data: $jsonData")
+
+                    val outputStream = OutputStreamWriter(connection.outputStream)
+                    outputStream.write(jsonData.toString())
+                    outputStream.flush()
+                    outputStream.close()
+
+                    // Handle the response
+                    val responseCode = connection.responseCode
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        val response = connection.inputStream.bufferedReader().use { it.readText() }
+                        Log.d(TAG, "Response: $response")
+                    } else {
+                        Log.e(TAG, "Server returned error code: $responseCode")
+                        val errorResponse = connection.errorStream.bufferedReader().use { it.readText() }
+                        Log.e(TAG, "Error Response: $errorResponse")
+                    }
+                } catch (e: JSONException) {
+                    // Log and handle exceptions
+                    Log.e(TAG, "Error sending data: ${e.message}", e)
+                } finally {
+                    connection.disconnect()
+                }
+            }
+        }
+    }
+
+    private fun setupBottomNavigation() {
         // Select Home tab initially
         bottomNavigationView.selectedItemId = R.id.nav_home
 
@@ -150,7 +158,7 @@ class SessionsListActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 // In case of error, continue with the activity
                 // The user will still be able to use the app if there's a temporary connection issue
             }

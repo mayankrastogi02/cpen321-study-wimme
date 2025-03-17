@@ -1,6 +1,5 @@
 package com.cpen321.study_wimme
 
-import SessionService
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -15,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -173,14 +173,14 @@ class SessionDetailsActivity : AppCompatActivity() {
                             if (errorMessage == "User is already a participant") {
                                 finish()
                             }
-                        } catch (e: Exception) {
+                        } catch (e: JSONException) {
                             Toast.makeText(this@SessionDetailsActivity,
                                 "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error joining session", e)
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE

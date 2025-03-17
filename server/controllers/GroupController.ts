@@ -49,11 +49,9 @@ export class GroupController {
       const { userId } = req.params;
       console.log(userId);
 
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({ message: "Invalid user ID" });
-      }
-
-      console.log(userId);
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ message: "Invalid user ID" });
+            }
 
       const groups = await Group.find({ userId: userId }).populate(
         "members",
@@ -78,13 +76,21 @@ export class GroupController {
 
       const group = await Group.findById(groupId);
 
-      if (!group) {
-        return res.status(404).json({ message: "Group not found" });
-      }
+            if (!group) {
+                return res.status(404).json({ message: "Group not found" });
+            }
 
-      if (members) {
-        group.members = members;
-      }
+            if (members && members.includes(group.userId.toString())) {
+                return res.status(400).json({ message: "Host cannot be a member of their own group" });
+            }
+
+            if (members) {
+                const validUsers = await User.find({ _id: { $in: members } });
+                if (validUsers.length !== members.length) {
+                    return res.status(400).json({ message: "One or more members are invalid" });
+                }
+                group.members = members
+            }
 
       const savedGroup = await group.save();
 
