@@ -5,6 +5,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.junit.AfterClass
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +20,24 @@ class NonFunctionalTests {
     private val baseUserId = BuildConfig.TEST_GOOGLE_ID
     private val baseGoogleId = BuildConfig.TEST_USER_ID
 
+    companion object {
+        private val responseTimes = mutableListOf<Long>()
+
+        @AfterClass
+        @JvmStatic
+        fun printStatistics() {
+            if (responseTimes.isNotEmpty()) {
+                val averageResponseTime = responseTimes.average()
+                val maxResponseTime = responseTimes.maxOrNull()
+                val minResponseTime = responseTimes.minOrNull()
+
+                println("Average Response Time: $averageResponseTime ms")
+                println("Max Response Time: $maxResponseTime ms")
+                println("Fastest Response Time: $minResponseTime ms")
+            }
+        }
+    }
+
     private fun measureResponseTime(request: Request): Long {
         val startTime = System.currentTimeMillis()
         return try {
@@ -28,6 +47,7 @@ class NonFunctionalTests {
             val statusCode = response.code
             println("Response time for ${request.url}: $responseTime ms, Status: $statusCode")
             response.close()
+            responseTimes.add(responseTime)
             responseTime
         } catch (e: IOException) {
             e.printStackTrace()
