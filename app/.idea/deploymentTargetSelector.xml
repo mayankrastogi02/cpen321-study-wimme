@@ -27,13 +27,13 @@
       <SelectionState runConfigName="ErrorRecoveryTests">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="testHostSessionMissingFields()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="testCreateUserMissingFields()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="CreateSessionActivityTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="test02_JoinAndLeaveSession()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
