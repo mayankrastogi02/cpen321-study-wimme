@@ -3,11 +3,11 @@ package com.cpen321.study_wimme
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
@@ -87,14 +87,14 @@ class SessionDetailsActivity : AppCompatActivity() {
 
         val currentUserId = LoginActivity.getCurrentUserId(this)
 
-        // Set up join,delete and leave button
+        // Set up join, delete and leave button
         if (currentUserId != null && sessionHostId != null && currentUserId == sessionHostId) {
             joinButton.visibility = View.GONE
             leaveButton.visibility = View.GONE
             deleteButton.visibility = View.VISIBLE
 
             deleteButton.setOnClickListener {
-                deleteSession()
+                showDeleteSessionConfirmation()
             }
         } else {
             joinButton.visibility = View.VISIBLE
@@ -106,7 +106,18 @@ class SessionDetailsActivity : AppCompatActivity() {
         }
     }
 
-    //TODO:: For future move this to sessionService (or use the preexisting logic there)
+    private fun showDeleteSessionConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Session")
+            .setMessage("Are you sure you want to delete this session? This action cannot be undone.")
+            .setPositiveButton("Delete") { dialog, which ->
+                deleteSession()
+            }
+            .setNegativeButton("Cancel", null)
+            .setCancelable(false)
+            .show()
+    }
+
     private fun joinSession() {
         if (sessionId == null) {
             Toast.makeText(this, "Session ID is missing. Cannot join.", Toast.LENGTH_SHORT).show()
@@ -149,9 +160,6 @@ class SessionDetailsActivity : AppCompatActivity() {
                     if (responseCode == HttpURLConnection.HTTP_OK) {
                         Toast.makeText(this@SessionDetailsActivity,
                             "Successfully joined session!", Toast.LENGTH_SHORT).show()
-//                        This does not work as expected at the moment
-//                        joinButton.text = "Joined"
-//                        joinButton.isEnabled = false
                     } else {
                         // Read error message
                         val errorStream = if (responseCode >= 400) connection.errorStream else connection.inputStream
@@ -161,6 +169,10 @@ class SessionDetailsActivity : AppCompatActivity() {
                             val errorJson = JSONObject(response)
                             val errorMessage = errorJson.optString("message", "Failed to join session")
                             Toast.makeText(this@SessionDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                            // Return to previous activity if already a participant
+                            if (errorMessage == "User is already a participant") {
+                                finish()
+                            }
                         } catch (e: JSONException) {
                             Toast.makeText(this@SessionDetailsActivity,
                                 "Error joining session: $responseCode", Toast.LENGTH_SHORT).show()
