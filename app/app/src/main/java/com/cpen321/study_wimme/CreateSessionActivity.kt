@@ -214,7 +214,7 @@ class CreateSessionActivity : AppCompatActivity() {
                 intent.putExtra("SESSION_YEAR", year)
                 startActivityForResult(intent, FRIEND_SELECT_REQUEST_CODE)
             } else {
-                createSessionOnServer(
+                val sessionDetails = SessionDetails(
                     name = name!!,
                     description = description ?: "",
                     latitude = selectedLatitude!!,
@@ -227,6 +227,7 @@ class CreateSessionActivity : AppCompatActivity() {
                     year = year,
                     invitees = arrayListOf()
                 )
+                createSessionOnServer(sessionDetails)
             }
         }
     }
@@ -249,19 +250,21 @@ class CreateSessionActivity : AppCompatActivity() {
         }, currentYear, currentMonth, currentDay).show()
     }
 
-    private fun createSessionOnServer(
-        name: String,
-        description: String,
-        latitude: Double,
-        longitude: Double,
-        startDate: Date,
-        endDate: Date,
-        isPublic: Boolean,
-        subject: String,
-        faculty: String,
-        year: Int,
-        invitees: ArrayList<String>
-    ) {
+    data class SessionDetails(
+        val name: String,
+        val description: String,
+        val latitude: Double,
+        val longitude: Double,
+        val startDate: Date,
+        val endDate: Date,
+        val isPublic: Boolean,
+        val subject: String,
+        val faculty: String,
+        val year: Int,
+        val invitees: ArrayList<String>
+    )
+
+    private fun createSessionOnServer(sessionDetails: SessionDetails) {
         val userId = LoginActivity.getCurrentUserId(this)
 
         if (userId == null) {
@@ -278,9 +281,7 @@ class CreateSessionActivity : AppCompatActivity() {
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
 
-                val jsonData = createSessionJsonData(
-                    name, description, userId, latitude, longitude, startDate, endDate, isPublic, subject, faculty, year, invitees
-                )
+                val jsonData = createSessionJsonData(sessionDetails, userId)
 
                 val jsonString = jsonData.toString()
                 Log.d(TAG, "Request body: $jsonString")
@@ -299,7 +300,7 @@ class CreateSessionActivity : AppCompatActivity() {
                 }
                 Log.d(TAG, "Response body: $responseBody")
 
-                handleServerResponse(responseCode, responseBody, name, description, latitude, longitude, startDate, endDate, isPublic)
+                handleServerResponse(responseCode, responseBody, sessionDetails)
                 connection.disconnect()
             } catch (e: IOException) {
                 Log.e(TAG, "Network error creating session", e)
@@ -315,44 +316,31 @@ class CreateSessionActivity : AppCompatActivity() {
         }
     }
 
-    private fun createSessionJsonData(
-        name: String,
-        description: String,
-        userId: String,
-        latitude: Double,
-        longitude: Double,
-        startDate: Date,
-        endDate: Date,
-        isPublic: Boolean,
-        subject: String,
-        faculty: String,
-        year: Int,
-        invitees: ArrayList<String>
-    ): JSONObject {
+    private fun createSessionJsonData(sessionDetails: SessionDetails, userId: String): JSONObject {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
 
         return JSONObject().apply {
-            put("name", name)
-            put("description", description)
+            put("name", sessionDetails.name)
+            put("description", sessionDetails.description)
             put("hostId", userId)
             put("location", JSONObject().apply {
                 put("type", "Point")
                 put("coordinates", JSONArray().apply {
-                    put(longitude)
-                    put(latitude)
+                    put(sessionDetails.longitude)
+                    put(sessionDetails.latitude)
                 })
             })
             put("dateRange", JSONObject().apply {
-                put("startDate", dateFormat.format(startDate))
-                put("endDate", dateFormat.format(endDate))
+                put("startDate", dateFormat.format(sessionDetails.startDate))
+                put("endDate", dateFormat.format(sessionDetails.endDate))
             })
-            put("isPublic", isPublic)
-            put("subject", subject)
-            put("faculty", faculty)
-            put("year", year)
+            put("isPublic", sessionDetails.isPublic)
+            put("subject", sessionDetails.subject)
+            put("faculty", sessionDetails.faculty)
+            put("year", sessionDetails.year)
             put("invitees", JSONArray().apply {
-                invitees.forEach { friendId ->
+                sessionDetails.invitees.forEach { friendId ->
                     put(friendId)
                 }
             })
@@ -362,13 +350,7 @@ class CreateSessionActivity : AppCompatActivity() {
     private suspend fun handleServerResponse(
         responseCode: Int,
         responseBody: String,
-        name: String,
-        description: String,
-        latitude: Double,
-        longitude: Double,
-        startDate: Date,
-        endDate: Date,
-        isPublic: Boolean
+        sessionDetails: SessionDetails
     ) {
         withContext(Dispatchers.Main) {
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
@@ -376,17 +358,17 @@ class CreateSessionActivity : AppCompatActivity() {
                 val sessionJson = responseJson.optJSONObject("session")
 
                 if (sessionJson != null) {
-                    val sessionLocation = "${latitude.toString().take(7)}, ${longitude.toString().take(7)}"
+                    val sessionLocation = "${sessionDetails.latitude.toString().take(7)}, ${sessionDetails.longitude.toString().take(7)}"
                     val sessionTime = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
-                        .format(startDate) + " - " +
-                            SimpleDateFormat("hh:mm a", Locale.getDefault()).format(endDate)
+                        .format(sessionDetails.startDate) + " - " +
+                            SimpleDateFormat("hh:mm a", Locale.getDefault()).format(sessionDetails.endDate)
 
                     val session = Session(
-                        name = name,
+                        name = sessionDetails.name,
                         time = sessionTime,
                         location = sessionLocation,
-                        description = description,
-                        visibility = if (isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
+                        description = sessionDetails.description,
+                        visibility = if (sessionDetails.isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
                     )
 
                     setResult(RESULT_OK, Intent().apply {
@@ -442,7 +424,7 @@ class CreateSessionActivity : AppCompatActivity() {
             val selectedFriendIds = data?.getStringArrayExtra("SELECTED_FRIEND_IDS")?.toList() ?: listOf()
 
             // Create the session with selected invitees
-            createSessionOnServer(
+            val sessionDetails = SessionDetails(
                 name = name,
                 description = description,
                 latitude = latitude,
@@ -455,6 +437,8 @@ class CreateSessionActivity : AppCompatActivity() {
                 year = year,
                 invitees = ArrayList(selectedFriendIds)
             )
+
+            createSessionOnServer(sessionDetails)
         }
     }
 }
