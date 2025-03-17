@@ -20,15 +20,18 @@ const Routes = [
   ...AuthRoutes,
 ];
 
-const utf8GCPKeyBuffer = Buffer.from(process.env.GCP_PRIVATE_KEY as string, "utf-8");
+const utf8GCPKeyBuffer = Buffer.from(
+  process.env.GCP_PRIVATE_KEY as string,
+  "utf-8"
+);
 const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
 
 admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.GCP_PROJECT_ID,
     clientEmail: process.env.GCP_CLIENT_EMAIL,
-    privateKey: utf8GCPKeyString
-  })
+    privateKey: utf8GCPKeyString,
+  }),
 });
 
 export const messaging = admin.messaging();
@@ -39,7 +42,7 @@ Routes.forEach((route) => {
   (app as any)[route.method](
     route.route,
     route.validation,
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         /* If there are validation errors, send a response with the error messages */
@@ -56,16 +59,18 @@ Routes.forEach((route) => {
   );
 });
 
-if (process.env.NODE_ENV !== 'test') {
-  mongoose.connect(process.env.DB_URI as string).then(() => {
-    console.log("MongoDB Client Connected");
+if (process.env.NODE_ENV !== "test") {
+  mongoose
+    .connect(process.env.DB_URI as string)
+    .then(() => {
+      console.log("MongoDB Client Connected");
 
-    app.listen(process.env.PORT, () => {
-      console.log(`Example app listening on port ${process.env.PORT}`);
+      app.listen(process.env.PORT, () => {
+        console.log(`Example app listening on port ${process.env.PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      mongoose.disconnect();
     });
-  }).catch(err => {
-    console.error(err);
-    mongoose.disconnect();
-  });
 }
-
