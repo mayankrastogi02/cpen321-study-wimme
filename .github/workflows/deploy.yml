@@ -1,7 +1,10 @@
 name: Deploy to EC2
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Run Backend Tests"]
+    types:
+      - completed
     branches:
       - main
 

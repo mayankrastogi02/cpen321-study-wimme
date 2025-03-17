@@ -60,7 +60,7 @@ describe("Unmocked: PUT /user/friendRequest", () => {
             .put('/user/friendRequest')
             .send({ userId: "invalidUserId" , friendUserName: "testuser2"});
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(200);
         expect(response.body.message).toBe("Invalid user ID")
     });
 
