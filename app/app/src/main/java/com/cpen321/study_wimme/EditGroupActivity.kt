@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -113,7 +114,7 @@ class EditGroupActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error editing group", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@EditGroupActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -139,7 +140,7 @@ class EditGroupActivity : AppCompatActivity() {
                     }
                 }
                 connection.disconnect()
-            } catch (e: Exception) {
+            } catch (e: JSONException) {
                 Log.e(TAG, "Error deleting group", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@EditGroupActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import User from "../schemas/UserSchema";
 
 export class AuthController {
@@ -42,12 +42,12 @@ export class AuthController {
           interests: user.interests,
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error verifying user:", error);
       return res.status(500).json({
         success: false,
         message: "Server error",
-        error: error.message,
+        error: (error as Error).message,
       });
     }
   }
@@ -105,12 +105,12 @@ export class AuthController {
         profileCreated: user.profileCreated,
         data: user,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating/updating user:", error);
       return res.status(500).json({
         success: false,
         message: "Server error",
-        error: error.message,
+        error: (error as Error).message,
       });
     }
   }
@@ -148,12 +148,12 @@ export class AuthController {
         message: "User profile updated successfully",
         data: user,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating user profile:", error);
       return res.status(500).json({
         success: false,
         message: "Server error",
-        error: error.message,
+        error: (error as Error).message,
       });
     }
   }
