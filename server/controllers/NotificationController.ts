@@ -52,14 +52,13 @@ export class NotificationController {
       } else {
         return res.status(404).json({ message: "Token not found" });
       }
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({ error: "Internal server error" });
     }
   }
 
   // for testing purposes only
-  // async testMessage(req: Request, res: Response, next: NextFunction) {
+  // async testMessage(req: Request, res: Response) {
   //   try {
   //     const { userId, title, body} = req.body;
   //     sendPushNotification(userId, title, body);
