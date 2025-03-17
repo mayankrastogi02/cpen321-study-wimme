@@ -7,53 +7,6 @@ import { sendPushNotification } from "../utils/notificationUtils";
 import Device from "../schemas/DeviceSchema";
 
 export class UserController {
-  async createUser(req: Request, res: Response) {
-    try {
-      const {
-        userName,
-        email,
-        firstName,
-        lastName,
-        profilePic,
-        year,
-        faculty,
-        friends,
-        friendRequests,
-      } = req.body;
-
-      const existingUser = await User.findOne({
-        $or: [{ userName }, { email }],
-      });
-
-      if (existingUser) {
-        return res
-          .status(400)
-          .json({ message: "Username or Email already in use" });
-      }
-
-      const newUser = new User({
-        userName,
-        email,
-        firstName,
-        lastName,
-        profilePic,
-        year,
-        faculty,
-        friends,
-        friendRequests,
-      });
-
-      const savedUser = await newUser.save();
-
-      res
-        .status(200)
-        .json({ message: "User created successfully", user: savedUser });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send(error);
-    }
-  }
-
   async sendFriendRequest(req: Request, res: Response) {
     try {
       const { userId, friendUserName } = req.body;
@@ -278,9 +231,9 @@ export class UserController {
 
   async getUser(req: Request, res: Response) {
     try {
-      const { userId } = req.body;
+      const { userId } = req.query;
 
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
+      if (!mongoose.Types.ObjectId.isValid(userId as string)) {
         return res.status(400).json({ message: "Invalid user ID" });
       }
 

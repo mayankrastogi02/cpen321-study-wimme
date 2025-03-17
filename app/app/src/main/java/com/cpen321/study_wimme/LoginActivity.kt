@@ -270,10 +270,10 @@ class LoginActivity : AppCompatActivity() {
                     reader.close()
                     
                     val jsonResponse = JSONObject(response.toString())
-                    
+
                     // Extract MongoDB user ID from response
-                    if (jsonResponse.has("user") && jsonResponse.getJSONObject("user").has("_id")) {
-                        val mongoUserId = jsonResponse.getJSONObject("user").getString("_id")
+                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
+                        val mongoUserId = jsonResponse.getJSONObject("data").getString("_id")
                         
                         // Save both Google ID and MongoDB ID to SharedPreferences
                         val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)

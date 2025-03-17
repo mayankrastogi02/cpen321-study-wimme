@@ -37,9 +37,10 @@ export const sendPushNotification = async (
         // if the device token is invalid or not registered (expired), delete it from the DB
         if (
           typedError.code === "messaging/registration-token-not-registered" ||
-          typedError.code === "messaging/invalid-registration-token"
+          typedError.code === "messaging/invalid-registration-token" ||
+          typedError.code === "messaging/invalid-argument" ||
+          typedError.code === "messaging/invalid-recipient"
         ) {
-          console.log(`Removing invalid token: ${token}`);
           await removeToken(token);
         }
       }
@@ -52,6 +53,8 @@ export const sendPushNotification = async (
 export const removeToken = async (token: string) => {
   const result = await Device.deleteOne({ token });
   if (result.deletedCount === 0) {
-    console.error("Could not delete token", token);
+    console.error('Could not delete token', token)
+    return false;
   }
+  return true;
 };
