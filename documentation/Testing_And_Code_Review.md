@@ -54,26 +54,47 @@ _(Placeholder for Jest coverage screenshot without mocks)_
 
 ### 3.1. Test Locations in Git
 
-| **Non-Functional Requirement**  | **Location in Git**                              |
-| ------------------------------- | ------------------------------------------------ |
-| **Performance (Response Time)** | [`tests/nonfunctional/response_time.test.js`](#) |
-| **Chat Data Security**          | [`tests/nonfunctional/chat_security.test.js`](#) |
+| **Non-Functional Requirement**  | **Location in Git**                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Performance (Response Time)** | [`app\app\src\androidTest\java\com\cpen321\study_wimme\Non-Functional Tests\NFR3_Tests.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/androidTest/java/com/cpen321/study_wimme/Non-Functional%20Tests/NFR3_Tests.kt) |
+| **Reliability and Error Handling**| [`app\app\src\androidTest\java\com\cpen321\study_wimme\Non-Functional Tests\NFR4_Tests.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/androidTest/java/com/cpen321/study_wimme/Non-Functional%20Tests/NFR4_Tests.kt)                                               |
 
 ### 3.2. Test Verification and Logs
 
 - **Performance (Response Time)**
 
-  - **Verification:** This test suite simulates multiple concurrent API calls using Jest along with a load-testing utility to mimic real-world user behavior. The focus is on key endpoints such as user login and study group search to ensure that each call completes within the target response time of 2 seconds under normal load. The test logs capture metrics such as average response time, maximum response time, and error rates. These logs are then analyzed to identify any performance bottlenecks, ensuring the system can handle expected traffic without degradation in user experience.
+  - **Verification:** The response time of the API is measured using the `NFR3_Tests.kt` test suite. The test suite sends multiple requests to the API and measures the time taken for the API to respond. The response time is then compared against the expected response time to verify that the API meets the performance requirements. As mentioned in our requirements, the API should respond within 300ms for 95% of the requests. The test reports the response times for each request, the average response time, as well as the maximum response time. If the average response time is less than 300ms and the maximum response time is less than 300ms, the test is considered successful.
   - **Log Output**
     ```
-    [Placeholder for response time test logs]
+    ...
+      Average Response Time: 129.26315789473685 ms
+      Max Response Time: 213 ms
+      Fastest Response Time: 77 ms
+      run finished: 23 tests, 0 failed, 0 ignored
+    ...
     ```
 
-- **Chat Data Security**
-  - **Verification:** ...
+- **Reliability and Error Handling**
+  - **Verification:** The reliability and error handling of the API are tested using the `NFR4_Tests.kt` test suite. The test suite sends requests to the API with different inputs to test the API's error handling capabilities. The test suite verifies that the API returns the correct error codes and messages when invalid inputs are provided. The test suite also verifies that the API returns the correct error codes and messages when the API encounters internal errors. The test suite reports the error codes and messages returned by the API for each request and compares them against the expected error codes and messages to verify that the API meets the reliability and error handling requirements. If the API returns the correct error codes and messages for all requests, the test is considered successful.
   - **Log Output**
     ```
-    [Placeholder for chat security test logs]
+      started: testHostSessionMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testHostSessionMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testCreateOrUpdateUserMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testCreateOrUpdateUserMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testDeleteSessionMissingSessionId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testDeleteSessionMissingSessionId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testVerifyUserMissingGoogleId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testVerifyUserMissingGoogleId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testCreateGroupMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testCreateGroupMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testGetGroupsMissingUserId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testGetGroupsMissingUserId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testUpdateUserProfileMissingGoogleId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testUpdateUserProfileMissingGoogleId(com.cpen321.study_wimme.ErrorRecoveryTests)
+      started: testAssociateDeviceMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      finished: testAssociateDeviceMissingFields(com.cpen321.study_wimme.ErrorRecoveryTests)
+      run finished: 8 tests, 0 failed, 0 ignored
     ```
 
 ---
@@ -163,7 +184,5 @@ _(Placeholder for Jest coverage screenshot without mocks)_
 
 - **Others**
 
-  1.  **Expression with labels increase complexity and affect maintainability.** - 
-      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/
-CreateSessionActivity.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/CreateSessionActivity.kt) 
-      - **Justification:** The `CreateSessionActivity` class uses labeled expressions to manage complex control flows that are essential for the application's functionality. Removing these labels would significantly increase the complexity of the code and reduce its maintainability. Therefore, the decision was made to keep the labeled expressions to ensure the code remains understandable and maintainable.
+  1.  **Expression with labels increase complexity and affect maintainability.** - - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/
+CreateSessionActivity.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/CreateSessionActivity.kt) - **Justification:** The `CreateSessionActivity` class uses labeled expressions to manage complex control flows that are essential for the application's functionality. Removing these labels would significantly increase the complexity of the code and reduce its maintainability. Therefore, the decision was made to keep the labeled expressions to ensure the code remains understandable and maintainable.
