@@ -103,43 +103,63 @@ _(Placeholder for Jest coverage screenshot without mocks)_
 
 ### 4.1. Location in Git of Front-end Test Suite:
 
-`frontend/src/androidTest/java/com/studygroupfinder/`
+`cpen321-study-wimme\app\app\src\androidTest\java\com\cpen321\study_wimme\EspressoTests.kt`
 
 ### 4.2. Tests
 
-- **Use Case: Login**
+- **Use Case: Create session**
 
   - **Expected Behaviors:**
     | **Scenario Steps** | **Test Case Steps** |
     | ------------------ | ------------------- |
-    | 1. The user opens â€œAdd Todo Itemsâ€ screen. | Open â€œAdd Todo Itemsâ€ screen. |
-    | 2. The app shows an input text field and an â€œAddâ€ button. The add button is disabled. | Check that the text field is present on screen.<br>Check that the button labelled â€œAddâ€ is present on screen.<br>Check that the â€œAddâ€ button is disabled. |
-    | 3a. The user inputs an ill-formatted string. | Input â€œ*^*^^OQ#$â€ in the text field. |
-    | 3a1. The app displays an error message prompting the user for the expected format. | Check that a dialog is opened with the text: â€œPlease use only alphanumeric charactersâ€. |
-    | 3. The user inputs a new item for the list and the add button becomes enabled. | Input â€œbuy milkâ€ in the text field.<br>Check that the button labelled â€œaddâ€ is enabled. |
-    | 4. The user presses the â€œAddâ€ button. | Click the button labelled â€œaddâ€. |
-    | 5. The screen refreshes and the new item is at the bottom of the todo list. | Check that a text box with the text â€œbuy milkâ€ is present on screen.<br>Input â€œbuy chocolateâ€ in the text field.<br>Click the button labelled â€œaddâ€.<br>Check that two text boxes are present on the screen with â€œbuy milkâ€ on top and â€œbuy chocolateâ€ at the bottom. |
-    | 5a. The list exceeds the maximum todo-list size. | Repeat steps 3 to 5 ten times.<br>Check that a dialog is opened with the text: â€œYou have too many items, try completing one firstâ€. |
+    | 1. The actor clicks on the create session button | Open activity and click create session button. |
+    | 2. The system displays empty, editable fields for time range, location, and description. It also includes a toggle that lets the actor choose if the session is private or public  If the session is private, the actor chooses which friends or groups they broadcast the session to | Implicitly checks visibility of elements (using findViewById, withId), toggles session to be public.|
+    | 3a.  User enters invalid information for session (letters for time, symbols for anything, date in the past, etc…) | Input an empty string for the session name field.|
+    | 3a1. Message informing user that they have entered invalid information for a field | Click on field with error image (session name field), checking that message "Session name is required" is displayed. |
+    | 3. The actor clicks the fields, enters the appropriate information and specifies whether the session is public or private. If the session is private, the actor chooses which friends or groups they broadcast the session to | Clicks on fields and fills out session details with valid information. |
+    | 4. The actor clicks the create button | Click host session button. |
+    | 5. The inputted data gets populated in the database for the new session | Check that hosted session is visible in study list. |
+    | 6. The system displays that the session has been created successfully. If the session is private, the selected friends/groups are notified. | Check that hosted session is visible in study list. Visual verification of Toast message.|
 
-  - **Test Logs:**
-    ```
-    [Placeholder for Espresso test execution logs]
-    ```
-
-- **Use Case: ...**
+- **Use Case: Join + Leave session (tested together)**
 
   - **Expected Behaviors:**
-
     | **Scenario Steps** | **Test Case Steps** |
     | ------------------ | ------------------- |
-    | ...                | ...                 |
+    | 1. The actor clicks on the session which they want to join | Navigate to public sessions in session list and click on a session. |
+    | 1a.  User already joined | Click into session and click join session again after initial join. |
+    | 1a1. System displays message that user is already in session and returns to session list page | Check return to session list page and visually verify toast message. |
+    | 2.The system retrieves the session information from the database and displays the information | Checks that session details activity has started by selecting the join button that exists in that activity. |
+    | 3. The actor clicks the join button | Click join session button. |
+    | 4. The system updates the database to include the actor as an attendee | Check that session appears in the joined sessions list. |
+    | 5. The system displays that the actor has joined the session | Visual verification of toast message. |
+    | **Leave Session**                                                                                
+    | 1. The actor clicks on the session which they have joined | Navigate to "joined" sessions in the session list and click on previously joined session.|
+    | 2. The system retrieves the session information from the database and displays the information | Check that the session details activity has started by verifying the "Leave" button is present and clickable in that activity. |
+    | 3. The actor clicks the leave button | Click the "Leave Session" button.|
+    | 3a. Session no longer exists | Requires server mocks so untested.|
+    | 3a1. System displays error that session cannot be found and returns to sessions list| Requires server mocks so untested.|
+    | 4. The system updates the database to remove the actor as an attendee  | Check that session no longer appears in the joined sessions list. |
+    | 5. The system displays that the actor has left the session | Visual verification of toast message. |
+  
+- **Use Case: Delete session**
+
+  - **Expected Behaviors:**
+    | **Scenario Steps** | **Test Case Steps** |
+    | ------------------ | ------------------- |
+    | 1. The actor clicks the session which they want to delete | Navigate to hosted sessions in session list and click on a self-hosted session. |
+    | 2.The system retrieves the session information from the database and displays the information | Checks that session details activity has started by selecting the delete button that exists in that activity|
+    | 3. The actor clicks the delete button | Click delete session button. |
+    | 4. The system displays a popup asking to confirm deletion of this session | Check that popup is shown to user by selecting the cancel button that is only visble in popup. |
+    | 4a.  User cancels deletion | Cancel button on popup is clicked. |
+    | 4a1. System closes confirmation popup and returns to session page with no changes.| Return to session detail pages and checks by selecting delete button again. |
+    | 5. The actor clicks the confirm deletion button | Delete button is clicked again and confirm is clicked on popup. |
+    | 6. The system deletes the session entry from the database | Check that hosted session is no longer visible in study list. |
+    | 7. The system displays that the session has been deleted successfully | Check that hosted session is not visible in study list. Visual verification of Toast message.|
 
   - **Test Logs:**
-    ```
-    [Placeholder for Espresso test execution logs]
-    ```
+    ![Espresso Tests](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/EspressoResults.jpg)
 
-- **...**
 
 ---
 
