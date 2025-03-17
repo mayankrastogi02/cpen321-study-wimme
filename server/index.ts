@@ -20,19 +20,23 @@ const Routes = [
   ...AuthRoutes,
 ];
 
-const utf8GCPKeyBuffer = Buffer.from(
-  process.env.GCP_PRIVATE_KEY as string,
-  "utf-8"
-);
-const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
-
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.GCP_PROJECT_ID,
-    clientEmail: process.env.GCP_CLIENT_EMAIL,
-    privateKey: utf8GCPKeyString,
-  }),
-});
+if (process.env.NODE_ENV !== "test") {
+  const utf8GCPKeyBuffer = Buffer.from(
+    process.env.GCP_PRIVATE_KEY as string,
+    "utf-8"
+  );
+  const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
+  
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.GCP_PROJECT_ID,
+      clientEmail: process.env.GCP_CLIENT_EMAIL,
+      privateKey: utf8GCPKeyString,
+    }),
+  });
+} else {
+  admin.initializeApp();
+}
 
 export const messaging = admin.messaging();
 
