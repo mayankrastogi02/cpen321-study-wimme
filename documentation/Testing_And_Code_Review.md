@@ -130,11 +130,12 @@ _(Placeholder for Jest coverage screenshot without mocks)_
 
 ### 5.2. Unfixed Issues per Codacy Category
 
-_(Placeholder for screenshots of Codacyâ€™s Category Breakdown table in Overview)_
+![Codacy Screenshot](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Codacy_Screenshot.jpg)
 
 ### 5.3. Unfixed Issues per Codacy Code Pattern
 
-_(Placeholder for screenshots of Codacyâ€™s Issues page)_
+![Codacy Screenshot](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Codacy_Screenshot_Category_1.jpg)
+![Codacy Screenshot](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/Codacy_Screenshot_Category_2.jpg)
 
 ### 5.4. Justifications for Unfixed Issues
 
@@ -142,27 +143,27 @@ _(Placeholder for screenshots of Codacyâ€™s Issues page)_
 
   1.  **Class 'HomeFragment' with '18' functions detected. Defined threshold inside classes is set to '11'**
 
-      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/HomeFragment.kt`](#)
+      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/HomeFragment.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/HomeFragment.kt)
       - **Justification:** The `HomeFragment`class contains multiple functions that handle different responsibilities, such as fetching user data, displaying user data, and handling user interactions. Attempts were made to refactor the code to supress the`method too long` warning, but as a result, the class now contains multiple functions that handle different responsibilities. This is a tradeoff between code readability and adherence to the single responsibility principle.
 
   2.  **Class 'UserSettingsActivity' with '12' functions detected. Defined threshold inside classes is set to '11'**
 
-      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/UserSettingsActivity.kt`](#)
+      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/UserSettingsActivity.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/UserSettingsActivity.kt)
       - **Justification:** The `UserSettingsActivity` class contains multiple functions that handle different responsibilities, such as updating user settings, displaying user settings, and handling user interactions. Attempts were made to refactor the code to suppress the `method too long` warning, but as a result, the class now contains multiple functions that handle different responsibilities. This is a tradeoff between code readability and adherence to the single responsibility principle.
 
   3.  **Class 'CreateSessionActivity' with '11' functions detected. Defined threshold inside classes is set to '11'**
 
-      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/CreateSessionActivity.kt`](#)
+      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/CreateSessionActivity.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/CreateSessionActivity.kt)
       - **Justification:** The `CreateSessionActivity` class contains multiple functions that handle different responsibilities, such as creating a new study session, displaying study session details, and handling user interactions. Attempts were made to refactor the code to suppress the `method too long` warning, but as a result, the class now contains multiple functions that handle different responsibilities. This is a tradeoff between code readability and adherence to the single responsibility principle.
 
   4.  **Class 'FriendsFragment' with '11' functions detected. Defined threshold inside classes is set to '11'**
 
-      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/FriendsFragment.kt`](#)
+      - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/FriendsFragment.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/FriendsFragment.kt)
       - **Justification:** The `FriendsFragment` class contains multiple functions that handle different responsibilities, such as fetching user data, displaying user data, and handling user interactions. Attempts were made to refactor the code to suppress the `method too long` warning, but as a result, the class now contains multiple functions that handle different responsibilities. This is a tradeoff between code readability and adherence to the single responsibility principle.
 
 - **Others**
 
   1.  **Expression with labels increase complexity and affect maintainability.** - 
       - **Location in Git:** [`app/app/src/main/java/com/cpen321/study_wimme/
-CreateSessionActivity.kt`](#)
-      - **Justification:** The use of labels in the `CreateSessionActivity` class increases the complexity of the code and affects its maintainability. The labels are used to control the flow of the code, but they make the code harder to read and understand.
+CreateSessionActivity.kt`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/app/app/src/main/java/com/cpen321/study_wimme/CreateSessionActivity.kt) 
+      - **Justification:** The `CreateSessionActivity` class uses labeled expressions to manage complex control flows that are essential for the application's functionality. Removing these labels would significantly increase the complexity of the code and reduce its maintainability. Therefore, the decision was made to keep the labeled expressions to ensure the code remains understandable and maintainable.
