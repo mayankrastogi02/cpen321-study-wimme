@@ -63,7 +63,14 @@
      ```
      npm test --coverage
      ```
-3. **View coverage report**
+4. **Create a .env file**
+    - Make a .env file under the `server` folder and add the following keys
+      ```
+      DB_URI=<YOUR MONGODB URI>
+      PORT=<YOUR PORT>
+      GCP_PROJECT_ID=study-wimme
+      ```
+5. **View coverage report**
    - Navigate to `<YOUR REPO>/server/coverage/lcov-report` to view the html coverage reports in a browser
 
 ### 2.2. GitHub Actions Configuration Location
