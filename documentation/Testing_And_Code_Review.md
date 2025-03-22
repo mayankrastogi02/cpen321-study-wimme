@@ -14,16 +14,36 @@
 
 #### 2.1.1. Tests
 
-| **Interface**                 | **Describe Group Location, No Mocks**                | **Describe Group Location, With Mocks**            | **Mocked Components**              |
-| ----------------------------- | ---------------------------------------------------- | -------------------------------------------------- | ---------------------------------- |
-| **POST /user/login**          | [`tests/unmocked/authenticationLogin.test.js#L1`](#) | [`tests/mocked/authenticationLogin.test.js#L1`](#) | Google Authentication API, User DB |
-| **POST /study-groups/create** | ...                                                  | ...                                                | Study Group DB                     |
-| ...                           | ...                                                  | ...                                                | ...                                |
-| ...                           | ...                                                  | ...                                                | ...                                |
+| **Interface**                                | **Describe Group Location, No Mocks**                | **Describe Group Location, With Mocks**            | **Mocked Components**              |
+| ---------------------------------------------| ---------------------------------------------------- | -------------------------------------------------- | ---------------------------------- |
+| **GET /auth/verify**                         | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/AuthRoutes.test.ts#L31)               | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/AuthRoutes.test.ts#L16)              | User table |
+| **POST /auth/google**                        | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/AuthRoutes.test.ts#L84)               | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/AuthRoutes.test.ts#L36)              | User table |
+| **PUT /auth/profile/:googleId**              | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/AuthRoutes.test.ts#L169)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/AuthRoutes.test.ts#L60)              | User table |
+| **POST /group**                              | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/GroupRoutes.test.ts#L78)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/GroupRoutes.test.ts#L32)             | User table |
+| **GET /group/:userId**                       | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/GroupRoutes.test.ts#L155)             | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/GroupRoutes.test.ts#L49)             | Group table |
+| **PUT /group/:groupId**                      | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/GroupRoutes.test.ts#L195)             | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/GroupRoutes.test.ts#L66)             | Group table |
+| **DELETE /group/:groupId**                   | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/GroupRoutes.test.ts#L280)             | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/GroupRoutes.test.ts#L84)             | Group table |
+| **POST /notification/deviceToken**           | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/NotificationRoutes.test.ts#L44)       | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/NotificationRoutes.test.ts#L244)     | Device table |
+| **DELETE /notification/deviceToken**         | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/NotificationRoutes.test.ts#L145)      | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/71de8f883fe976552522db765e14e0a1b3024c67/server/testing/backend_testing_mocked/NotificationRoutes.test.ts#L266)     | Device table |
+| **PUT /session/:sessionId/join**             | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/SessionRoutes.test.ts#L112)           | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/SessionRoutes.test.ts#L32)                                               | Session table |
+| **POST /session**                            | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/SessionRoutes.test.ts#L230)           | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/SessionRoutes.test.ts#L50)                                               | User table |
+| **PUT /session/:sessionId/leave**            | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/SessionRoutes.test.ts#L376)           | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/SessionRoutes.test.ts#L82)                                               | Session table |
+| **DELETE /session/:sessionId**               | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/SessionRoutes.test.ts#L466)           | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/SessionRoutes.test.ts#L100)                                              | Session table |
+| **GET /session/availableSessions/:userId**   | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/SessionRoutes.test.ts#L513)           | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/SessionRoutes.test.ts#L117)                                              | Session table |
+| **GET /session/nearbySessions/**             | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/SessionRoutes.test.ts#L588)           | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/SessionRoutes.test.ts#L134)                                              | Session table |
+| **PUT /user/friendRequest**                  | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L53)               | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L55)                                                  | User table |
+| **GET /user/friendRequests**                 | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L159)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L72)                                                  | User table |
+| **GET /user/friends**                        | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L210)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L89)                                                  | User table |
+| **PUT /user/friend**                         | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L264)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L106)                                                 | User table |
+| **DELETE /user/removeFriend**                | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L368)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L124)                                                 | User table |
+| **GET /user**                                | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L464)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L142)                                                 | User table |
+| **PUT /user**                                | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L518)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L158)                                                 | User table |
+| **DELETE /user**                             | [`Link to unmocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_unmocked/UserRoutes.test.ts#L609)              | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/UserRoutes.test.ts#L180)                                                 | User table |
+| **sendPushNotification() helper function**   | N/A                                                                                                                                                                      | [`Link to mocked test`](https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/server/testing/backend_testing_mocked/NotificationRoutes.test.ts#L69)                                          | Device table, Firebase Notification API |
 
 #### 2.1.2. Commit Hash Where Tests Run
 
-`[Insert Commit SHA here]`
+`94da49a72c74aca72d9acce383440749b1a5d019`
 
 #### 2.1.3. Explanation on How to Run the Tests
 
@@ -31,23 +51,48 @@
 
    - Open your terminal and run:
      ```
-     git clone https://github.com/example/your-project.git
+     git clone https://github.com/mayankrastogi02/cpen321-study-wimme.git
      ```
-
-2. **...**
+2. **Install node packages**
+   - Navigate to the `server` folder in your cloned repository and run:
+     ```
+     npm i
+     ```
+3. **Run jest tests with coverage**
+   - Run the Jest tests with coverage using the following command:
+     ```
+     npm test --coverage
+     ```
+4. **Create a .env file**
+    - Make a .env file under the `server` folder and add the following keys
+      ```
+      DB_URI=<YOUR MONGODB URI>
+      PORT=<YOUR PORT>
+      GCP_PROJECT_ID=study-wimme
+      ```
+5. **View coverage report**
+   - Navigate to `<YOUR REPO>/server/coverage/lcov-report` to view the html coverage reports in a browser
 
 ### 2.2. GitHub Actions Configuration Location
 
-`~/.github/workflows/backend-tests.yml`
+`<YOUR REPO>/.github/workflows/test-backend.yml`
 
 ### 2.3. Jest Coverage Report Screenshots With Mocks
 
-_(Placeholder for Jest coverage screenshot with mocks enabled)_
+![Placeholder for Jest coverage screenshot with mocks enabled](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/study-wimme-with-mocking.jpg)
+
+We were able to achieve a **97.5%** statement coverage and a **98.6%** branch coverage when we ran our report with mocks
+- Our index.ts file did not have a lot of coverage. This was intentional because we didn't need we want to use an actual database for testing, instead
+using an in-memory database. Additionally, we did not need firebase credentials to run the test. Thus we added a boolean condition to exclude this code during testing.
+- We also had 1 unreachable line of code in AuthController which we are going to modify for the final milestone.
 
 ### 2.4. Jest Coverage Report Screenshots Without Mocks
 
-_(Placeholder for Jest coverage screenshot without mocks)_
+![Placeholder for Jest coverage screenshot without mocks](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/study-wimme-without-mocking.jpg)
 
+We saw a slight decline in both statement and branch coverage when we ran our tests without mocks at **86.4%** and **95.2%** respectively
+- This was partially attributed to the fact that all of our endpoints were wrapped in a try-catch bock that threw an internal server error with code 500 if the server were to unexpectedly fail (ie. from a database error). We were unable to test these unexpected failures without mocks.
+- Additionally, the push notification API for firebase admin were unable to be tested without because we could not generate real valid/expired device tokens, hence the low coverage in `notificationUtils.ts`.
 ---
 
 ## 3. Back-end Test Specification: Tests of Non-Functional Requirements
@@ -156,6 +201,45 @@ _(Placeholder for Jest coverage screenshot without mocks)_
     | 5. The actor clicks the confirm deletion button | Delete button is clicked again and confirm is clicked on popup. |
     | 6. The system deletes the session entry from the database | Check that hosted session is no longer visible in study list. |
     | 7. The system displays that the session has been deleted successfully | Check that hosted session is not visible in study list. Visual verification of Toast message.|
+
+    
+  - **Use Case: Create Profile**
+
+  - **Expected Behaviors:**
+    | **Scenario Steps** | **Test Case Steps** |
+    | ------------------ | ------------------- |
+    | 1. The actor clicks the create profile button.| Start activity session with complete_profile set to true (creating profile for the first time). |
+    | 2. The system displays empty, editable fields about their profile. | Implicity verifies that expected fields exist through selection.|
+    | 3. The actor clicks the fields and enters the appropriate information | Fill out fields with valid inputs. |
+    | 3a.  User enters invalid text for respective fields (string for year, number for major, etc..) | Enter empty string for name. |
+    | 3a1. Message is displayed to user informing them that they have entered invalid characters for the given field(s) and to fix it before submitting is allowed. | Verify expected error shows up. |
+    | 4. The actor clicks the save button | Click save button. |
+    | 5. The inputted data gets populated in the database for that user. | Close and open profile again to verify entered fields were properly saved. |
+    | 6. The system displays that the profile has been created successfully | Visual verification of displayed toast message. |
+
+  - **Use Case: Read Profile**
+
+  - **Expected Behaviors:**
+    | **Scenario Steps** | **Test Case Steps** |
+    | ------------------ | ------------------- |
+    | 1. The actor clicks on their profile button | Click on profile button. |
+    | 2. The system retrieves the actor’s profile information from the database | Verifies that expected fields (from creation) are shown correctly (since they come from the database) |
+    | 3. The system displays information about their profile: username, year, and faculty | Verifies that expected fields (from creation) are shown correctly with expected values|
+
+  - **Use Case: Edit Profile**
+
+  - **Expected Behaviors:**
+    | **Scenario Steps** | **Test Case Steps** |
+    | ------------------ | ------------------- |
+    | 1. The actor clicks the edit button on their profile | Start activity session with complete_profile set to false (profile already exists). |
+    | 2. The system retrieves the actor’s profile information from the database | Verifies that expected fields are not empty (since they come from the database)|
+    | 3. The system displays information about their profile, such as username, year, and faculty as editable fields | Verifies that expected fields are not empty |
+    | 4. The actor clicks on the field they want to modify and changes it | New information is entered for each field |
+    | 4a.  User enters invalid text for respective fields (string for year, number for major, etc..) | Enter empty string for name. |
+    | 4a1. Message is displayed to user informing them that they have entered invalid characters for the given field(s) and to fix it before submitting is allowed. | Verify expected error shows up. |
+    | 5. The actor clicks the save button | Close and open profile again to verify entered fields were properly saved. |
+    | 6. The inputted data gets updated in the database for that user | Visual verification of displayed toast message. |
+    | 7. The system displays that the changes have been saved successfully | Visual verification of displayed toast message. |
 
   - **Test Logs:**
     ![Espresso Tests](https://raw.githubusercontent.com/mayankrastogi02/cpen321-study-wimme/refs/heads/main/documentation/images/EspressoResults.jpg)

@@ -340,6 +340,20 @@ class CreateSessionActivityTest {
         onView(withId(R.id.profileIcon))
             .perform(click())
 
+        // Verify that each field is pre-populated (not empty) before editing.
+        onView(withId(R.id.usernameEditText))
+            .check(matches(not(withText(""))))
+        onView(withId(R.id.firstNameEditText))
+            .check(matches(not(withText(""))))
+        onView(withId(R.id.lastNameEditText))
+            .check(matches(not(withText(""))))
+        onView(withId(R.id.programEditText))
+            .check(matches(not(withText(""))))
+        onView(withId(R.id.yearEditText))
+            .check(matches(not(withText(""))))
+        onView(withId(R.id.interestsEditText))
+            .check(matches(not(withText(""))))
+
         onView(withId(R.id.usernameEditText))
             .perform(clearText(), closeSoftKeyboard())
 
