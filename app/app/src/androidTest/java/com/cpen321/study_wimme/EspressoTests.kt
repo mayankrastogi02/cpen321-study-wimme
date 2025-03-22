@@ -32,6 +32,7 @@ import java.util.Properties
 import android.view.View
 import android.widget.EditText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
+import androidx.test.espresso.intent.Intents.intended
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import androidx.test.espresso.matcher.BoundedMatcher
@@ -169,7 +170,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.joinedButton)).perform(click())
 
         onView(withText("Test Session 1"))
-            .check(doesNotExist())
+            .check(matches(not(isDisplayed())))
 
         onView(withId(R.id.findButton)).perform(click())
 
@@ -214,7 +215,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.backButton)).perform(click())
 
         onView(withText("Test Session 1"))
-            .check(doesNotExist())
+            .check(matches(not(isDisplayed())))
     }
 
     @Test
@@ -251,6 +252,137 @@ class CreateSessionActivityTest {
         Thread.sleep(1000)
 
         onView(withText("Test Session Espresso"))
-            .check(doesNotExist())
+            .check(matches(not(isDisplayed())))
+    }
+
+    @Test
+    fun test04_NewUserCompletingProfilePrepopulate() {
+        // Set up SharedPreferences with dummy Google sign-in info
+        val appContext = ApplicationProvider.getApplicationContext<Context>()
+        val sharedPrefs = appContext.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        sharedPrefs.edit()
+            .putString("displayName", "Alice Wonderland")
+            .putString("email", "alice@wonderland.com")
+            .apply()
+
+        // Launch UserSettingsActivity with COMPLETE_PROFILE set to true
+        val intent = Intent(appContext, UserSettingsActivity::class.java).apply {
+            putExtra("COMPLETE_PROFILE", true)
+        }
+        ActivityScenario.launch<UserSettingsActivity>(intent)
+
+        onView(withId(R.id.usernameEditText))
+            .perform(clearText(), closeSoftKeyboard())
+
+        onView(withId(R.id.programEditText))
+            .perform(typeText("Engineering"), closeSoftKeyboard())
+        onView(withId(R.id.yearEditText))
+            .perform(typeText("2"), closeSoftKeyboard())
+        onView(withId(R.id.interestsEditText))
+            .perform(typeText("Math, Science"), closeSoftKeyboard())
+
+        // Attempt to save with an empty username
+        onView(withId(R.id.saveButton)).perform(click())
+
+        onView(withId(R.id.usernameEditText))
+            .check(matches(hasEditTextErrorText("Username is required")))
+
+        // Now fix the username field
+        onView(withId(R.id.usernameEditText))
+            .perform(typeText("alice"), closeSoftKeyboard())
+
+        // Verify that the first and last names are prepopulated from displayName
+        onView(withId(R.id.firstNameEditText))
+            .check(matches(withText("Alice")))
+        onView(withId(R.id.lastNameEditText))
+            .check(matches(withText("Wonderland")))
+
+        // Verify that the username is set using the email's local-part ("alice")
+        onView(withId(R.id.usernameEditText))
+            .check(matches(withText("alice")))
+
+        // Verify that the back and delete account buttons are hidden
+        onView(withId(R.id.backButton))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.deleteAccountButton))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+
+        onView(withId(R.id.saveButton)).perform(click())
+
+        intended(hasComponent(SessionsListActivity::class.java.getName()))
+    }
+
+    @Test
+    fun test05_ReadProfileFields() {
+        val studyListScenario = ActivityScenario.launch(SessionsListActivity::class.java)
+
+        onView(withId(R.id.profileIcon))
+            .perform(click())
+
+        onView(withId(R.id.usernameEditText))
+            .check(matches(withText("alice")))
+        onView(withId(R.id.firstNameEditText))
+            .check(matches(withText("Alice")))
+        onView(withId(R.id.lastNameEditText))
+            .check(matches(withText("Wonderland")))
+        onView(withId(R.id.programEditText))
+            .check(matches(withText("Engineering")))
+        onView(withId(R.id.yearEditText))
+            .check(matches(withText("2")))
+        onView(withId(R.id.interestsEditText))
+            .check(matches(withText("Math, Science")))
+    }
+
+    @Test
+    fun test06_EditProfileFieldsAndSave() {
+        val studyListScenario = ActivityScenario.launch(SessionsListActivity::class.java)
+
+        onView(withId(R.id.profileIcon))
+            .perform(click())
+
+        onView(withId(R.id.usernameEditText))
+            .perform(clearText(), closeSoftKeyboard())
+
+        // Attempt to save with an empty username
+        onView(withId(R.id.saveButton)).perform(click())
+
+        onView(withId(R.id.usernameEditText))
+            .check(matches(hasEditTextErrorText("Username is required")))
+
+        onView(withId(R.id.usernameEditText))
+            .perform(clearText(), typeText("John Doe"), closeSoftKeyboard())
+        onView(withId(R.id.firstNameEditText))
+            .perform(clearText(), typeText("John"), closeSoftKeyboard())
+        onView(withId(R.id.lastNameEditText))
+            .perform(clearText(), typeText("Doe"), closeSoftKeyboard())
+        onView(withId(R.id.programEditText))
+            .perform(clearText(), typeText("Biology"), closeSoftKeyboard())
+        onView(withId(R.id.yearEditText))
+            .perform(clearText(), typeText("3"), closeSoftKeyboard())
+        onView(withId(R.id.interestsEditText))
+            .perform(clearText(), typeText("Biology, CPSC"), closeSoftKeyboard())
+
+        // the activity will simply call finish() so that it goes back to SessionsListActivity.
+        onView(withId(R.id.saveButton)).perform(click())
+
+        intended(hasComponent(SessionsListActivity::class.java.getName()))
+
+        Thread.sleep(1000)
+
+        onView(withId(R.id.profileIcon))
+            .perform(click())
+
+        onView(withId(R.id.usernameEditText))
+            .check(matches(withText("John Doe")))
+        onView(withId(R.id.firstNameEditText))
+            .check(matches(withText("John")))
+        onView(withId(R.id.lastNameEditText))
+            .check(matches(withText("Doe")))
+        onView(withId(R.id.programEditText))
+            .check(matches(withText("Biology")))
+        onView(withId(R.id.yearEditText))
+            .check(matches(withText("3")))
+        onView(withId(R.id.interestsEditText))
+            .check(matches(withText("Biology, CPSC")))
     }
 }
