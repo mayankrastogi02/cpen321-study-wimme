@@ -8,6 +8,7 @@ import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
+import { sentenceSimilarity } from "./utils/sessionRecommender";
 
 export const app = express();
 app.use(express.json());
@@ -37,6 +38,26 @@ if (process.env.NODE_ENV !== "test") {
 } else {
   admin.initializeApp();
 }
+
+// let model: use.UniversalSentenceEncoder | null = null;
+// export async function loadModel() {
+//   if (!model) {
+//       model = await use.load();
+//   }
+//   return model;
+// }
+
+sentenceSimilarity("sasuke", "naruto").then(similarity => {
+  console.log(`Cosine similarity between text1: ${similarity}`);
+});
+
+sentenceSimilarity("pilot", "driver").then(similarity => {
+  console.log(`Cosine similarity between text2: ${similarity}`);
+});
+
+sentenceSimilarity("science, math", "math, arts").then(similarity => {
+  console.log(`Cosine similarity between text3: ${similarity}`);
+});
 
 export const messaging = admin.messaging();
 
