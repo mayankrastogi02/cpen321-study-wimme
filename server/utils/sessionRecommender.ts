@@ -1,12 +1,14 @@
 import * as tf from '@tensorflow/tfjs';
-import * as use from '@tensorflow-models/universal-sentence-encoder';
-import { IUser } from '../schemas/UserSchema';
+import User, { IUser } from '../schemas/UserSchema';
 import { ISession } from '../schemas/SessionSchema';
-import Session from '../schemas/SessionSchema';
+import { loadModel } from '..';
 
+// set the top N sessions returned by findTopSessions()
+const TOP_SESSIONS_RETURNED = 3
 
+// Calculates vectorizes 2 strings passed in using google's universal-sentence-encoder and calculates their cosine similarity
 export const sentenceSimilarity = async (sentence1: string, sentence2: string): Promise<number> => {
-    const model = await use.load();
+    const model = await loadModel();
     const embeddings = await model.embed([sentence1, sentence2]);
 
     return tf.tidy(() => {
@@ -21,8 +23,34 @@ export const sentenceSimilarity = async (sentence1: string, sentence2: string): 
     });
 }
 
-export const rankSessions = async (user: IUser, sessionsArray: ISession[]) => {
+export const findTopSessions = async (user: IUser, sessionsArray: ISession[]) => {
+    const scoredSessions: { session: ISession; score: number }[] = [];
+
     for (const session of sessionsArray) {
-        const host = Session.find(session.hostId)
+        const host = await User.findById(session.hostId);
+        if (host) {
+            const facultyScore = session.faculty == user.faculty ? 1 : 0;
+            const participantsScore = session.participants.some(participant => user.friends.includes(participant)) ? 1 : 0;
+            const yearScore = session.year === user.year ? 1 : 0;
+
+            const sessionStartDateMillis = new Date(session.dateRange.startDate).getTime()
+            
+            const dateScore = (
+                sessionStartDateMillis - Date.now()
+              ) <= 24 * 60 * 60 * 1000 
+              && sessionStartDateMillis > Date.now()
+              ? 1 : 0;
+
+            // determine the cosine similarity between the user's interests and the host's interests
+            const interestsScore = await sentenceSimilarity(user.interests, host.interests);
+
+            const finalScore = (facultyScore + participantsScore + yearScore + dateScore + interestsScore) / 5;
+            scoredSessions.push({ session, score: finalScore });
+        }
     }
+
+    scoredSessions.sort((a, b) => b.score - a.score);
+    console.log("DEBUG scored sessions:", scoredSessions);
+
+    return scoredSessions.slice(0, TOP_SESSIONS_RETURNED).map(entry => entry.session);
 }

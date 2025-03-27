@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Session from "../schemas/SessionSchema";
+import Session, { ISession } from "../schemas/SessionSchema";
 import User from "../schemas/UserSchema";
 import { sendPushNotification } from "../utils/notificationUtils";
+import { findTopSessions } from "../utils/sessionRecommender";
 
 export class SessionController {
   async hostSession(req: Request, res: Response) {
@@ -252,9 +253,17 @@ export class SessionController {
         ...invitedSessions,
       ];
 
+      const user = await User.findById(userId);
+      let recommendedSessions: ISession[] = [];
+      
+      if (user) {
+        recommendedSessions = await findTopSessions(user, publicSessions);
+      }
+
       return res.status(200).json({
         success: true,
         sessions: allSessions,
+        recommendedSessions,
       });
     } catch (error) {
       console.error("Error in getAvailableSessions:", error);
