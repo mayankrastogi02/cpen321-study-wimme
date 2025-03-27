@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import com.cpen321.study_wimme.helpers.SessionHelper
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
@@ -283,7 +284,7 @@ class CreateSessionActivity : AppCompatActivity() {
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
 
-                val jsonData = createSessionJsonData(sessionDetails, userId)
+                val jsonData = SessionHelper.createSessionJsonData(sessionDetails, userId)
 
                 val jsonString = jsonData.toString()
                 Log.d(TAG, "Request body: $jsonString")
@@ -302,7 +303,12 @@ class CreateSessionActivity : AppCompatActivity() {
                 }
                 Log.d(TAG, "Response body: $responseBody")
 
-                handleServerResponse(responseCode, responseBody, sessionDetails)
+                SessionHelper.handleServerResponse(
+                    this@CreateSessionActivity,
+                    responseCode,
+                    responseBody,
+                    sessionDetails
+                )
                 connection.disconnect()
             } catch (e: IOException) {
                 Log.e(TAG, "Network error creating session", e)
@@ -313,86 +319,6 @@ class CreateSessionActivity : AppCompatActivity() {
                 Log.e(TAG, "JSON error creating session", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CreateSessionActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    private fun createSessionJsonData(sessionDetails: SessionDetails, userId: String): JSONObject {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-
-        return JSONObject().apply {
-            put("name", sessionDetails.name)
-            put("description", sessionDetails.description)
-            put("hostId", userId)
-            put("location", JSONObject().apply {
-                put("type", "Point")
-                put("coordinates", JSONArray().apply {
-                    put(sessionDetails.longitude)
-                    put(sessionDetails.latitude)
-                })
-            })
-            put("dateRange", JSONObject().apply {
-                put("startDate", dateFormat.format(sessionDetails.startDate))
-                put("endDate", dateFormat.format(sessionDetails.endDate))
-            })
-            put("isPublic", sessionDetails.isPublic)
-            put("subject", sessionDetails.subject)
-            put("faculty", sessionDetails.faculty)
-            put("year", sessionDetails.year)
-            put("invitees", JSONArray().apply {
-                sessionDetails.invitees.forEach { friendId ->
-                    put(friendId)
-                }
-            })
-        }
-    }
-
-    private suspend fun handleServerResponse(
-        responseCode: Int,
-        responseBody: String,
-        sessionDetails: SessionDetails
-    ) {
-        withContext(Dispatchers.Main) {
-            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                val responseJson = JSONObject(responseBody)
-                val sessionJson = responseJson.optJSONObject("session")
-
-                if (sessionJson != null) {
-                    val sessionLocation = "${sessionDetails.latitude.toString().take(7)}, ${sessionDetails.longitude.toString().take(7)}"
-                    val sessionTime = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
-                        .format(sessionDetails.startDate) + " - " +
-                            SimpleDateFormat("hh:mm a", Locale.getDefault()).format(sessionDetails.endDate)
-
-                    val session = Session(
-                        name = sessionDetails.name,
-                        time = sessionTime,
-                        location = sessionLocation,
-                        description = sessionDetails.description,
-                        visibility = if (sessionDetails.isPublic) SessionVisibility.PUBLIC else SessionVisibility.PRIVATE
-                    )
-
-                    setResult(RESULT_OK, Intent().apply {
-                        putExtra("SESSION_NAME", session.name)
-                        putExtra("SESSION_TIME", session.time)
-                        putExtra("SESSION_LOCATION", session.location)
-                        putExtra("SESSION_DESCRIPTION", session.description)
-                        putExtra("SESSION_VISIBILITY", session.visibility)
-                    })
-
-                    Toast.makeText(this@CreateSessionActivity, "Session created successfully!", Toast.LENGTH_SHORT).show()
-                    finish()
-                } else {
-                    Toast.makeText(this@CreateSessionActivity, "Unexpected server response format", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                try {
-                    val errorJson = JSONObject(responseBody)
-                    val errorMessage = errorJson.optString("message", "Failed to create session")
-                    Toast.makeText(this@CreateSessionActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                } catch (e: JSONException) {
-                    Toast.makeText(this@CreateSessionActivity, "Failed to create session: $responseCode", Toast.LENGTH_SHORT).show()
                 }
             }
         }
