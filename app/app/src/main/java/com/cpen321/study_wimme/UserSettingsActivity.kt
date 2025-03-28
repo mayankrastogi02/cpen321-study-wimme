@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
+import com.cpen321.study_wimme.helpers.UserAccountHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,11 +84,6 @@ class UserSettingsActivity : AppCompatActivity() {
             logout()
         }
 
-        // Set up logout button
-        logoutButton.setOnClickListener {
-            logout()
-        }
-
         // Set up delete account button - add debug logs
         deleteAccountButton.setOnClickListener {
             Log.d(TAG, "Delete account button clicked")
@@ -115,63 +111,31 @@ class UserSettingsActivity : AppCompatActivity() {
 
     private fun deleteUserAccount() {
         val userId = LoginActivity.getCurrentUserId(this)
-        
         if (userId == null) {
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
             return
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val url = URL("${BuildConfig.SERVER_URL}/user")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "DELETE"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
-
-                val jsonData = JSONObject().apply {
-                    put("userId", userId)
-                }
-
-                val writer = OutputStreamWriter(connection.outputStream)
-                writer.write(jsonData.toString())
-                writer.flush()
-
-                val responseCode = connection.responseCode
-                withContext(Dispatchers.Main) {
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(this@UserSettingsActivity, "Account deleted successfully", Toast.LENGTH_SHORT).show()
-                        
-                        // Clear user data from SharedPreferences
-                        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
-                        sharedPreferences.edit().clear().apply()
-                        
-                        // Sign out from Google
-                        LoginActivity.signOut(this@UserSettingsActivity)
-                        
-                        // Redirect to login screen
-                        val intent = Intent(this@UserSettingsActivity, LoginActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        // Try to read error message from response
-                        try {
-                            val errorStream = connection.errorStream ?: connection.inputStream
-                            val errorResponse = errorStream.bufferedReader().use { it.readText() }
-                            val jsonError = JSONObject(errorResponse)
-                            val errorMessage = jsonError.optString("message", "Failed to delete account")
-                            Toast.makeText(this@UserSettingsActivity, errorMessage, Toast.LENGTH_LONG).show()
-                        } catch (e: JSONException) {
-                            Toast.makeText(this@UserSettingsActivity, "Failed to delete account: $responseCode", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-                connection.disconnect()
-            } catch (e: JSONException) {
-                Log.e(TAG, "Error deleting account", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@UserSettingsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            val response = UserAccountHelper.deleteAccount(userId, BuildConfig.SERVER_URL)
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@UserSettingsActivity, "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                    
+                    // Clear user data from SharedPreferences
+                    val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                    sharedPreferences.edit().clear().apply()
+                    
+                    // Sign out from Google
+                    LoginActivity.signOut(this@UserSettingsActivity)
+                    
+                    // Redirect to login screen
+                    val intent = Intent(this@UserSettingsActivity, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this@UserSettingsActivity, response.errorMessage, Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -331,19 +295,7 @@ class UserSettingsActivity : AppCompatActivity() {
     }
 
     private suspend fun sendUserProfileDataToServer(googleId: String, userProfileData: JSONObject): Int {
-        val url = URL("${BuildConfig.SERVER_URL}/auth/profile/$googleId")
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "PUT"
-        connection.setRequestProperty("Content-Type", "application/json")
-        connection.doOutput = true
-
-        val outputStream = OutputStreamWriter(connection.outputStream)
-        outputStream.write(userProfileData.toString())
-        outputStream.flush()
-
-        val responseCode = connection.responseCode
-        connection.disconnect()
-        return responseCode
+        return UserAccountHelper.updateUserProfile(googleId, userProfileData, BuildConfig.SERVER_URL)
     }
 
     private suspend fun handleServerResponse(responseCode: Int) {

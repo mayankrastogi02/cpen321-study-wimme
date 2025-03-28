@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.cpen321.study_wimme.helpers.FriendsHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,8 +24,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -128,23 +127,23 @@ class FriendsFragment : Fragment() {
     }
 
     private fun fetchFriends() {
-        // Get userId using our new helper method
         val userId = LoginActivity.getCurrentUserId(requireActivity())
-        
-        // Log the userId for debugging
         Log.d(TAG, "Fetching friends with userId: $userId")
 
         if (userId == null) {
-            // If userId is null, try to get it from GoogleId
             val googleId = LoginActivity.getCurrentUserGoogleId(requireActivity())
             Log.d(TAG, "userId is null, googleId: $googleId")
-            
+
             if (googleId != null) {
-                // Try to fetch userId from backend using googleId
-                fetchUserIdFromGoogleId(googleId)
+                FriendsHelper.fetchUserIdFromGoogleId(requireActivity(), googleId) { mongoUserId ->
+                    if (mongoUserId != null) {
+                        fetchFriendsFromServer(mongoUserId)
+                    } else {
+                        Toast.makeText(context, "Error: User ID not found", Toast.LENGTH_SHORT).show()
+                    }
+                }
             } else {
                 Toast.makeText(context, "User not authenticated. Please log in again.", Toast.LENGTH_SHORT).show()
-                // Navigate back to login
                 val intent = Intent(requireContext(), LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
@@ -168,7 +167,7 @@ class FriendsFragment : Fragment() {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     val jsonResponse = JSONObject(response)
                     val friendsArray = jsonResponse.getJSONArray("friends")
-                    val fetchedFriends = parseFriends(friendsArray)
+                    val fetchedFriends = FriendsHelper.parseFriends(friendsArray)
 
                     withContext(Dispatchers.Main) {
                         updateFriendsList(fetchedFriends)
@@ -188,24 +187,6 @@ class FriendsFragment : Fragment() {
         }
     }
 
-    private fun parseFriends(friendsArray: JSONArray): ArrayList<Friend> {
-        val fetchedFriends = ArrayList<Friend>()
-        for (i in 0 until friendsArray.length()) {
-            val friendObj = friendsArray.getJSONObject(i)
-            val friend = Friend(
-                friendObj.getString("_id"),
-                friendObj.getString("userName"),
-                friendObj.getString("firstName"),
-                friendObj.getString("lastName"),
-                friendObj.optString("year", ""),
-                friendObj.optString("faculty", ""),
-                friendObj.optString("interests", "")
-            )
-            fetchedFriends.add(friend)
-        }
-        return fetchedFriends
-    }
-
     private fun updateFriendsList(fetchedFriends: ArrayList<Friend>) {
         friendList.clear()
         friendList.addAll(fetchedFriends)
@@ -219,70 +200,6 @@ class FriendsFragment : Fragment() {
             }
         }
         recyclerView.adapter = adapter
-    }
-
-    // Helper method to fetch userId using googleId
-    private fun fetchUserIdFromGoogleId(googleId: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val url = URL("${BuildConfig.SERVER_URL}/auth/verify?googleId=$googleId")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-
-                val responseCode = connection.responseCode
-                Log.d(TAG, "Verify API response code: $responseCode")
-
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
-                    val response = StringBuilder()
-                    var line: String?
-                    while (reader.readLine().also { line = it } != null) {
-                        response.append(line)
-                    }
-                    reader.close()
-
-                    val jsonResponse = JSONObject(response.toString())
-
-                    // Extract MongoDB user ID from response
-                    if (jsonResponse.has("data") && jsonResponse.getJSONObject("data").has("_id")) {
-                        val mongoUserId = jsonResponse.getJSONObject("data").getString("_id")
-
-                        // Save MongoDB ID to SharedPreferences
-                        val sharedPreferences = requireActivity().getSharedPreferences(
-                            "user_prefs",
-                            AppCompatActivity.MODE_PRIVATE
-                        )
-                        val editor = sharedPreferences.edit()
-                        editor.putString("userId", mongoUserId)
-                        editor.apply()
-
-                        Log.d(TAG, "Saved MongoDB user ID: $mongoUserId")
-
-                        // Now fetch friends with the retrieved userId
-                        withContext(Dispatchers.Main) {
-                            fetchFriendsFromServer(mongoUserId)
-                        }
-                    } else {
-                        Log.e(TAG, "MongoDB user ID not found in response")
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "Error: User ID not found", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    }
-                } else {
-                    Log.e(TAG, "Failed to verify user")
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Failed to verify user", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                connection.disconnect()
-            } catch (e: JSONException) {
-                Log.e(TAG, "Error fetching user ID", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 
     private fun fetchGroups() {
@@ -309,7 +226,7 @@ class FriendsFragment : Fragment() {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     val jsonResponse = JSONObject(response)
                     val groupsArray = jsonResponse.getJSONArray("groups")
-                    val fetchedGroups = parseGroups(groupsArray)
+                    val fetchedGroups = FriendsHelper.parseGroups(groupsArray)
 
                     withContext(Dispatchers.Main) {
                         updateGroupsList(fetchedGroups)
@@ -327,32 +244,6 @@ class FriendsFragment : Fragment() {
                 }
             }
         }
-    }
-
-    private fun parseGroups(groupsArray: JSONArray): ArrayList<Group> {
-        val fetchedGroups = ArrayList<Group>()
-        for (i in 0 until groupsArray.length()) {
-            val groupObj = groupsArray.getJSONObject(i)
-            val membersArray = groupObj.getJSONArray("members")
-            val membersArrayList = ArrayList<GroupMember>()
-
-            for (j in 0 until membersArray.length()) {
-                val memberObj = membersArray.getJSONObject(j)
-                val member = GroupMember(
-                    memberObj.getString("_id"),
-                    memberObj.getString("userName")
-                )
-                membersArrayList.add(member)
-            }
-
-            val group = Group(
-                groupObj.getString("_id"),
-                groupObj.getString("name"),
-                membersArrayList
-            )
-            fetchedGroups.add(group)
-        }
-        return fetchedGroups
     }
 
     private fun updateGroupsList(fetchedGroups: ArrayList<Group>) {
