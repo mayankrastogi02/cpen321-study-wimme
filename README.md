@@ -1,6 +1,6 @@
 # 📚 CPEN 321 Study Wimme
 
-Welcome to the **CPEN 321 Study Wimme** project! This repository contains the codebase and documentation for our collaborative study platform. Hope you have fun!
+Welcome to the **CPEN 321 Study Wimme** project! This repository contains the codebase and documentation for our collaborative study platform.
 
 ---
 
