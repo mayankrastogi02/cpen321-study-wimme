@@ -100,14 +100,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:hint="Faculty">
+            android:hint="Faculty to Invite"
+            app:endIconMode="dropdown_menu">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/facultyInput"
+            <AutoCompleteTextView
+                android:id="@+id/facultyDropdown"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1" />
+                android:layout_height="match_parent"
+                android:padding="10dp"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
