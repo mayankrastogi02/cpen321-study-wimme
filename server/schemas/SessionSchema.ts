@@ -1,10 +1,29 @@
 import mongoose from "mongoose";
 
+export interface ISession extends mongoose.Document {
+    name: string;
+    description?: string;
+    hostId: mongoose.Types.ObjectId;
+    location: {
+        type: "Point";
+        coordinates: [number, number];
+    };
+    dateRange: {
+        startDate: Date;
+        endDate: Date;
+    };
+    isPublic: boolean;
+    subject: string;
+    faculty: string;
+    year: number;
+    invitees: mongoose.Types.ObjectId[];
+    participants: mongoose.Types.ObjectId[];
+}
+
 const SessionSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    description: { type: String},
+    description: { type: String },
     hostId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    // Store location as a GeoJSON point
     location: {
         type: {
             type: String,
@@ -29,7 +48,7 @@ const SessionSchema = new mongoose.Schema({
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
-// Create a geospatial index on the location field
+// Create geospatial index on the location field
 SessionSchema.index({ location: "2dsphere" });
 
 // Index for efficient querying of sessions a user is part of
@@ -38,6 +57,6 @@ SessionSchema.index({ participants: 1 });
 // Delete document after endDate has passed
 SessionSchema.index({ endDate: 1 }, { expireAfterSeconds: 0 });
 
-const Session = mongoose.model("Session", SessionSchema);
+const Session = mongoose.model<ISession>("Session", SessionSchema);
 
 export default Session;

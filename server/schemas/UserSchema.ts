@@ -6,7 +6,6 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   profilePic: string;
-  school: string;
   year: Number;
   faculty: string;
   friends: mongoose.Types.ObjectId[];

@@ -8,6 +8,8 @@ import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
+import { sentenceSimilarity } from "./utils/sessionRecommender";
+import * as use from '@tensorflow-models/universal-sentence-encoder';
 
 export const app = express();
 app.use(express.json());
@@ -36,6 +38,14 @@ if (process.env.NODE_ENV !== "test") {
   });
 } else {
   admin.initializeApp();
+}
+
+let model: use.UniversalSentenceEncoder | null = null;
+export async function loadModel() {
+  if (!model) {
+      model = await use.load();
+  }
+  return model;
 }
 
 export const messaging = admin.messaging();

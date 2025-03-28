@@ -16,8 +16,6 @@ export class AuthController {
 
       const user = await User.findOne({ googleId });
 
-      console.log("DEBUG: User:", user);
-
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -98,7 +96,6 @@ export class AuthController {
 
         await user.save();
       }
-      console.log("DEBUG: User:", user);
 
       return res.status(201).json({
         success: true,
