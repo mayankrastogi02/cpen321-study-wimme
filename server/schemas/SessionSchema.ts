@@ -55,7 +55,7 @@ SessionSchema.index({ location: "2dsphere" });
 SessionSchema.index({ participants: 1 });
 
 // Delete document after endDate has passed
-SessionSchema.index({ endDate: 1 }, { expireAfterSeconds: 0 });
+SessionSchema.index({ endDate: 1 }, { expireAfterSeconds: 1 });
 
 const Session = mongoose.model<ISession>("Session", SessionSchema);
 

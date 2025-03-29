@@ -2,15 +2,41 @@ import request from 'supertest';
 import { app } from '../../index';
 import mongoose from 'mongoose';
 import User from '../../schemas/UserSchema';
-import Session from '../../schemas/SessionSchema';
+import Session, { ISession } from '../../schemas/SessionSchema';
+import { scoreSessions } from '../../utils/sessionRecommender';
 
+let friendUser: mongoose.Document;
 let testUser1: mongoose.Document;
 let testUser2: mongoose.Document;
 let testSession1: mongoose.Document;
 let testSession2: mongoose.Document;
 let testSession3: mongoose.Document;
 
+//Start and end dates within 24 hours for session recommendation
+const startDateWithin24Hours = new Date(Date.now() + 60 * 60 * 1000);
+const endDateWithin24Hours = new Date(Date.now() + 2 * 60 * 60 * 1000);
+
+//Start and end dates outside 24 hours for session recommendation
+const startDateOutside24Hours = new Date(Date.now() + 48 * 60 * 60 * 1000);
+const endDateOutside24Hours = new Date(Date.now() + 72 * 60 * 60 * 1000);
+
 beforeEach(async () => {
+    friendUser = new User({
+        userName: "friendUser",
+        email: "friendUser@example.com",
+        firstName: "Friend",
+        lastName: "User",
+        year: 2,
+        faculty: "English",
+        friends: [],
+        friendRequests: [],
+        interests: "English, History",
+        profileCreated: true,
+        googleId: "googleIdFriend",
+        displayName: "Friend User"
+    });
+
+    await friendUser.save();
     // Create the users and sessions before each test
     testUser1 = new User({
         userName: "testuser1",
@@ -34,7 +60,7 @@ beforeEach(async () => {
         firstName: "Test2",
         lastName: "User",
         year: 2,
-        faculty: "English",
+        faculty: "Engineering",
         friends: [],
         friendRequests: [],
         interests: "English, History",
@@ -51,8 +77,8 @@ beforeEach(async () => {
             coordinates: [-74.0060, 40.7128]
         },
         dateRange: {
-            startDate: "2026-03-01T00:00:00Z",
-            endDate: "2026-03-02T00:00:00Z" 
+            startDate: startDateOutside24Hours,
+            endDate: endDateOutside24Hours
         },
         isPublic: false,
         subject: "testSubject",
@@ -61,8 +87,9 @@ beforeEach(async () => {
         invitees: [],
         participants: []
     });
-    await testSession1.save()
+    await testSession1.save();
 
+    // Session 2 has the same faculty and year as User 1 so it will be recommended higher than Session 1
     testSession2 = new Session({
         name: "session2",
         hostId: testUser2._id,
@@ -70,17 +97,18 @@ beforeEach(async () => {
             coordinates: [-74.0060, 40.7128]
         },
         dateRange: {
-            startDate: "2026-03-01T00:00:00Z",
-            endDate: "2026-03-02T00:00:00Z" 
+            //set start and end date to be 2 hours after the current time (within 24 hours for session recommendation)
+            startDate: startDateWithin24Hours,
+            endDate: endDateWithin24Hours 
         },
         isPublic: true,
         subject: "testSubject",
-        faculty: "testFaculty",
+        faculty: "Engineering",
         year: 2,
         invitees: [],
         participants: []
     });
-    await testSession2.save()
+    await testSession2.save();
 
     testSession3 = new Session({
         name: "session3",
@@ -89,17 +117,18 @@ beforeEach(async () => {
             coordinates: [-74.0060, 40.7128]
         },
         dateRange: {
-            startDate: "2026-03-01T00:00:00Z",
-            endDate: "2026-03-02T00:00:00Z" 
+            //set start and end date outside 24 hours for session recommendation
+            startDate: startDateOutside24Hours,
+            endDate: endDateOutside24Hours 
         },
-        isPublic: false,
+        isPublic: true,
         subject: "testSubject",
         faculty: "testFaculty",
         year: 2,
         invitees: [],
         participants: []
     });
-    await testSession3.save()
+    await testSession3.save();
 });
 
 afterEach(async () => {
@@ -523,6 +552,17 @@ describe("Unmocked: GET /session/availableSessions/:userId", () => {
         expect(response.body.message).toBe("Invalid user ID");
     });
 
+    // Input: Valid ID but user does not exist - pass in session ID in for user id
+    // Expected status code: 404
+    // Expected behavior: User is invalid
+    // Expected output: message: "Invalid user ID"
+    test("Valid ID but user does not exist", async () => {
+        const response = await request(app)
+            .get(`/session/availableSessions/${testSession1.id}`)
+
+        expect(response.status).toBe(404);
+    });
+
     // Input: Valid user ID
     // Expected status code: 200
     // Expected behavior: Available sessions returned
@@ -547,8 +587,8 @@ describe("Unmocked: GET /session/availableSessions/:userId", () => {
                     coordinates: [-74.0060, 40.7128]
                 },
                 dateRange: {
-                    startDate: "2026-03-01T00:00:00.000Z",
-                    endDate: "2026-03-02T00:00:00.000Z"
+                    startDate: startDateOutside24Hours.toISOString(),
+                    endDate: endDateOutside24Hours.toISOString()
                 },
                 isPublic: false,
                 subject: "testSubject",
@@ -570,8 +610,31 @@ describe("Unmocked: GET /session/availableSessions/:userId", () => {
                     coordinates: [-74.0060, 40.7128]
                 },
                 dateRange: {
-                    startDate: "2026-03-01T00:00:00.000Z",
-                    endDate: "2026-03-02T00:00:00.000Z" 
+                    startDate: startDateWithin24Hours.toISOString(),
+                    endDate: endDateWithin24Hours.toISOString()
+                },
+                isPublic: true,
+                subject: "testSubject",
+                faculty: "Engineering",
+                year: 2,
+                invitees: [],
+                participants: []
+            },
+            {
+                _id: (testSession3._id as mongoose.Types.ObjectId).toString(),
+                name: "session3",
+                hostId: {
+                    _id: (testUser2._id as mongoose.Types.ObjectId).toString(),
+                    firstName: "Test2",
+                    lastName: "User"
+                },
+                location: {
+                    type: "Point",
+                    coordinates: [-74.0060, 40.7128]
+                },
+                dateRange: {
+                    startDate: startDateOutside24Hours.toISOString(),
+                    endDate: endDateOutside24Hours.toISOString()
                 },
                 isPublic: true,
                 subject: "testSubject",
@@ -681,12 +744,12 @@ describe("Unmocked: GET /session/nearbySessions/", () => {
                     coordinates: [-74.0060, 40.7128]
                 },
                 dateRange: {
-                    startDate: "2026-03-01T00:00:00.000Z",
-                    endDate: "2026-03-02T00:00:00.000Z" 
+                    startDate: startDateWithin24Hours.toISOString(),
+                    endDate: endDateWithin24Hours.toISOString()
                 },
                 isPublic: true,
                 subject: "testSubject",
-                faculty: "testFaculty",
+                faculty: "Engineering",
                 year: 2,
                 invitees: [],
                 participants: []
@@ -704,10 +767,10 @@ describe("Unmocked: GET /session/nearbySessions/", () => {
                     coordinates: [-74.0060, 40.7128]
                 },
                 dateRange: {
-                    startDate: "2026-03-01T00:00:00.000Z",
-                    endDate: "2026-03-02T00:00:00.000Z" 
+                    startDate: startDateOutside24Hours.toISOString(),
+                    endDate: endDateOutside24Hours.toISOString()
                 },
-                isPublic: false,
+                isPublic: true,
                 subject: "testSubject",
                 faculty: "testFaculty",
                 year: 2,
@@ -715,5 +778,182 @@ describe("Unmocked: GET /session/nearbySessions/", () => {
                 participants: []
             }
         ]);
+    });
+});
+
+// sessionRecommender
+describe("sessionRecommender", () => {
+    // Input: Nonexistent host id (sessionID passed in as hostID), valid session passed into an array
+    // Expected status code: NA
+    // Expected behavior: Empty array returned because host is not found
+    // Expected output: message: None
+    test("Nonexistent host", async () => {
+        let invalidSession = new Session({
+            name: "invalidSession",
+            hostId: testSession1.id,
+            location: {
+                coordinates: [-74.0060, 40.7128]
+            },
+            dateRange: {
+                startDate: new Date(Date.now() + 60 * 60 * 1000),
+                endDate: new Date(Date.now() + 2 * 60 * 60 * 1000) 
+            },
+            isPublic: true,
+            subject: "test",
+            faculty: "test",
+            year: 2,
+            invitees: [],
+            participants: []
+        });
+        await invalidSession.save();
+
+        const scoredSessions = await scoreSessions(new User({
+            userName: "myUser",
+            email: "myUser@example.com",
+            firstName: "My",
+            lastName: "User",
+            year: 2,
+            faculty: "Engineering",
+            friends: [],
+            friendRequests: [],
+            interests: "English, History",
+            profileCreated: true,
+            googleId: "googleIdMyUser",
+            displayName: "My user"
+        }), [invalidSession]);
+
+        expect(scoredSessions).toHaveLength(0);
+    });
+
+    // Input: User with no interests, mySession passed into an array
+    // Expected status code: NA
+    // Expected behavior: Array of recommended sessions returned but cosine similarity is not taken into account
+    // Expected output: message: None
+    test("User with no interests", async () => {
+        let mySession = new Session({
+            name: "mySession",
+            hostId: testUser1.id,
+            location: {
+                coordinates: [-74.0060, 40.7128]
+            },
+            dateRange: {
+                startDate: new Date(Date.now() + 60 * 60 * 1000),
+                endDate: new Date(Date.now() + 2 * 60 * 60 * 1000) 
+            },
+            isPublic: true,
+            subject: "test",
+            faculty: "test",
+            year: 2,
+            invitees: [],
+            participants: []
+        });
+        await mySession.save();
+
+        // user with no interests
+        const scoredSessions = await scoreSessions(new User({
+            userName: "myUser",
+            email: "myUser@example.com",
+            firstName: "My",
+            lastName: "User",
+            year: 2,
+            faculty: "Engineering",
+            friends: [],
+            friendRequests: [],
+            profileCreated: true,
+            googleId: "googleIdMyUser",
+            displayName: "My user"
+        }), [mySession]);
+
+        expect(scoredSessions).toHaveLength(1);
+    });
+
+    // Input: Typical inputs
+    // Expected status code: NA
+    // Expected behavior: Array sessions sorted by recommended first is returned
+    // Expected output: message: None
+    test("Scoring sessions works properly", async () => {
+        const scoredSessions = await scoreSessions(new User({
+            userName: "myUser",
+            email: "myUser@example.com",
+            firstName: "My",
+            lastName: "User",
+            year: 2,
+            faculty: "Engineering",
+            friends: [],
+            friendRequests: [],
+            interests: "English, History",
+            profileCreated: true,
+            googleId: "googleIdMyUser",
+            displayName: "My user"
+        }), [testSession3 as ISession, testSession2 as ISession]);
+
+        expect(scoredSessions).toHaveLength(2);
+        // expect session2 to be ranked higher than session 3 because more relevant to user 
+        expect(scoredSessions[0].name).toBe("session2");
+        expect(scoredSessions[1].name).toBe("session3");
+    });
+
+    // Input: User myUser with testUser2 as a friend, 2 sessions passed into an array - identical in contents but one has testUser 2 joining 
+    // Expected status code: NA
+    // Expected behavior: Session with testUser2 has a higher score
+    // Expected output: message: None
+    test("Session recommendation prioritizes sessions with user's friends as participants", async () => {
+        const myUser = new User({
+            userName: "myUser",
+            email: "myUser@example.com",
+            firstName: "My",
+            lastName: "User",
+            year: 2,
+            faculty: "Engineering",
+            friends: [testUser2.id],
+            friendRequests: [],
+            interests: "English, History",
+            profileCreated: true,
+            googleId: "googleIdMyUser",
+            displayName: "My user"
+        });
+
+        const sessionWithParticipants = new Session({
+            name: "sessionWithParticipants",
+            hostId: testUser1._id,
+            location: {
+                coordinates: [-74.0060, 40.7128]
+            },
+            dateRange: {
+                startDate: startDateOutside24Hours,
+                endDate: endDateOutside24Hours
+            },
+            isPublic: false,
+            subject: "testSubject",
+            faculty: "testFaculty",
+            year: 1,
+            invitees: [],
+            participants: [testUser2.id]
+        });
+
+        const sessionWithoutParticipants = new Session({
+            name: "sessionWithoutParticipants",
+            hostId: testUser1._id,
+            location: {
+                coordinates: [-74.0060, 40.7128]
+            },
+            dateRange: {
+                startDate: startDateOutside24Hours,
+                endDate: endDateOutside24Hours
+            },
+            isPublic: false,
+            subject: "testSubject",
+            faculty: "testFaculty",
+            year: 1,
+            invitees: [],
+            participants: []
+        });
+
+        const scoredSessions = await scoreSessions(myUser, [sessionWithoutParticipants as ISession, sessionWithParticipants as ISession]);
+
+        expect(scoredSessions).toHaveLength(2);
+        // expect sessionWithParticipants to be ranked higher than session 3 because more relevant to user 
+        expect(scoredSessions[0].name).toBe("sessionWithParticipants");
+        expect(scoredSessions[1].name).toBe("sessionWithoutParticipants");
     });
 });

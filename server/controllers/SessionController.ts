@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Session, { ISession } from "../schemas/SessionSchema";
+import Session from "../schemas/SessionSchema";
 import User from "../schemas/UserSchema";
 import { sendPushNotification } from "../utils/notificationUtils";
-import { findTopSessions } from "../utils/sessionRecommender";
+import { scoreSessions } from "../utils/sessionRecommender";
 
 export class SessionController {
   async hostSession(req: Request, res: Response) {
@@ -216,9 +216,15 @@ export class SessionController {
   async getAvailableSessions(req: Request, res: Response) {
     try {
       const { userId } = req.params;
-      console.log(userId);
+
       if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Find sessions where the user is the host
@@ -247,11 +253,7 @@ export class SessionController {
         invitees: userId,
       }).populate("hostId", "firstName lastName");
 
-      const user = await User.findById(userId);
-      let recommendedSessions: ISession[] = [];
-      if (user) {
-        recommendedSessions = await findTopSessions(user, publicSessions);
-      }
+      const recommendedSessions = await scoreSessions(user, publicSessions);
 
       // Combine all sessions
       const allSessions = [

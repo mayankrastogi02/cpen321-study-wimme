@@ -8,7 +8,6 @@ import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
-import { sentenceSimilarity } from "./utils/sessionRecommender";
 import * as use from '@tensorflow-models/universal-sentence-encoder';
 
 export const app = express();
