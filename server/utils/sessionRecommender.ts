@@ -1,56 +1,82 @@
-import * as tf from '@tensorflow/tfjs';
-import User, { IUser } from '../schemas/UserSchema';
-import { ISession } from '../schemas/SessionSchema';
-import { loadModel } from '..';
+import * as tf from "@tensorflow/tfjs";
+import User, { IUser } from "../schemas/UserSchema";
+import { ISession } from "../schemas/SessionSchema";
+import { loadModel } from "..";
 
 // set the top N sessions returned by findTopSessions()
-const TOP_SESSIONS_RETURNED = 3
+const TOP_SESSIONS_RETURNED = 3;
 
 // Calculates vectorizes 2 strings passed in using google's universal-sentence-encoder and calculates their cosine similarity
-export const sentenceSimilarity = async (sentence1: string, sentence2: string): Promise<number> => {
-    const model = await loadModel();
-    const embeddings = await model.embed([sentence1, sentence2]);
+export const sentenceSimilarity = async (
+  sentence1: string,
+  sentence2: string
+): Promise<number> => {
+  const model = await loadModel();
+  const embeddings = await model.embed([sentence1, sentence2]);
 
-    return tf.tidy(() => {
-        const vecs = embeddings.arraySync() as number[][];
-        const [vec1, vec2] = vecs;
+  return tf.tidy(() => {
+    const vecs = embeddings.arraySync() as number[][];
+    const [vec1, vec2] = vecs;
 
-        const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
-        const magnitude1 = Math.sqrt(vec1.reduce((sum, value) => sum + value * value, 0));
-        const magnitude2 = Math.sqrt(vec2.reduce((sum, value) => sum + value * value, 0));
+    const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
+    const magnitude1 = Math.sqrt(
+      vec1.reduce((sum, value) => sum + value * value, 0)
+    );
+    const magnitude2 = Math.sqrt(
+      vec2.reduce((sum, value) => sum + value * value, 0)
+    );
 
-        return dotProduct / (magnitude1 * magnitude2);
-    });
-}
+    return dotProduct / (magnitude1 * magnitude2);
+  });
+};
 
-export const findTopSessions = async (user: IUser, sessionsArray: ISession[]) => {
-    const scoredSessions: { session: ISession; score: number }[] = [];
+export const findTopSessions = async (
+  user: IUser,
+  sessionsArray: ISession[]
+) => {
+  const scoredSessions: { session: ISession; score: number }[] = [];
 
-    for (const session of sessionsArray) {
-        const host = await User.findById(session.hostId);
-        if (host) {
-            const facultyScore = session.faculty == user.faculty ? 1 : 0;
-            const participantsScore = session.participants.some(participant => user.friends.includes(participant)) ? 1 : 0;
-            const yearScore = session.year === user.year ? 1 : 0;
+  for (const session of sessionsArray) {
+    const host = await User.findById(session.hostId);
+    if (host) {
+      const facultyScore = session.faculty == user.faculty ? 1 : 0;
+      const participantsScore = session.participants.some((participant) =>
+        user.friends.includes(participant)
+      )
+        ? 1
+        : 0;
+      const yearScore = session.year === user.year ? 1 : 0;
 
-            const sessionStartDateMillis = new Date(session.dateRange.startDate).getTime()
-            
-            const dateScore = (
-                sessionStartDateMillis - Date.now()
-              ) <= 24 * 60 * 60 * 1000 
-              && sessionStartDateMillis > Date.now()
-              ? 1 : 0;
+      const sessionStartDateMillis = new Date(
+        session.dateRange.startDate
+      ).getTime();
 
-            // determine the cosine similarity between the user's interests and the host's interests
-            const interestsScore = await sentenceSimilarity(user.interests, host.interests);
+      const dateScore =
+        sessionStartDateMillis - Date.now() <= 24 * 60 * 60 * 1000 &&
+        sessionStartDateMillis > Date.now()
+          ? 1
+          : 0;
 
-            const finalScore = (facultyScore + participantsScore + yearScore + dateScore + interestsScore) / 5;
-            scoredSessions.push({ session, score: finalScore });
-        }
+      // determine the cosine similarity between the user's interests and the host's interests
+      const interestsScore = await sentenceSimilarity(
+        user.interests,
+        host.interests
+      );
+
+      const finalScore =
+        (facultyScore +
+          participantsScore +
+          yearScore +
+          dateScore +
+          interestsScore) /
+        5;
+      scoredSessions.push({ session, score: finalScore });
     }
+  }
 
-    scoredSessions.sort((a, b) => b.score - a.score);
-    console.log("DEBUG scored sessions:", scoredSessions);
+  scoredSessions.sort((a, b) => b.score - a.score);
+  console.log("DEBUG scored sessions:", scoredSessions);
 
-    return scoredSessions.slice(0, TOP_SESSIONS_RETURNED).map(entry => entry.session);
-}
+  // return scoredSessions.slice(0, TOP_SESSIONS_RETURNED).map(entry => entry.session);
+  return scoredSessions.map((entry) => entry.session);
+};

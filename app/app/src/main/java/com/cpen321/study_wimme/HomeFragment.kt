@@ -181,6 +181,10 @@ class HomeFragment : Fragment() {
                     Log.d(TAG, "Response: $response")
 
                     val fetchedSessions = parseSessions(response)
+                    // get the first 3 sessions -> recommended sessions
+                    // if less than 3, then all are recommended??
+                    // use recommended_session_list_view for recommended sessions
+                    // use session_list_view for all other (index 3+) sessions
                     withContext(Dispatchers.Main) {
                         updateUIWithFetchedSessions(fetchedSessions, showLoading)
                     }
@@ -354,10 +358,14 @@ class HomeFragment : Fragment() {
             emptyStateTextView.visibility = View.GONE
             sessionsRecyclerView.visibility = View.VISIBLE
             
-            // Update adapter with filtered sessions
-            sessionsAdapter.updateSessions(filteredSessions)
-        }
+        // Filter public sessions and determine the top 3 recommended session IDs
+        val publicSessions = sessionsList.filter { it.visibility == SessionVisibility.PUBLIC && it.hostId != userId}
+        val recommendedSessionIds = publicSessions.take(3).map { it.id }.toSet()
+
+        // Update adapter with filtered sessions and recommended IDs
+        sessionsAdapter.updateSessions(filteredSessions, recommendedSessionIds)
     }
+}
     
     private fun showEmptyState(message: String) {
         sessionsRecyclerView.visibility = View.GONE

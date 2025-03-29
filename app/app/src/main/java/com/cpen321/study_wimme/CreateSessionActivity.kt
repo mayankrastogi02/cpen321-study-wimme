@@ -5,6 +5,9 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +40,17 @@ class CreateSessionActivity : AppCompatActivity() {
     private var startDateMillis: Long = 0
     private var endDateMillis: Long = 0
 
+    private val faculties = listOf(
+        "Arts",
+        "Science",
+        "Engineering",
+        "Business",
+        "Education",
+        "Law",
+        "Medicine",
+        "Other"
+    )
+
     companion object {
         private const val LOCATION_PICKER_REQUEST_CODE = 1001
         private const val FRIEND_SELECT_REQUEST_CODE = 1002
@@ -53,7 +67,18 @@ class CreateSessionActivity : AppCompatActivity() {
         val locationInput = findViewById<TextInputEditText>(R.id.sessionLocationInput)
         val descriptionInput = findViewById<TextInputEditText>(R.id.sessionDescriptionInput)
         val subjectInput = findViewById<TextInputEditText>(R.id.subjectInput)
-        val facultyInput = findViewById<TextInputEditText>(R.id.facultyInput)
+
+        val facultyDropdown = findViewById<AutoCompleteTextView>(R.id.facultyDropdown)
+
+// Create an ArrayAdapter using the faculties list
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            faculties
+        )
+
+// Attach the adapter to the AutoCompleteTextView
+        facultyDropdown.setAdapter(adapter)
         val yearInput = findViewById<TextInputEditText>(R.id.yearInput)
         val visibilityGroup = findViewById<MaterialButtonToggleGroup>(R.id.visibilityToggleGroup)
         val hostButton = findViewById<MaterialButton>(R.id.hostButton)
@@ -61,7 +86,10 @@ class CreateSessionActivity : AppCompatActivity() {
         setupVisibilityToggle(visibilityGroup)
         setupDateTimePickers(startTimeInput, endTimeInput)
         setupLocationPicker(locationInput)
-        setupHostButton(hostButton, HostButtonInputs(nameInput, descriptionInput, subjectInput, facultyInput, yearInput))
+        setupHostButton(
+            hostButton,
+            HostButtonInputs(nameInput, descriptionInput, subjectInput, yearInput)
+        )
     }
 
     private fun setupVisibilityToggle(visibilityGroup: MaterialButtonToggleGroup) {
@@ -77,18 +105,31 @@ class CreateSessionActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDateTimePickers(startTimeInput: TextInputEditText, endTimeInput: TextInputEditText) {
+    private fun setupDateTimePickers(
+        startTimeInput: TextInputEditText,
+        endTimeInput: TextInputEditText
+    ) {
         startTimeInput.setOnClickListener {
             showDateTimePicker { selectedDate ->
                 startDateMillis = selectedDate.time
-                startTimeInput.setText(SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault()).format(selectedDate))
+                startTimeInput.setText(
+                    SimpleDateFormat(
+                        "MMM dd, yyyy hh:mm a",
+                        Locale.getDefault()
+                    ).format(selectedDate)
+                )
             }
         }
 
         endTimeInput.setOnClickListener {
             showDateTimePicker { selectedDate ->
                 endDateMillis = selectedDate.time
-                endTimeInput.setText(SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault()).format(selectedDate))
+                endTimeInput.setText(
+                    SimpleDateFormat(
+                        "MMM dd, yyyy hh:mm a",
+                        Locale.getDefault()
+                    ).format(selectedDate)
+                )
             }
         }
     }
@@ -96,7 +137,10 @@ class CreateSessionActivity : AppCompatActivity() {
     private fun setupLocationPicker(locationInput: TextInputEditText) {
         locationInput.setOnClickListener {
             Log.d(TAG, "Location field tapped")
-            startActivityForResult(Intent(this, MapLocationPickerActivity::class.java), LOCATION_PICKER_REQUEST_CODE)
+            startActivityForResult(
+                Intent(this, MapLocationPickerActivity::class.java),
+                LOCATION_PICKER_REQUEST_CODE
+            )
         }
     }
 
@@ -116,7 +160,6 @@ class CreateSessionActivity : AppCompatActivity() {
         val startTimeInput = findViewById<TextInputEditText>(R.id.startTimeInput)
         val endTimeInput = findViewById<TextInputEditText>(R.id.endTimeInput)
         val subjectInput = findViewById<TextInputEditText>(R.id.subjectInput)
-        val facultyInput = findViewById<TextInputEditText>(R.id.facultyInput)
         val yearInput = findViewById<TextInputEditText>(R.id.yearInput)
 
         if (inputData.name.isNullOrEmpty()) {
@@ -150,11 +193,6 @@ class CreateSessionActivity : AppCompatActivity() {
             return false
         }
 
-        if (inputData.faculty.isNullOrEmpty()) {
-            facultyInput.error = "Faculty is required"
-            return false
-        }
-
         if (inputData.yearString.isNullOrEmpty()) {
             yearInput.error = "Year is required"
             return false
@@ -173,7 +211,6 @@ class CreateSessionActivity : AppCompatActivity() {
         val nameInput: TextInputEditText,
         val descriptionInput: TextInputEditText,
         val subjectInput: TextInputEditText,
-        val facultyInput: TextInputEditText,
         val yearInput: TextInputEditText
     )
 
@@ -182,7 +219,8 @@ class CreateSessionActivity : AppCompatActivity() {
             val name = inputs.nameInput.text?.toString()
             val description = inputs.descriptionInput.text?.toString()
             val subject = inputs.subjectInput.text?.toString()
-            val faculty = inputs.facultyInput.text?.toString()
+            val facultyDropdown = findViewById<AutoCompleteTextView>(R.id.facultyDropdown)
+            val faculty = facultyDropdown.text.toString()
             val yearString = inputs.yearInput.text?.toString()
 
             val inputData = SessionInputData(
@@ -296,7 +334,8 @@ class CreateSessionActivity : AppCompatActivity() {
                 Log.d(TAG, "Response code: $responseCode")
 
                 val responseBody = if (responseCode >= 400) {
-                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error details"
+                    connection.errorStream?.bufferedReader()?.use { it.readText() }
+                        ?: "No error details"
                 } else {
                     connection.inputStream.bufferedReader().use { it.readText() }
                 }
@@ -307,12 +346,20 @@ class CreateSessionActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 Log.e(TAG, "Network error creating session", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CreateSessionActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@CreateSessionActivity,
+                        "Network error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: JSONException) {
                 Log.e(TAG, "JSON error creating session", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CreateSessionActivity, "JSON error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@CreateSessionActivity,
+                        "JSON error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -360,10 +407,15 @@ class CreateSessionActivity : AppCompatActivity() {
                 val sessionJson = responseJson.optJSONObject("session")
 
                 if (sessionJson != null) {
-                    val sessionLocation = "${sessionDetails.latitude.toString().take(7)}, ${sessionDetails.longitude.toString().take(7)}"
+                    val sessionLocation = "${
+                        sessionDetails.latitude.toString().take(7)
+                    }, ${sessionDetails.longitude.toString().take(7)}"
                     val sessionTime = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
                         .format(sessionDetails.startDate) + " - " +
-                            SimpleDateFormat("hh:mm a", Locale.getDefault()).format(sessionDetails.endDate)
+                            SimpleDateFormat(
+                                "hh:mm a",
+                                Locale.getDefault()
+                            ).format(sessionDetails.endDate)
 
                     val session = Session(
                         name = sessionDetails.name,
@@ -381,18 +433,31 @@ class CreateSessionActivity : AppCompatActivity() {
                         putExtra("SESSION_VISIBILITY", session.visibility)
                     })
 
-                    Toast.makeText(this@CreateSessionActivity, "Session created successfully!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@CreateSessionActivity,
+                        "Session created successfully!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     finish()
                 } else {
-                    Toast.makeText(this@CreateSessionActivity, "Unexpected server response format", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@CreateSessionActivity,
+                        "Unexpected server response format",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } else {
                 try {
                     val errorJson = JSONObject(responseBody)
                     val errorMessage = errorJson.optString("message", "Failed to create session")
-                    Toast.makeText(this@CreateSessionActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CreateSessionActivity, errorMessage, Toast.LENGTH_SHORT)
+                        .show()
                 } catch (e: JSONException) {
-                    Toast.makeText(this@CreateSessionActivity, "Failed to create session: $responseCode", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@CreateSessionActivity,
+                        "Failed to create session: $responseCode",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -407,10 +472,13 @@ class CreateSessionActivity : AppCompatActivity() {
             if (lat != null && lng != null) {
                 selectedLatitude = lat
                 selectedLongitude = lng
-                findViewById<TextInputEditText>(R.id.sessionLocationInput).setText("Lat: ${lat.toString().take(7)}, Lng: ${lng.toString().take(7)}")
+                findViewById<TextInputEditText>(R.id.sessionLocationInput).setText(
+                    "Lat: ${
+                        lat.toString().take(7)
+                    }, Lng: ${lng.toString().take(7)}"
+                )
             }
-        }
-        else if (requestCode == FRIEND_SELECT_REQUEST_CODE && resultCode == RESULT_OK) {
+        } else if (requestCode == FRIEND_SELECT_REQUEST_CODE && resultCode == RESULT_OK) {
             // Get all the session data and selected friends
             val name = data?.getStringExtra("SESSION_NAME") ?: ""
             val description = data?.getStringExtra("SESSION_DESCRIPTION") ?: ""
@@ -423,7 +491,8 @@ class CreateSessionActivity : AppCompatActivity() {
             val year = data?.getIntExtra("SESSION_YEAR", 1) ?: 1
 
             // Get selected friend IDs
-            val selectedFriendIds = data?.getStringArrayExtra("SELECTED_FRIEND_IDS")?.toList() ?: listOf()
+            val selectedFriendIds =
+                data?.getStringArrayExtra("SELECTED_FRIEND_IDS")?.toList() ?: listOf()
 
             // Create the session with selected invitees
             val sessionDetails = SessionDetails(

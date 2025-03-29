@@ -40,7 +40,9 @@ export class SessionController {
       const endDate = new Date(dateRange.endDate);
 
       if (endDate <= new Date()) {
-        return res.status(400).json({ message: "End date must be in the future" });
+        return res
+          .status(400)
+          .json({ message: "End date must be in the future" });
       }
 
       const newSession = new Session({
@@ -245,25 +247,23 @@ export class SessionController {
         invitees: userId,
       }).populate("hostId", "firstName lastName");
 
-      // Combine all sessions
-      const allSessions = [
-        ...hostedSessions,
-        ...participantSessions,
-        ...publicSessions,
-        ...invitedSessions,
-      ];
-
       const user = await User.findById(userId);
       let recommendedSessions: ISession[] = [];
-      
       if (user) {
         recommendedSessions = await findTopSessions(user, publicSessions);
       }
 
+      // Combine all sessions
+      const allSessions = [
+        ...hostedSessions,
+        ...participantSessions,
+        ...recommendedSessions,
+        ...invitedSessions,
+      ];
+
       return res.status(200).json({
         success: true,
         sessions: allSessions,
-        recommendedSessions,
       });
     } catch (error) {
       console.error("Error in getAvailableSessions:", error);
@@ -297,7 +297,11 @@ export class SessionController {
             $maxDistance: number;
           };
         };
-        $or: { isPublic: boolean; invitees?: string; hostId?: { $ne: string } }[];
+        $or: {
+          isPublic: boolean;
+          invitees?: string;
+          hostId?: { $ne: string };
+        }[];
       } = {
         location: {
           $near: {
@@ -305,7 +309,10 @@ export class SessionController {
             $maxDistance: rad, // distance in meters
           },
         },
-        $or: [{ isPublic: true, hostId: { $ne: userIdStr } }, { isPublic: false, invitees: userIdStr }],
+        $or: [
+          { isPublic: true, hostId: { $ne: userIdStr } },
+          { isPublic: false, invitees: userIdStr },
+        ],
       };
 
       const sessions = await Session.find(filter)
