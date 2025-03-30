@@ -167,6 +167,7 @@ class HomeFragment : Fragment() {
         if (showLoading) {
             isLoading = true
             fetchSessionsButton.isEnabled = false
+            LoaderDialog.show(requireContext()) // Show loader
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -181,10 +182,6 @@ class HomeFragment : Fragment() {
                     Log.d(TAG, "Response: $response")
 
                     val fetchedSessions = parseSessions(response)
-                    // get the first 3 sessions -> recommended sessions
-                    // if less than 3, then all are recommended??
-                    // use recommended_session_list_view for recommended sessions
-                    // use session_list_view for all other (index 3+) sessions
                     withContext(Dispatchers.Main) {
                         updateUIWithFetchedSessions(fetchedSessions, showLoading)
                     }
@@ -202,12 +199,17 @@ class HomeFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     handleJSONError(e)
                 }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    LoaderDialog.hide() // Hide loader
+                }
             }
         }
     }
 
     private suspend fun handleErrorResponse(connection: HttpURLConnection, responseCode: Int) {
-        val errorMessage = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
+        val errorMessage =
+            connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
         Log.e(TAG, "Error response: $errorMessage")
         showEmptyState("Error loading sessions (${responseCode})")
         isLoading = false
@@ -292,14 +294,21 @@ class HomeFragment : Fragment() {
         )
     }
 
-    private fun updateUIWithFetchedSessions(fetchedSessions: ArrayList<Session>, showLoading: Boolean) {
+    private fun updateUIWithFetchedSessions(
+        fetchedSessions: ArrayList<Session>,
+        showLoading: Boolean
+    ) {
         sessionsList.clear()
         sessionsList.addAll(fetchedSessions)
         updateSessionsDisplay()
         isLoading = false
         fetchSessionsButton.isEnabled = true
         if (showLoading) {
-            Toast.makeText(context, "Sessions updated! Found ${fetchedSessions.size} sessions", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Sessions updated! Found ${fetchedSessions.size} sessions",
+                Toast.LENGTH_SHORT
+            ).show()
         }
         Log.d(TAG, "Loaded ${fetchedSessions.size} sessions")
     }
@@ -309,16 +318,16 @@ class HomeFragment : Fragment() {
         return try {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
             dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-            
+
             val startDateTime = dateFormat.parse(startDate)
             val endDateTime = dateFormat.parse(endDate)
-            
+
             val displayFormat = SimpleDateFormat("MMM dd, yyyy h:mm a", Locale.US)
             displayFormat.timeZone = TimeZone.getDefault() // Convert to local time
-            
+
             val endTimeOnlyFormat = SimpleDateFormat("h:mm a", Locale.US)
             endTimeOnlyFormat.timeZone = TimeZone.getDefault()
-            
+
             displayFormat.format(startDateTime) + " - " + endTimeOnlyFormat.format(endDateTime)
         } catch (e: ParseException) {
             Log.e(TAG, "Error formatting session time", e)
@@ -348,31 +357,41 @@ class HomeFragment : Fragment() {
         }
 
         Log.d(TAG, "Total sessions: ${sessionsList.size}")
-        Log.d(TAG, "Public sessions: ${sessionsList.count { it.visibility == SessionVisibility.PUBLIC }}")
-        Log.d(TAG, "Private sessions: ${sessionsList.count { it.visibility == SessionVisibility.PRIVATE }}")
-        Log.d(TAG, "Currently showing ${currentVisibility} sessions: ${privateOrPublicSessions.size}")
-        
+        Log.d(
+            TAG,
+            "Public sessions: ${sessionsList.count { it.visibility == SessionVisibility.PUBLIC }}"
+        )
+        Log.d(
+            TAG,
+            "Private sessions: ${sessionsList.count { it.visibility == SessionVisibility.PRIVATE }}"
+        )
+        Log.d(
+            TAG,
+            "Currently showing ${currentVisibility} sessions: ${privateOrPublicSessions.size}"
+        )
+
         if (filteredSessions.isEmpty()) {
             showEmptyState("No sessions found")
         } else {
             emptyStateTextView.visibility = View.GONE
             sessionsRecyclerView.visibility = View.VISIBLE
-            
-        // Filter public sessions and determine the top 3 recommended session IDs
-        val publicSessions = sessionsList.filter { it.visibility == SessionVisibility.PUBLIC && it.hostId != userId}
-        val recommendedSessionIds = publicSessions.take(3).map { it.id }.toSet()
 
-        // Update adapter with filtered sessions and recommended IDs
-        sessionsAdapter.updateSessions(filteredSessions, recommendedSessionIds)
+            // Filter public sessions and determine the top 3 recommended session IDs
+            val publicSessions =
+                sessionsList.filter { it.visibility == SessionVisibility.PUBLIC && it.hostId != userId }
+            val recommendedSessionIds = publicSessions.take(3).map { it.id }.toSet()
+
+            // Update adapter with filtered sessions and recommended IDs
+            sessionsAdapter.updateSessions(filteredSessions, recommendedSessionIds)
+        }
     }
-}
-    
+
     private fun showEmptyState(message: String) {
         sessionsRecyclerView.visibility = View.GONE
         emptyStateTextView.visibility = View.VISIBLE
         emptyStateTextView.text = message
     }
-    
+
     // Method to expose the adapter to parent activity
     fun getSessionsAdapter(): SessionAdapter {
         return sessionsAdapter

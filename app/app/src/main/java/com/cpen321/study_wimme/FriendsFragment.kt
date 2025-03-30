@@ -80,6 +80,7 @@ class FriendsFragment : Fragment() {
                     intent.putExtra("friend", item)
                     startActivity(intent)
                 }
+
                 is Group -> {
                     val intent = Intent(context, EditGroupActivity::class.java)
                     intent.putExtra("group", item)
@@ -95,7 +96,7 @@ class FriendsFragment : Fragment() {
         addFriendStub = view.findViewById(R.id.addFriendStub)
         createGroupStub = view.findViewById(R.id.createGroupStub)
 
-        visibilityToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked -> 
+        visibilityToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
                     R.id.friendsButton -> {
@@ -103,6 +104,7 @@ class FriendsFragment : Fragment() {
                         hideCreateGroupLayout()
                         fetchFriends()
                     }
+
                     R.id.groupsButton -> {
                         hideAddFriendLayout()
                         showCreateGroupLayout()
@@ -130,7 +132,7 @@ class FriendsFragment : Fragment() {
     private fun fetchFriends() {
         // Get userId using our new helper method
         val userId = LoginActivity.getCurrentUserId(requireActivity())
-        
+
         // Log the userId for debugging
         Log.d(TAG, "Fetching friends with userId: $userId")
 
@@ -138,12 +140,16 @@ class FriendsFragment : Fragment() {
             // If userId is null, try to get it from GoogleId
             val googleId = LoginActivity.getCurrentUserGoogleId(requireActivity())
             Log.d(TAG, "userId is null, googleId: $googleId")
-            
+
             if (googleId != null) {
                 // Try to fetch userId from backend using googleId
                 fetchUserIdFromGoogleId(googleId)
             } else {
-                Toast.makeText(context, "User not authenticated. Please log in again.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "User not authenticated. Please log in again.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 // Navigate back to login
                 val intent = Intent(requireContext(), LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -156,6 +162,7 @@ class FriendsFragment : Fragment() {
     }
 
     private fun fetchFriendsFromServer(userId: String) {
+        LoaderDialog.show(requireContext()) // Show loader
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("${BuildConfig.SERVER_URL}/user/friends?userId=$userId")
@@ -175,7 +182,8 @@ class FriendsFragment : Fragment() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Failed to fetch friends", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to fetch friends", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
                 connection.disconnect()
@@ -183,6 +191,47 @@ class FriendsFragment : Fragment() {
                 Log.e(TAG, "Error fetching friends", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    LoaderDialog.hide() // Hide loader
+                }
+            }
+        }
+    }
+
+    private fun fetchGroupsFromServer(userId: String) {
+        LoaderDialog.show(requireContext()) // Show loader
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val url = URL("${BuildConfig.SERVER_URL}/group/${userId}")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    val jsonResponse = JSONObject(response)
+                    val groupsArray = jsonResponse.getJSONArray("groups")
+                    val fetchedGroups = parseGroups(groupsArray)
+
+                    withContext(Dispatchers.Main) {
+                        updateGroupsList(fetchedGroups)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to fetch groups", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                connection.disconnect()
+            } catch (e: JSONException) {
+                Log.e(TAG, "Error fetching groups", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    LoaderDialog.hide() // Hide loader
                 }
             }
         }
@@ -295,38 +344,6 @@ class FriendsFragment : Fragment() {
         }
 
         fetchGroupsFromServer(userId)
-    }
-
-    private fun fetchGroupsFromServer(userId: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val url = URL("${BuildConfig.SERVER_URL}/group/${userId}")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val response = connection.inputStream.bufferedReader().use { it.readText() }
-                    val jsonResponse = JSONObject(response)
-                    val groupsArray = jsonResponse.getJSONArray("groups")
-                    val fetchedGroups = parseGroups(groupsArray)
-
-                    withContext(Dispatchers.Main) {
-                        updateGroupsList(fetchedGroups)
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Failed to fetch groups", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                connection.disconnect()
-            } catch (e: JSONException) {
-                Log.e(TAG, "Error fetching groups", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 
     private fun parseGroups(groupsArray: JSONArray): ArrayList<Group> {
@@ -446,14 +463,20 @@ class FriendsFragment : Fragment() {
                 val responseCode = connection.responseCode
                 withContext(Dispatchers.Main) {
                     if (responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(context, "Friend request sent to $username", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Friend request sent to $username",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         addFriendEditText?.text?.clear()
                     } else {
                         // Read error message from response
-                        val errorStream = if (responseCode >= 400) connection.errorStream else connection.inputStream
+                        val errorStream =
+                            if (responseCode >= 400) connection.errorStream else connection.inputStream
                         val errorResponse = errorStream.bufferedReader().use { it.readText() }
                         val errorJson = JSONObject(errorResponse)
-                        val errorMessage = errorJson.optString("message", "Failed to send friend request")
+                        val errorMessage =
+                            errorJson.optString("message", "Failed to send friend request")
                         Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -497,7 +520,8 @@ class FriendsFragment : Fragment() {
                 val responseCode = connection.responseCode
                 withContext(Dispatchers.Main) {
                     if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(context, "Group created: $groupName", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Group created: $groupName", Toast.LENGTH_SHORT)
+                            .show()
                         createGroupEditText?.text?.clear()
                         // Refresh groups list
                         fetchGroups()

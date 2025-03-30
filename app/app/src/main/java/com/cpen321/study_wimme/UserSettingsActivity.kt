@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Spinner
@@ -37,6 +39,19 @@ class UserSettingsActivity : AppCompatActivity() {
     private lateinit var logoutButton: Button
     private lateinit var deleteAccountButton: Button
     private lateinit var backButton: ImageButton
+    private lateinit var programDropdown: AutoCompleteTextView
+    
+
+    private val programs = listOf(
+        "Arts",
+        "Science",
+        "Engineering",
+        "Business",
+        "Education",
+        "Law",
+        "Medicine",
+        "Other"
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,13 +63,22 @@ class UserSettingsActivity : AppCompatActivity() {
         usernameInput = findViewById(R.id.usernameEditText)
         firstNameInput = findViewById(R.id.firstNameEditText)
         lastNameInput = findViewById(R.id.lastNameEditText)
-        facultyInput = findViewById(R.id.programEditText)
+//        facultyInput = findViewById(R.id.programEditText)
         yearInput = findViewById(R.id.yearEditText)
         interestsInput = findViewById(R.id.interestsEditText)
         saveButton = findViewById(R.id.saveButton)
         logoutButton = findViewById(R.id.logoutButton)
         deleteAccountButton = findViewById(R.id.deleteAccountButton)
         backButton = findViewById(R.id.backButton)
+        programDropdown = findViewById<AutoCompleteTextView>(R.id.programDropdown)
+        // Create an ArrayAdapter using the programs list
+        val programAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            programs
+        )
+        // Attach the adapter to the AutoCompleteTextView
+        programDropdown.setAdapter(programAdapter)
 
         // Setup back button functionality
         if (isCompletingProfile) {
@@ -230,7 +254,7 @@ class UserSettingsActivity : AppCompatActivity() {
                         usernameInput.setText(userData.optString("userName", ""))
                         firstNameInput.setText(userData.optString("firstName", ""))
                         lastNameInput.setText(userData.optString("lastName", ""))
-                        facultyInput.setText(userData.optString("faculty", ""))
+                        programDropdown.setText(userData.optString("faculty", ""), false)
                         yearInput.setText(userData.optInt("year", 1).toString())
                         interestsInput.setText(userData.optString("interests", ""))
                     }
@@ -267,8 +291,8 @@ class UserSettingsActivity : AppCompatActivity() {
             isValid = false
         }
 
-        if (facultyInput.text.toString().trim().isEmpty()) {
-            facultyInput.error = "Faculty is required"
+        if (programDropdown.text.toString().trim().isEmpty()) {
+            programDropdown.error = "Program is required"
             isValid = false
         }
 
@@ -316,7 +340,8 @@ class UserSettingsActivity : AppCompatActivity() {
         val username = usernameInput.text.toString().trim()
         val firstName = firstNameInput.text.toString().trim()
         val lastName = lastNameInput.text.toString().trim()
-        val faculty = facultyInput.text.toString().trim()
+        // val faculty = facultyInput.text.toString().trim()
+        val selectedProgram = programDropdown.text.toString()
         val year = yearInput.text.toString().trim().toInt()
         val interests = interestsInput.text.toString().trim()
 
@@ -324,7 +349,7 @@ class UserSettingsActivity : AppCompatActivity() {
             put("userName", username)
             put("firstName", firstName)
             put("lastName", lastName)
-            put("faculty", faculty)
+            put("faculty", selectedProgram)
             put("year", year)
             put("interests", interests)
         }
