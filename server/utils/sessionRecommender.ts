@@ -27,10 +27,7 @@ export const sentenceSimilarity = async (
   });
 };
 
-export const scoreSessions = async (
-  user: IUser,
-  sessionsArray: ISession[]
-) => {
+export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
   const scoredSessions: { session: ISession; score: number }[] = [];
 
   for (const session of sessionsArray) {
@@ -55,15 +52,15 @@ export const scoreSessions = async (
           : 0;
 
       // determine the cosine similarity between the user's interests and the host's interests
-      let interestsScore;
-      if (user.interests && host.interests) {
-        interestsScore = await sentenceSimilarity(
-            user.interests,
-            host.interests
-        );
-      } else {
-        interestsScore = 0;
-      }
+      let interestsScore = 0;
+      // if (user.interests && host.interests) {
+      //   interestsScore = await sentenceSimilarity(
+      //       user.interests,
+      //       host.interests
+      //   );
+      // } else {
+      //   interestsScore = 0;
+      // }
 
       const finalScore =
         (facultyScore +
