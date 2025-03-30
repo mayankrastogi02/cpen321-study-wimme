@@ -1,31 +1,9 @@
-import * as tf from "@tensorflow/tfjs";
+// import * as tf from "@tensorflow/tfjs";
 import User, { IUser } from "../schemas/UserSchema";
 import { ISession } from "../schemas/SessionSchema";
-import { loadModel } from "..";
+// import { loadModel } from "..";
 
 // Calculates vectorizes 2 strings passed in using google's universal-sentence-encoder and calculates their cosine similarity
-export const sentenceSimilarity = async (
-  sentence1: string,
-  sentence2: string
-): Promise<number> => {
-  const model = await loadModel();
-  const embeddings = await model.embed([sentence1, sentence2]);
-
-  return tf.tidy(() => {
-    const vecs = embeddings.arraySync() as number[][];
-    const [vec1, vec2] = vecs;
-
-    const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
-    const magnitude1 = Math.sqrt(
-      vec1.reduce((sum, value) => sum + value * value, 0)
-    );
-    const magnitude2 = Math.sqrt(
-      vec2.reduce((sum, value) => sum + value * value, 0)
-    );
-
-    return dotProduct / (magnitude1 * magnitude2);
-  });
-};
 
 export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
   const scoredSessions: { session: ISession; score: number }[] = [];

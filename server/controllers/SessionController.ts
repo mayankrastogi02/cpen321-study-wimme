@@ -253,14 +253,14 @@ export class SessionController {
         invitees: userId,
       }).populate("hostId", "firstName lastName");
 
-      const recommendedSessions = await scoreSessions(user, publicSessions);
+      // const recommendedSessions = await scoreSessions(user, publicSessions);
       // For debug: return all public sessions
-      // const recommendedSessions = publicSessions.map((session) => {
-      //   return {
-      //     ...session.toObject(),
-      //     score: Math.random(), // Placeholder for scoring logic
-      //   };
-      // });
+      const recommendedSessions = publicSessions.map((session) => {
+        return {
+          ...session.toObject(),
+          score: Math.random(), // Placeholder for scoring logic
+        };
+      });
 
       // Combine all sessions
       const allSessions = [

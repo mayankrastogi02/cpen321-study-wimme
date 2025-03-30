@@ -8,7 +8,7 @@ import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
-import * as use from '@tensorflow-models/universal-sentence-encoder';
+// import * as use from "@tensorflow-models/universal-sentence-encoder";
 import cron from "node-cron";
 import Session from "./schemas/SessionSchema";
 import { sendPushNotification } from "./utils/notificationUtils";
@@ -30,7 +30,7 @@ if (process.env.NODE_ENV !== "test") {
     "utf-8"
   );
   const utf8GCPKeyString = utf8GCPKeyBuffer.toString("utf-8");
-  
+
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.GCP_PROJECT_ID,
@@ -42,13 +42,13 @@ if (process.env.NODE_ENV !== "test") {
   admin.initializeApp();
 }
 
-let model: use.UniversalSentenceEncoder | null = null;
-export async function loadModel() {
-  if (!model) {
-      model = await use.load();
-  }
-  return model;
-}
+// let model: use.UniversalSentenceEncoder | null = null;
+// export async function loadModel() {
+//   if (!model) {
+//       model = await use.load();
+//   }
+//   return model;
+// }
 
 export const messaging = admin.messaging();
 
@@ -95,10 +95,12 @@ if (process.env.NODE_ENV !== "test") {
 const deleteExpiredSessions = async () => {
   const now = new Date();
   try {
-      const result = await Session.deleteMany({ "dateRange.endDate": { $lt: now } });
-      console.log(`Deleted ${result.deletedCount} expired sessions`);
+    const result = await Session.deleteMany({
+      "dateRange.endDate": { $lt: now },
+    });
+    console.log(`Deleted ${result.deletedCount} expired sessions`);
   } catch (error) {
-      console.error("Error deleting expired sessions:", error);
+    console.error("Error deleting expired sessions:", error);
   }
 };
 
@@ -107,30 +109,39 @@ if (process.env.NODE_ENV !== "test") {
     await deleteExpiredSessions();
     console.log("Expired sessions deleted");
   });
-  
+
   cron.schedule("*/2 * * * *", async () => {
     const now = new Date();
     const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
-  
+
     try {
-        // Find sessions starting in the next 30 minutes that haven't been notified
-        const sessions = await Session.find({
-            "dateRange.startDate": { $gte: now, $lte: thirtyMinutesLater },
-            notified: false,
+      // Find sessions starting in the next 30 minutes that haven't been notified
+      const sessions = await Session.find({
+        "dateRange.startDate": { $gte: now, $lte: thirtyMinutesLater },
+        notified: false,
+      });
+
+      for (const session of sessions) {
+        await sendPushNotification(
+          session.hostId,
+          `Hosted session "${session.name}" starts soon!`,
+          `"${session.name}" will start at ${session.dateRange.startDate}`
+        );
+        session.participants.forEach(async (participant) => {
+          await sendPushNotification(
+            participant,
+            `Joined session "${session.name}" starts soon!`,
+            `"${session.name}" will start at ${session.dateRange.startDate}`
+          );
         });
-  
-        for (const session of sessions) {
-            await sendPushNotification(session.hostId, `Hosted session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
-            session.participants.forEach(async(participant) => {
-              await sendPushNotification(participant, `Joined session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
-            });
-  
-            await Session.updateOne({ _id: session._id }, { $set: { notified: true } });
-        }
+
+        await Session.updateOne(
+          { _id: session._id },
+          { $set: { notified: true } }
+        );
+      }
     } catch (error) {
-        console.error("Error sending notifications:", error);
+      console.error("Error sending notifications:", error);
     }
   });
 }
-
-
