@@ -108,14 +108,14 @@ class EditGroupActivity : AppCompatActivity() {
                 val responseCode = connection.responseCode
                 withContext(Dispatchers.Main) {
                     if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(this@EditGroupActivity, "Group updated", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@EditGroupActivity, "Invite List updated", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this@EditGroupActivity, "Failed to update group", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@EditGroupActivity, "Failed to update Invite List", Toast.LENGTH_SHORT).show()
                     }
                 }
                 connection.disconnect()
             } catch (e: JSONException) {
-                Log.e(TAG, "Error editing group", e)
+                Log.e(TAG, "Error editing Invite List", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@EditGroupActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -134,9 +134,9 @@ class EditGroupActivity : AppCompatActivity() {
                 val responseCode = connection.responseCode
                 withContext(Dispatchers.Main) {
                     if (responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(this@EditGroupActivity, "Group deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@EditGroupActivity, "Invite List deleted", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this@EditGroupActivity, "Failed to delete group", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@EditGroupActivity, "Failed to delete Invite List", Toast.LENGTH_SHORT).show()
                     }
                 }
                 connection.disconnect()

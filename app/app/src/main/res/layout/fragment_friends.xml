@@ -22,7 +22,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Friends &amp; Groups"
+                android:text="Friends &amp; Invite Lists"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:text="Groups" />
+                android:text="Invite List" />
 
         </com.google.android.material.button.MaterialButtonToggleGroup>
 

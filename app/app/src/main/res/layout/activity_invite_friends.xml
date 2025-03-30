@@ -36,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Select friends or groups to invite to your study session"
+        android:text="Select friends or Invite Lists to invite to your study session"
         android:textSize="16sp" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
@@ -60,7 +60,7 @@
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Groups" />
+            android:text="Invite Lists" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
 

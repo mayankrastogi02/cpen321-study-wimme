@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                tools:text="Study Group" />
+                tools:text="Study Group Invite List" />
 
             <TextView
                 android:id="@+id/memberCountTextView"

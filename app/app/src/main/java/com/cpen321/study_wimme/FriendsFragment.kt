@@ -422,7 +422,7 @@ class FriendsFragment : Fragment() {
                 if (groupName.isNotEmpty()) {
                     createGroup(groupName)
                 } else {
-                    Toast.makeText(context, "Please enter a group name", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please enter an Invite List name", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {

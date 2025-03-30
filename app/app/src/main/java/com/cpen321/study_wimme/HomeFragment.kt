@@ -306,7 +306,7 @@ class HomeFragment : Fragment() {
         if (showLoading) {
             Toast.makeText(
                 context,
-                "Sessions updated! Found ${fetchedSessions.size} sessions",
+                "Sessions updated!",
                 Toast.LENGTH_SHORT
             ).show()
         }
