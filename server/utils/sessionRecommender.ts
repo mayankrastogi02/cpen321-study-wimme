@@ -3,9 +3,6 @@ import User, { IUser } from "../schemas/UserSchema";
 import { ISession } from "../schemas/SessionSchema";
 import { loadModel } from "..";
 
-// set the top N sessions returned by findTopSessions()
-const TOP_SESSIONS_RETURNED = 3;
-
 // Calculates vectorizes 2 strings passed in using google's universal-sentence-encoder and calculates their cosine similarity
 export const sentenceSimilarity = async (
   sentence1: string,
@@ -30,7 +27,7 @@ export const sentenceSimilarity = async (
   });
 };
 
-export const findTopSessions = async (
+export const scoreSessions = async (
   user: IUser,
   sessionsArray: ISession[]
 ) => {
@@ -58,10 +55,15 @@ export const findTopSessions = async (
           : 0;
 
       // determine the cosine similarity between the user's interests and the host's interests
-      const interestsScore = await sentenceSimilarity(
-        user.interests,
-        host.interests
-      );
+      let interestsScore;
+      if (user.interests && host.interests) {
+        interestsScore = await sentenceSimilarity(
+            user.interests,
+            host.interests
+        );
+      } else {
+        interestsScore = 0;
+      }
 
       const finalScore =
         (facultyScore +
