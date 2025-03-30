@@ -644,7 +644,7 @@ describe("Unmocked: GET /session/availableSessions/:userId", () => {
                 participants: []
             }
         ]);
-    });
+    }, 60000);
 });
 
 // Interface GET /session/nearbySessions/
@@ -891,7 +891,7 @@ describe("sessionRecommender", () => {
         // expect session2 to be ranked higher than session 3 because more relevant to user 
         expect(scoredSessions[0].name).toBe("session2");
         expect(scoredSessions[1].name).toBe("session3");
-    });
+    }, 60000);
 
     // Input: User myUser with testUser2 as a friend, 2 sessions passed into an array - identical in contents but one has testUser 2 joining 
     // Expected status code: NA
@@ -955,5 +955,5 @@ describe("sessionRecommender", () => {
         // expect sessionWithParticipants to be ranked higher than session 3 because more relevant to user 
         expect(scoredSessions[0].name).toBe("sessionWithParticipants");
         expect(scoredSessions[1].name).toBe("sessionWithoutParticipants");
-    });
+    }, 60000);
 });

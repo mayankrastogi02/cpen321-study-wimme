@@ -102,33 +102,35 @@ const deleteExpiredSessions = async () => {
   }
 };
 
-cron.schedule("*/5 * * * *", async () => {
-  await deleteExpiredSessions();
-  console.log("Expired sessions deleted");
-});
-
-cron.schedule("*/2 * * * *", async () => {
-  const now = new Date();
-  const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
-
-  try {
-      // Find sessions starting in the next 30 minutes that haven't been notified
-      const sessions = await Session.find({
-          "dateRange.startDate": { $gte: now, $lte: thirtyMinutesLater },
-          notified: false,
-      });
-
-      for (const session of sessions) {
-          sendPushNotification(session.hostId, `Hosted session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
-          session.participants.forEach(participant => {
-            sendPushNotification(participant, `Joined session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
-          });
-
-          await Session.updateOne({ _id: session._id }, { $set: { notified: true } });
-      }
-  } catch (error) {
-      console.error("Error sending notifications:", error);
-  }
-});
+if (process.env.NODE_ENV !== "test") {
+  cron.schedule("*/5 * * * *", async () => {
+    await deleteExpiredSessions();
+    console.log("Expired sessions deleted");
+  });
+  
+  cron.schedule("*/2 * * * *", async () => {
+    const now = new Date();
+    const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
+  
+    try {
+        // Find sessions starting in the next 30 minutes that haven't been notified
+        const sessions = await Session.find({
+            "dateRange.startDate": { $gte: now, $lte: thirtyMinutesLater },
+            notified: false,
+        });
+  
+        for (const session of sessions) {
+            await sendPushNotification(session.hostId, `Hosted session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
+            session.participants.forEach(async(participant) => {
+              await sendPushNotification(participant, `Joined session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
+            });
+  
+            await Session.updateOne({ _id: session._id }, { $set: { notified: true } });
+        }
+    } catch (error) {
+        console.error("Error sending notifications:", error);
+    }
+  });
+}
 
 
