@@ -46,6 +46,7 @@ const SessionSchema = new mongoose.Schema({
     year: { type: Number, min: 1, required: true },
     invitees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    notified: { type: Boolean, default: false }, // Track if notified
 });
 
 // Create geospatial index on the location field
@@ -53,9 +54,6 @@ SessionSchema.index({ location: "2dsphere" });
 
 // Index for efficient querying of sessions a user is part of
 SessionSchema.index({ participants: 1 });
-
-// Delete document after endDate has passed
-SessionSchema.index({ endDate: 1 }, { expireAfterSeconds: 1 });
 
 const Session = mongoose.model<ISession>("Session", SessionSchema);
 

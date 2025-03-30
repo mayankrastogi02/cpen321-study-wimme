@@ -9,6 +9,9 @@ import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
 import * as use from '@tensorflow-models/universal-sentence-encoder';
+import cron from "node-cron";
+import Session from "./schemas/SessionSchema";
+import { sendPushNotification } from "./utils/notificationUtils";
 
 export const app = express();
 app.use(express.json());
@@ -87,3 +90,45 @@ if (process.env.NODE_ENV !== "test") {
       mongoose.disconnect();
     });
 }
+
+// chron jobs
+const deleteExpiredSessions = async () => {
+  const now = new Date();
+  try {
+      const result = await Session.deleteMany({ "dateRange.endDate": { $lt: now } });
+      console.log(`Deleted ${result.deletedCount} expired sessions`);
+  } catch (error) {
+      console.error("Error deleting expired sessions:", error);
+  }
+};
+
+cron.schedule("*/5 * * * *", async () => {
+  await deleteExpiredSessions();
+  console.log("Expired sessions deleted");
+});
+
+cron.schedule("*/2 * * * *", async () => {
+  const now = new Date();
+  const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000);
+
+  try {
+      // Find sessions starting in the next 30 minutes that haven't been notified
+      const sessions = await Session.find({
+          "dateRange.startDate": { $gte: now, $lte: thirtyMinutesLater },
+          notified: false,
+      });
+
+      for (const session of sessions) {
+          sendPushNotification(session.hostId, `Hosted session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
+          session.participants.forEach(participant => {
+            sendPushNotification(participant, `Joined session "${session.name}" starts soon!`, `"${session.name}" will start at ${session.dateRange.startDate}`);
+          });
+
+          await Session.updateOne({ _id: session._id }, { $set: { notified: true } });
+      }
+  } catch (error) {
+      console.error("Error sending notifications:", error);
+  }
+});
+
+
