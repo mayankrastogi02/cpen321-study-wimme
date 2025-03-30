@@ -31,6 +31,7 @@ import java.util.Calendar
 import java.util.Properties
 import android.view.View
 import android.widget.EditText
+import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.intent.Intents.intended
 import org.hamcrest.Description
@@ -131,8 +132,10 @@ class CreateSessionActivityTest {
             .perform(typeText("This is a test session"), closeSoftKeyboard())
         onView(withId(R.id.subjectInput))
             .perform(typeText("Math"), closeSoftKeyboard())
-        onView(withId(R.id.facultyInput))
-            .perform(typeText("CPEN"), closeSoftKeyboard())
+        onView(withId(R.id.facultyDropdown))
+            .perform(click()) // Open the dropdown
+        onData(allOf(`is`(instanceOf(String::class.java)), `is`("CPEN")))
+            .perform(click()) // Select "CPEN"
         onView(withId(R.id.yearInput))
             .perform(typeText("5"), closeSoftKeyboard())
 
@@ -274,8 +277,10 @@ class CreateSessionActivityTest {
         onView(withId(R.id.usernameEditText))
             .perform(clearText(), closeSoftKeyboard())
 
-        onView(withId(R.id.programEditText))
-            .perform(typeText("Engineering"), closeSoftKeyboard())
+        onView(withId(R.id.programDropdown))
+            .perform(click()) // Open the dropdown
+        onData(allOf(`is`(instanceOf(String::class.java)), `is`("Engineering")))
+            .perform(click()) // Select "Engineering"
         onView(withId(R.id.yearEditText))
             .perform(typeText("2"), closeSoftKeyboard())
         onView(withId(R.id.interestsEditText))
@@ -325,7 +330,7 @@ class CreateSessionActivityTest {
             .check(matches(withText("Alice")))
         onView(withId(R.id.lastNameEditText))
             .check(matches(withText("Wonderland")))
-        onView(withId(R.id.programEditText))
+        onView(withId(R.id.programDropdown))
             .check(matches(withText("Engineering")))
         onView(withId(R.id.yearEditText))
             .check(matches(withText("2")))
@@ -369,8 +374,10 @@ class CreateSessionActivityTest {
             .perform(clearText(), typeText("John"), closeSoftKeyboard())
         onView(withId(R.id.lastNameEditText))
             .perform(clearText(), typeText("Doe"), closeSoftKeyboard())
-        onView(withId(R.id.programEditText))
-            .perform(clearText(), typeText("Biology"), closeSoftKeyboard())
+        onView(withId(R.id.programDropdown))
+            .perform(click()) // Open the dropdown
+        onData(allOf(`is`(instanceOf(String::class.java)), `is`("Biology")))
+            .perform(click()) // Select "Biology"
         onView(withId(R.id.yearEditText))
             .perform(clearText(), typeText("3"), closeSoftKeyboard())
         onView(withId(R.id.interestsEditText))
