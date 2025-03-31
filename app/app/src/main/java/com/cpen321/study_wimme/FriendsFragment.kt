@@ -520,18 +520,18 @@ class FriendsFragment : Fragment() {
                 val responseCode = connection.responseCode
                 withContext(Dispatchers.Main) {
                     if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
-                        Toast.makeText(context, "Group created: $groupName", Toast.LENGTH_SHORT)
+                        Toast.makeText(context, "Invite List created: $groupName", Toast.LENGTH_SHORT)
                             .show()
                         createGroupEditText?.text?.clear()
                         // Refresh groups list
                         fetchGroups()
                     } else {
-                        Toast.makeText(context, "Failed to create group", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to create invite list", Toast.LENGTH_SHORT).show()
                     }
                 }
                 connection.disconnect()
             } catch (e: JSONException) {
-                Log.e(TAG, "Error creating group", e)
+                Log.e(TAG, "Error creating invite list", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
