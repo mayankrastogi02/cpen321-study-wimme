@@ -204,7 +204,7 @@ We saw a slight decline in both statement and branch coverage when we ran our te
     | 6. The system deletes the session entry from the database | Check that hosted session is no longer visible in study list. |
     | 7. The system displays that the session has been deleted successfully | Check that hosted session is not visible in study list. Visual verification of Toast message.|
 
-- **Use Case: Manage account**
+- **Use Case: Manage profile**
   - **Test Case: Create Profile**
 
   - **Expected Behaviors:**
@@ -219,7 +219,7 @@ We saw a slight decline in both statement and branch coverage when we ran our te
     | 5. The inputted data gets populated in the database for that user. | Close and open profile again to verify entered fields were properly saved. |
     | 6. The system displays that the profile has been created successfully | Visual verification of displayed toast message. |
 
-- **Use Case: Manage account**
+- **Use Case: Manage profile**
   - **Test Case: Read Profile**
 
   - **Expected Behaviors:**
@@ -229,7 +229,7 @@ We saw a slight decline in both statement and branch coverage when we ran our te
     | 2. The system retrieves the actor’s profile information from the database | Verifies that expected fields (from creation) are shown correctly (since they come from the database) |
     | 3. The system displays information about their profile: username, year, and faculty | Verifies that expected fields (from creation) are shown correctly with expected values|
 
-- **Use Case: Manage account**
+- **Use Case: Manage profile**
   - **Test Case: Edit Profile**
 
   - **Expected Behaviors:**

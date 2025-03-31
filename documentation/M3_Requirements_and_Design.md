@@ -10,6 +10,10 @@
 | 2025-03-02 | 4.5 Dependencies Diagram | Changed component dependencies| Merged SessionsDB and UserDB into one DB for the entire system |
 | 2025-03-02 | 4.6 Functional Requirements Sequence Diagrams | Authentication sequence diagrams added | Log In and Sign Out sequence diagrams were added |
 |2025-03-15 | 3.5 Non-Functional Requirements | Added new non-functional requirements | Added new non-functional requirements for performance, reliability, and error recovery |
+|2025-03-30 | 3.1 Use Case Diagram | Use Case diagram modified | Corrected diagram to separate Manage Groups and Friends use case |
+|2025-03-30 | 4.1  Main Components | Modified Interfaces | Updated the interfaces to better align with implementation |
+|2025-03-30 | 4.5 Dependencies Diagram | Dependencies Diagram modified | Corrected diagram to only have Group Management |
+|2025-03-30 | 4.6 Functional Requirements Sequence Diagrams | Modified a few sequence diagrams | Modified a few sequence diagrams for Manage Sessions, Manage Friends, and Manage Groups use cases to better align with the updated components and interfaces |
 
 ## 2. Project Description
 
@@ -401,8 +405,8 @@ Study Wimme targets university students who seek a collaborative study environme
 
 ### **4.1. Main Components**
 
-1. **UserManagement**
-   - **Purpose**: Handles user authentication and profile management
+1. **User Management**
+   - **Purpose**: Handles profile management and user's friends list.
    - **Interfaces**:
      1. `UserID createProfile(UserDTO)` 
         - **Purpose**: Creates a new user profile
@@ -412,24 +416,27 @@ Study Wimme targets university students who seek a collaborative study environme
         - **Purpose**: Deletes the user’s profile
      4. `User viewProfile(UserID)` 
         - **Purpose**: Views the user’s profile
-2. **FriendGroupManagement**
-   - **Purpose**: Handles creation, modification, and deletion of groups. It also manages users' friends list
-   - **Interfaces**:
-     1. `void sendFriendRequest(SenderID, ReceiverID)` 
+     5. `void sendFriendRequest(SenderID, ReceiverID)` 
         - **Purpose**: Send friend request to another user
-     2. `void decideFriendRequest(Decision, SenderID, ReceiverID)` 
+     6. `void handleFriend(Decision, SenderID, ReceiverID)` 
         - **Purpose**: Adds user to friends list if accepted, otherwise remove the friend request
-     3. `List<Friend> getFriends(UserID)` 
+     7. `List<User> getFriends(UserID)` 
         - **Purpose**: Get all friends for user
-     4. `void deleteFriend(UserID, FriendID)` 
-        - **Purpose**: Delete a friend that the user has selected
-     5. `void createGroup(UserID, List<UserId> members)` 
-        - **Purpose**: Create a group using the friends user has selected
-     6. `void editGroup(UserID, GroupID, List<UserID> newGroupMembers)` 
+     8. `List<User> getFriendRequests(UserID)` 
+        - **Purpose**: Get all friend requests for user
+     9. `void removeFriend(UserID, FriendID)` 
+        - **Purpose**: Remove a friend that the user has selected
+
+2. **Group Management**
+   - **Purpose**: Handles the creation, modification, and deletion of groups.
+   - **Interfaces**:
+     1. `GroupID createGroup(UserID, name)` 
+        - **Purpose**: Create a group using the given group name
+     2. `void editGroup(GroupID, List<UserID> members)` 
         - **Purpose**: Make changes to an existing group
-     7. `void deleteGroup(UserID, GroupID)` 
+     3. `void deleteGroup(GroupID)` 
         - **Purpose**: Delete a preexisting group
-     8. `List<Group> getGroups(UserID)` 
+     4. `List<Group> getGroups(UserID)` 
         - **Purpose**: Get all groups made by that user
 
 3. **Session**
@@ -437,21 +444,15 @@ Study Wimme targets university students who seek a collaborative study environme
    - **Interfaces**:
       1. `SessionID createSession(SessionDTO)` 
           - **Purpose**: Creates new study session
-      2. `void updateSession(SessionID, SessionDTO)` 
-          - **Purpose**: Updates existing session details
-      3. `void deleteSession(SessionID)` 
+      2. `void deleteSession(SessionID)` 
           - **Purpose**: Deletes existing study session
-      4. `Session viewSession(SessionID)` 
-          - **Purpose**: View the details of a session
-      5. `boolean isUserJoined(UserId, SessionId)` 
-          - **Purpose**: Checks if User has joined a particular session
-      6. `void addUserToSession(UserID, SessionID)` 
+      3. `void joinSession(UserID, SessionID)` 
           - **Purpose**: Adds a user to the joined attribute of a session
-      7. `void removeUserFromSession(UserID, SessionID)` 
+      4. `void leaveSession(UserID, SessionID)` 
           - **Purpose**: Removes from a user from the joined attribute of a session
-      8. `void sendJoinNotificationToCreator(SessionId)` 
+      5. `void sendJoinNotificationToCreator(SessionId)` 
           - **Purpose**: Send notification to creator of session notifying that someone joins
-      9. `List<Session> getFilteredSessions(filters: FilterOptions)` 
+      6. `List<Session> getFilteredSessions(filters: FilterOptions)` 
           - **Purpose**: Retrieves sessions based on applied filters
 
 4. **Authentication**
@@ -463,9 +464,9 @@ Study Wimme targets university students who seek a collaborative study environme
         - **Purpose**: Checks if a user has completed their profile
      3. `void signOut(UserID)` 
         - **Purpose**: Signs out a user from the application
-     5. `DeviceToken registerDeviceToken(UserID, Token)` 
+     4. `DeviceToken registerDeviceToken(UserID, Token)` 
         - **Purpose**: Registers a device for push notifications
-     6. `void unregisterDeviceToken(DeviceToken)` 
+     5. `void unregisterDeviceToken(DeviceToken)` 
         - **Purpose**: Removes a device from receiving push notifications
       
 ### **4.2. Databases**
