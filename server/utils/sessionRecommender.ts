@@ -32,7 +32,7 @@ import { ISession } from "../schemas/SessionSchema";
 
 /**
  * Cosine similarity does not work on our EC2 instance as the model uses too much memory on the server despite working locally. Instead, we
- * use a Jaccard similarity. This is less powerful as it does not take into account semantically similar words but our algorithm accounts for
+ * use Jaccard similarity. This is less powerful as it does not take into account semantically similar words but our algorithm accounts for
  * capital letters, out of order lists, and stopwords (such as and). Jaccard similarity is much faster to compute and will run on our instance
  */
 export const jaccardSimilarity = (str1: string, str2: string): number => {
@@ -107,9 +107,8 @@ export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
       scoredSessions.push({ session, score: finalScore });
     }
   }
-
+  
   scoredSessions.sort((a, b) => b.score - a.score);
-  console.log("DEBUG scored sessions:", scoredSessions);
 
   // return scoredSessions.slice(0, TOP_SESSIONS_RETURNED).map(entry => entry.session);
   return scoredSessions.map((entry) => entry.session);

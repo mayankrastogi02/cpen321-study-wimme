@@ -14,6 +14,7 @@
 |2025-03-30 | 4.1  Main Components | Modified Interfaces | Updated the interfaces to better align with implementation |
 |2025-03-30 | 4.5 Dependencies Diagram | Dependencies Diagram modified | Corrected diagram to only have Group Management |
 |2025-03-30 | 4.6 Functional Requirements Sequence Diagrams | Modified a few sequence diagrams | Modified a few sequence diagrams for Manage Sessions, Manage Friends, and Manage Groups use cases to better align with the updated components and interfaces |
+|2025-03-31 | 4.8. Main Project Complexity Design | Elaborated on main complexity | Elaborated further on the main complexity, describing the algorithm in more detail |
 
 ## 2. Project Description
 
@@ -584,52 +585,128 @@ Study Wimme targets university students who seek a collaborative study environme
 
 ### **4.8. Main Project Complexity Design**
 
-**Study Session Matching Algorithm**
+**Study Session Recommendation Algorithm**
 
-- **Description**: Algorithm to match students with compatible study sessions
-- **Why complex?**: Considers multiple factors including location, subject, time preferences, and friends and groups
+- **Description**: Algorithm to recommend compatible study sessions to students using their profile information
+- **Why complex?**: Considers multiple factors including the user's year, faculty, session time, the user's friends and the user's interests. A user can enter any response for their interests so these responses need to be normalized and compared for similarities. Thus we first tokenize the interest strings into pieces of semantic meaning, then create embeddings from them (convert into vectors) using google's universal-sentence-encoder model, and compute their cosine similarities using the following formula:
+
+  <img src="https://github.com/mayankrastogi02/cpen321-study-wimme/blob/main/documentation/images/Cosine_Similarity.jpg?raw=true" width="400">
 - **Design**:
-  - **Input**: User location, subjects, schedule, available sessions, user preferences
+  - **Input**: User's profile information and a list of available public study sessions
   - **Output**: Ranked list of recommended study sessions
-  - **Main computational logic**: Weighted scoring system based on multiple factors like user location, subjects, schedule, available sessions, user preferences
-  - **Pseudo-code**:
-    ```javascript
-    function calculateTotalScore(locationScore, subjectMatchScore, timePreferenceScore, socialScore) {
-        return (
-            locationScore * locationWeight +
-            subjectMatchScore * subjectWeight +
-            timePreferenceScore * timeWeight +
-            socialScore * socialWeight
-        );
-    }
+  - **Main computational logic**: 
+    Scoring system based 5 criteria:
+    1. If the user's program matches that of the session's host
+    2. If the user's year matches that of the sessions "Year level to invite"
+    3. If user's friends list contains any of the participants of the session
+    4. If the hosted session starts soon (less than 24 hours)
+    5. Interest score calculated using Cosine Similarity (**See Note 2**)
+  - Add individual criteria scores up and divide by 5 to compute total score for each session in the list. Recommend the top 3 sessions
+  - **Code**:
+    - **Cosine Similarity**
+        ```javascript
+          export const sentenceSimilarity = async (
+            sentence1: string,
+            sentence2: string
+          ): Promise<number> => {
+            const model = await loadModel();
+            const embeddings = await model.embed([sentence1, sentence2]);
 
-    function findMatchingSessions(user, availableSessions, radius) {
-        let matchedSessions = [];
-        let nearbySessions = filterByRadius(availableSessions, user.location, radius);
-        
-        nearbySessions.forEach((session) => {
-            let locationScore = calculateLocationScore(user.location, session.location);
-            let subjectMatchScore = calculateSubjectMatch(user.interests, session.subject);
-            let timePreferenceScore = calculateTimePreference(user.schedule, session.time);
-            let socialScore = calculateSocialFactor(user.friends, session.participants);
-            
-            let totalScore = calculateTotalScore(
-                locationScore,
-                subjectMatchScore,
-                timePreferenceScore,
-                socialScore
-            );
-            
-            matchedSessions.push({
-                ...session,
-                score: totalScore
+            return tf.tidy(() => {
+              const vecs = embeddings.arraySync() as number[][];
+              const [vec1, vec2] = vecs;
+
+              const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
+              const magnitude1 = Math.sqrt(
+                vec1.reduce((sum, value) => sum + value * value, 0)
+              );
+              const magnitude2 = Math.sqrt(
+                vec2.reduce((sum, value) => sum + value * value, 0)
+              );
+
+              return dotProduct / (magnitude1 * magnitude2);
             });
-        });
-        
-        return matchedSessions.sort((a, b) => b.score - a.score);
-    }
-    ```
+          };
+        ```
+        **Note 2**: Cosine similarity did not work on our T2 Micro EC2 instance as the model uses too much memory on the server despite working when hosting locally. Thus, instead, we use Jaccard similarity when deploying as seen in the below code:
+    - **Jaccard Similarity**
+      ```javascript
+        export const jaccardSimilarity = (str1: string, str2: string): number => {
+          const stopwords = new Set(["and", "or"]);
 
+          const tokenize = (text: string): Set<string> => {
+              return new Set(
+                  text
+                      .replace(/,/g, " ")
+                      .split(/\s+/)
+                      .filter(word => word.toLowerCase() && !stopwords.has(word.toLowerCase()))
+                      .map(word => word.toLowerCase())
+              );
+          };
+
+          const set1 = tokenize(str1);
+          const set2 = tokenize(str2);
+
+          if (set1.size === 0 || set2.size === 0) return 0.0;
+
+          const intersectionSize = [...set1].filter(word => set2.has(word)).length;
+          const unionSize = new Set([...set1, ...set2]).size;
+
+          return intersectionSize / unionSize;
+        };
+      ```
+      The Jaccard Similarity function above calculates the similarity between 2 string sets by dividing the size of their intersection by their union. We create sets of strings by using regex to separate out individual words from the user's interests using spaces and commas, taking away any stop words such as "or" and "and". Jaccard similarity is less powerful as it does not take into account semantically similar words (ex. milk and dairy) but our algoritm still accounts for some edge cases such as capital letters and out of order lists. Jaccard similarity is less resource intensive to compute and will run on our instance.
+    - **Ranking Algorithm** (Utilizing similarity to score interests)
+      ```javascript
+      export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
+        const scoredSessions: { session: ISession; score: number }[] = [];
+
+        for (const session of sessionsArray) {
+          const host = await User.findById(session.hostId);
+          if (host) {
+            const facultyScore = session.faculty == user.faculty ? 1 : 0;
+            const participantsScore = session.participants.some((participant) =>
+              user.friends.includes(participant)
+            )
+              ? 1
+              : 0;
+            const yearScore = session.year === user.year ? 1 : 0;
+
+            const sessionStartDateMillis = new Date(
+              session.dateRange.startDate
+            ).getTime();
+
+            const dateScore =
+              sessionStartDateMillis - Date.now() <= 24 * 60 * 60 * 1000 &&
+              sessionStartDateMillis > Date.now()
+                ? 1
+                : 0;
+
+            let interestsScore;
+            if (user.interests && host.interests) {
+              // determine the cosine similarity between the user's interests and the host's interests
+              // interestsScore = await sentenceSimilarity(
+              //     user.interests,
+              //     host.interests
+              // );
+              
+              // use Jaccard similarity in place of cosine similarity
+              interestsScore = jaccardSimilarity(user.interests, host.interests);
+            } else {
+              interestsScore = 0;
+            }
+
+            const finalScore =
+              (facultyScore +
+                participantsScore +
+                yearScore +
+                dateScore +
+                interestsScore) /
+              5;
+            scoredSessions.push({ session, score: finalScore });
+          }
+        }
+      ```
 ## 5. Contributions
 - `Yibo Chen` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
 - `David Deng` - All members discussed and worked on all parts of the assignment, contributing equally to all the parts.
