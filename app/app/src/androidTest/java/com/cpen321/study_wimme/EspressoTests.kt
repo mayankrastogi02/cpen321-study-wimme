@@ -37,6 +37,7 @@ import androidx.test.espresso.intent.Intents.intended
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import androidx.test.espresso.matcher.BoundedMatcher
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 
 //For displayed error messages (non-toast)
@@ -134,8 +135,9 @@ class CreateSessionActivityTest {
             .perform(typeText("Math"), closeSoftKeyboard())
         onView(withId(R.id.facultyDropdown))
             .perform(click()) // Open the dropdown
-        onData(allOf(`is`(instanceOf(String::class.java)), `is`("CPEN")))
-            .perform(click()) // Select "CPEN"
+        onView(withText("Law"))
+            .inRoot(RootMatchers.isPlatformPopup())
+            .perform(click())
         onView(withId(R.id.yearInput))
             .perform(typeText("5"), closeSoftKeyboard())
 
@@ -172,7 +174,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.publicButton)).perform(click())
         onView(withId(R.id.joinedButton)).perform(click())
 
-        onView(withText("Test Session 1"))
+        onView(withText("STAT251"))
             .check(matches(not(isDisplayed())))
 
         onView(withId(R.id.findButton)).perform(click())
@@ -180,7 +182,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.sessionsRecyclerView))
             .perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                    hasDescendant(withText("Test Session 1")),
+                    hasDescendant(withText("STAT251")),
                     click()
                 )
             )
@@ -190,13 +192,13 @@ class CreateSessionActivityTest {
         onView(withId(R.id.backButton)).perform(click())
         onView(withId(R.id.joinedButton)).perform(click())
 
-        onView(withText("Test Session 1"))
+        onView(withText("STAT251"))
             .check(matches(isDisplayed()))
 
         onView(withId(R.id.sessionsRecyclerView))
             .perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                    hasDescendant(withText("Test Session 1")),
+                    hasDescendant(withText("STAT251")),
                     click()
                 )
             )
@@ -209,7 +211,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.sessionsRecyclerView))
             .perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                    hasDescendant(withText("Test Session 1")),
+                    hasDescendant(withText("STAT251")),
                     click()
                 )
             )
@@ -217,7 +219,7 @@ class CreateSessionActivityTest {
         onView(withId(R.id.leaveButton)).perform(click())
         onView(withId(R.id.backButton)).perform(click())
 
-        onView(withText("Test Session 1"))
+        onView(withText("STAT251"))
             .check(matches(not(isDisplayed())))
     }
 
@@ -279,8 +281,9 @@ class CreateSessionActivityTest {
 
         onView(withId(R.id.programDropdown))
             .perform(click()) // Open the dropdown
-        onData(allOf(`is`(instanceOf(String::class.java)), `is`("Engineering")))
-            .perform(click()) // Select "Engineering"
+        onView(withText("Engineering"))
+            .inRoot(RootMatchers.isPlatformPopup())
+            .perform(click())
         onView(withId(R.id.yearEditText))
             .perform(typeText("2"), closeSoftKeyboard())
         onView(withId(R.id.interestsEditText))
@@ -352,7 +355,7 @@ class CreateSessionActivityTest {
             .check(matches(not(withText(""))))
         onView(withId(R.id.lastNameEditText))
             .check(matches(not(withText(""))))
-        onView(withId(R.id.programEditText))
+        onView(withId(R.id.programDropdown))
             .check(matches(not(withText(""))))
         onView(withId(R.id.yearEditText))
             .check(matches(not(withText(""))))
@@ -376,8 +379,9 @@ class CreateSessionActivityTest {
             .perform(clearText(), typeText("Doe"), closeSoftKeyboard())
         onView(withId(R.id.programDropdown))
             .perform(click()) // Open the dropdown
-        onData(allOf(`is`(instanceOf(String::class.java)), `is`("Biology")))
-            .perform(click()) // Select "Biology"
+        onView(withText("Law"))
+            .inRoot(RootMatchers.isPlatformPopup())
+            .perform(click())
         onView(withId(R.id.yearEditText))
             .perform(clearText(), typeText("3"), closeSoftKeyboard())
         onView(withId(R.id.interestsEditText))
@@ -399,8 +403,8 @@ class CreateSessionActivityTest {
             .check(matches(withText("John")))
         onView(withId(R.id.lastNameEditText))
             .check(matches(withText("Doe")))
-        onView(withId(R.id.programEditText))
-            .check(matches(withText("Biology")))
+        onView(withId(R.id.programDropdown))
+            .check(matches(withText("Law")))
         onView(withId(R.id.yearEditText))
             .check(matches(withText("3")))
         onView(withId(R.id.interestsEditText))
