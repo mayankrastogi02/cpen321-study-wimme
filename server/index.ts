@@ -8,7 +8,7 @@ import admin from "firebase-admin";
 import { NotificationRoutes } from "./routes/NotificationRoutes";
 import { GroupRoutes } from "./routes/GroupRoutes";
 import { AuthRoutes } from "./routes/AuthRoutes";
-// import * as use from "@tensorflow-models/universal-sentence-encoder";
+import * as use from "@tensorflow-models/universal-sentence-encoder";
 import cron from "node-cron";
 import Session from "./schemas/SessionSchema";
 import { sendPushNotification } from "./utils/notificationUtils";
@@ -42,13 +42,13 @@ if (process.env.NODE_ENV !== "test") {
   admin.initializeApp();
 }
 
-// let model: use.UniversalSentenceEncoder | null = null;
-// export async function loadModel() {
-//   if (!model) {
-//       model = await use.load();
-//   }
-//   return model;
-// }
+let model: use.UniversalSentenceEncoder | null = null;
+export async function loadModel() {
+  if (!model) {
+      model = await use.load();
+  }
+  return model;
+}
 
 export const messaging = admin.messaging();
 

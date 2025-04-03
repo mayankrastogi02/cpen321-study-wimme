@@ -1,62 +1,33 @@
-// import * as tf from "@tensorflow/tfjs";
+import * as tf from "@tensorflow/tfjs";
 import User, { IUser } from "../schemas/UserSchema";
 import { ISession } from "../schemas/SessionSchema";
-// import { loadModel } from "..";
+import { loadModel } from "..";
 
 /**
  * NOTE: Commented out because the code cannot run on the EC2 instance (model consumes too much compute and memory)
  * Calculates vectorizes 2 strings passed in using google's universal-sentence-encoder and calculates their cosine similarity
  */
-// export const sentenceSimilarity = async (
-//   sentence1: string,
-//   sentence2: string
-// ): Promise<number> => {
-//   const model = await loadModel();
-//   const embeddings = await model.embed([sentence1, sentence2]);
+export const sentenceSimilarity = async (
+  sentence1: string,
+  sentence2: string
+): Promise<number> => {
+  const model = await loadModel();
+  const embeddings = await model.embed([sentence1, sentence2]);
 
-//   return tf.tidy(() => {
-//     const vecs = embeddings.arraySync() as number[][];
-//     const [vec1, vec2] = vecs;
+  return tf.tidy(() => {
+    const vecs = embeddings.arraySync() as number[][];
+    const [vec1, vec2] = vecs;
 
-//     const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
-//     const magnitude1 = Math.sqrt(
-//       vec1.reduce((sum, value) => sum + value * value, 0)
-//     );
-//     const magnitude2 = Math.sqrt(
-//       vec2.reduce((sum, value) => sum + value * value, 0)
-//     );
+    const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
+    const magnitude1 = Math.sqrt(
+      vec1.reduce((sum, value) => sum + value * value, 0)
+    );
+    const magnitude2 = Math.sqrt(
+      vec2.reduce((sum, value) => sum + value * value, 0)
+    );
 
-//     return dotProduct / (magnitude1 * magnitude2);
-//   });
-// };
-
-/**
- * Cosine similarity does not work on our EC2 instance as the model uses too much memory on the server despite working locally. Instead, we
- * use Jaccard similarity. This is less powerful as it does not take into account semantically similar words but our algorithm accounts for
- * capital letters, out of order lists, and stopwords (such as and). Jaccard similarity is much faster to compute and will run on our instance
- */
-export const jaccardSimilarity = (str1: string, str2: string): number => {
-  const stopwords = new Set(["and", "or"]);
-
-  const tokenize = (text: string): Set<string> => {
-      return new Set(
-          text
-              .replace(/,/g, " ")
-              .split(/\s+/)
-              .filter(word => word.toLowerCase() && !stopwords.has(word.toLowerCase()))
-              .map(word => word.toLowerCase())
-      );
-  };
-
-  const set1 = tokenize(str1);
-  const set2 = tokenize(str2);
-
-  if (set1.size === 0 || set2.size === 0) return 0.0;
-
-  const intersectionSize = [...set1].filter(word => set2.has(word)).length;
-  const unionSize = new Set([...set1, ...set2]).size;
-
-  return intersectionSize / unionSize;
+    return dotProduct / (magnitude1 * magnitude2);
+  });
 };
 
 export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
@@ -86,13 +57,10 @@ export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
       let interestsScore;
       if (user.interests && host.interests) {
         // determine the cosine similarity between the user's interests and the host's interests
-        // interestsScore = await sentenceSimilarity(
-        //     user.interests,
-        //     host.interests
-        // );
-        
-        // use Jaccard similarity in place of cosine similarity
-        interestsScore = jaccardSimilarity(user.interests, host.interests);
+        interestsScore = await sentenceSimilarity(
+            user.interests,
+            host.interests
+        );
       } else {
         interestsScore = 0;
       }
