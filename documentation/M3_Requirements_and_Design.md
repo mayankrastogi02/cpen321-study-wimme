@@ -628,7 +628,7 @@ Study Wimme targets university students who seek a collaborative study environme
             });
           };
         ```
-        **Note 2**: Cosine similarity did not work on our T2 Micro EC2 instance as the model uses too much memory on the server despite working when hosting locally. Thus, instead, we use Jaccard similarity when deploying as seen in the below code:
+        **Note 2**: Cosine similarity did not work on our T2 Micro EC2 instance as the model uses too much memory on the server despite working when hosting locally. To look at our code for Cosine similarity, please refer to the `cosineSimilarityImplementation` branch. Instead, we use Jaccard similarity when deploying as seen in the below code:
     - **Jaccard Similarity**
       ```javascript
         export const jaccardSimilarity = (str1: string, str2: string): number => {
