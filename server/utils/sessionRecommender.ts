@@ -1,34 +1,5 @@
-// import * as tf from "@tensorflow/tfjs";
 import User, { IUser } from "../schemas/UserSchema";
 import { ISession } from "../schemas/SessionSchema";
-// import { loadModel } from "..";
-
-/**
- * NOTE: Commented out because the code cannot run on the EC2 instance (model consumes too much compute and memory)
- * Calculates vectorizes 2 strings passed in using google's universal-sentence-encoder and calculates their cosine similarity
- */
-// export const sentenceSimilarity = async (
-//   sentence1: string,
-//   sentence2: string
-// ): Promise<number> => {
-//   const model = await loadModel();
-//   const embeddings = await model.embed([sentence1, sentence2]);
-
-//   return tf.tidy(() => {
-//     const vecs = embeddings.arraySync() as number[][];
-//     const [vec1, vec2] = vecs;
-
-//     const dotProduct = vec1.reduce((sum, value, i) => sum + value * vec2[i], 0);
-//     const magnitude1 = Math.sqrt(
-//       vec1.reduce((sum, value) => sum + value * value, 0)
-//     );
-//     const magnitude2 = Math.sqrt(
-//       vec2.reduce((sum, value) => sum + value * value, 0)
-//     );
-
-//     return dotProduct / (magnitude1 * magnitude2);
-//   });
-// };
 
 /**
  * Cosine similarity does not work on our EC2 instance as the model uses too much memory on the server despite working locally. Instead, we
@@ -85,13 +56,7 @@ export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
 
       let interestsScore;
       if (user.interests && host.interests) {
-        // determine the cosine similarity between the user's interests and the host's interests
-        // interestsScore = await sentenceSimilarity(
-        //     user.interests,
-        //     host.interests
-        // );
-        
-        // use Jaccard similarity in place of cosine similarity
+        // used Jaccard similarity in place of cosine similarity
         interestsScore = jaccardSimilarity(user.interests, host.interests);
       } else {
         interestsScore = 0;
@@ -110,6 +75,5 @@ export const scoreSessions = async (user: IUser, sessionsArray: ISession[]) => {
   
   scoredSessions.sort((a, b) => b.score - a.score);
 
-  // return scoredSessions.slice(0, TOP_SESSIONS_RETURNED).map(entry => entry.session);
   return scoredSessions.map((entry) => entry.session);
 };

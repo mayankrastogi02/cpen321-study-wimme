@@ -56,17 +56,4 @@ export class NotificationController {
       return res.status(500).json({ error: "Internal server error" });
     }
   }
-
-  // for testing purposes only
-  // async testMessage(req: Request, res: Response) {
-  //   try {
-  //     const { userId, title, body} = req.body;
-  //     sendPushNotification(userId, title, body);
-  //     res.status(200).json({ message: "Message sent"});
-
-  //   } catch (error) {
-  //     	console.error(error);
-  //     	res.status(500).send(error);
-  //   }
-  // }
 }

@@ -15,11 +15,4 @@ export const NotificationRoutes = [
         action: controller.deleteToken,
         validation: [],
     },
-    //Route for testing purposes only
-    // {
-    //     method: "post",
-    //     route: "/notification/sendMessageTest",
-    //     action: controller.testMessage,
-    //     validation: [],
-    // },
 ]
